@@ -14,6 +14,9 @@ class PrimitiveDatatype:
     def __eq__(self, other):
         return self.typeVar == other.typeVar
     
+    def __str__(self):
+        return "Name: " + self.name + ", type: " + self.typeVar
+    
     def add_morphism(self, morphism : Morphism):
         if self == morphism.targetObj:
             self.inComingMorphisms.append(morphism)

@@ -6,3 +6,12 @@ class SchemaCategory:
         self.objects = objects
         self.morphisms = morphisms
     
+    # @classmethod
+    # def fromfilename(cls, name):
+    #     return cls(open(name, 'rb'))
+    
+    def __str__(self):
+        allmorphisms = ""
+        for morphism in self.morphisms:
+            allmorphisms += str(morphism) + "\n"
+        return allmorphisms
