@@ -5,6 +5,7 @@ from SchemaCategory.SchemaCategory import SchemaCategory
 from DataParsers.CSVParser import *
 from DataParsers.PropertyGraphParser import parseDirectedGraph
 from DataParsers.XMLParser import *
+from InstanceCategory.Objects.CollectionObject import CollectionObject
 
 # nested = NestedDatatype("Person", [], [])
 # primitive_name = PrimitiveDatatype("Name", "String", [])
@@ -30,4 +31,9 @@ from DataParsers.XMLParser import *
 # "id", "source", "source", "target")
 # print(graph.number_of_nodes())
 
-printTree(parseXML("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\orders.xml"))
+graphObject = CollectionObject(["C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerVertex.csv",
+"C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerEdge.csv"], "csv", "property graph", "customers", ["id", "name", "creditLimit", "locationId"], "id", ";", ["source", "target"], "source", "source", "target")
+tableObject = CollectionObject("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\locationsTable.csv", "csv", "relational", "locations", ["id", "address", "city", "zipCode", "country"], "id")
+xmlObject = CollectionObject("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\orders.xml", "xml", "XML", "orders")
+
+print(graphObject, tableObject, xmlObject)

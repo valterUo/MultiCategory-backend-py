@@ -1,5 +1,7 @@
 from DataParsers.CSVParser import readToTable
 import networkx as nx
+from DataParsers.PropertyGraphParser import parseDirectedGraph
+from DataParsers.XMLParser import parseXML
 
 class CollectionObject:
 
@@ -11,7 +13,7 @@ class CollectionObject:
     – separator: if the file is csv, this field specifies the separator
     """
 
-    def __init__(self, filePaths, fileformat, collectionType, name, schema, keyAttribute, separator = ";"):
+    def __init__(self, filePaths, fileformat, collectionType, name, schema = None, keyAttribute = None, separator = ";", edgeSchema = None, edgeKeyAttribute = None, fromKeyAttribute = None, toKeyAttribute = None):
         self.filePaths = filePaths
         self.fileformat = fileformat
         self.collectionType = collectionType
@@ -20,9 +22,11 @@ class CollectionObject:
         if self.collectionType == "relational":
             if self.fileformat == "csv":
                 self.collection = readToTable(self.filePaths, separator, self.schema, keyAttribute)
-        # elif self.collectionType == "property graph":
-        #     if self.fileformat == "csv":
-
+        elif self.collectionType == "property graph":
+            if self.fileformat == "csv":
+                self.collection = parseDirectedGraph(filePaths[0], filePaths[1], separator, separator, schema, edgeSchema, keyAttribute, edgeKeyAttribute, fromKeyAttribute, toKeyAttribute)
+        elif self.collectionType == "XML":
+            self.collection = parseXML(filePaths)
         # # elif self.collectionType == "RDF graph":
         # # elif self.collectionType == "JSON":
-        # # elif self.collectionType == "XML":
+        
