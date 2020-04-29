@@ -2,7 +2,9 @@ from SchemaCategory.Objects.NestedDatatype import NestedDatatype
 from SchemaCategory.Objects.PrimitiveDatatype import PrimitiveDatatype
 from SchemaCategory.Morphisms.Morphism import Morphism
 from SchemaCategory.SchemaCategory import SchemaCategory
-from DataParsers.CSVParser import readToTable
+from DataParsers.CSVParser import *
+from DataParsers.PropertyGraphParser import parseDirectedGraph
+from DataParsers.XMLParser import *
 
 # nested = NestedDatatype("Person", [], [])
 # primitive_name = PrimitiveDatatype("Name", "String", [])
@@ -21,9 +23,11 @@ from DataParsers.CSVParser import readToTable
 # schemaCategory = SchemaCategory([nested, primitive_name, primitive_age], [name_morphism, age_morphism])
 # #print(schemaCategory)
 
-# def greeting(name: str) -> int:
-#     return "jjfkldjls"
-
-# print(greeting("Location"))
-
 #readToTable("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\locationsTable.csv", ";", ["id", "address", "city", "zipCode", "country"], "id")
+
+# graph = parseDirectedGraph("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerVertex.csv",
+# "C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerEdge.csv", ";", ";", ["id", "name", "creditLimit", "locationId"], ["source", "target"], 
+# "id", "source", "source", "target")
+# print(graph.number_of_nodes())
+
+printTree(parseXML("C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\orders.xml"))

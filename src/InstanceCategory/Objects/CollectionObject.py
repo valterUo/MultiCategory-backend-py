@@ -1,4 +1,5 @@
 from DataParsers.CSVParser import readToTable
+import networkx as nx
 
 class CollectionObject:
 
