@@ -6,4 +6,4 @@ def parseXML(filePath):
 
 def printTree(tree):
     for elem in tree.getroot().iter():
-        print(elem.tag, elem.attrib)
+        print(elem.tag, elem.text)

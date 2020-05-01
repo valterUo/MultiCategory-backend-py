@@ -2,6 +2,8 @@ from DataParsers.CSVParser import readToTable
 import networkx as nx
 from DataParsers.PropertyGraphParser import parseDirectedGraph
 from DataParsers.XMLParser import parseXML
+from DataParsers.RDFParser import RDFParser
+import json
 
 class CollectionObject:
 
@@ -27,6 +29,13 @@ class CollectionObject:
                 self.collection = parseDirectedGraph(filePaths[0], filePaths[1], separator, separator, schema, edgeSchema, keyAttribute, edgeKeyAttribute, fromKeyAttribute, toKeyAttribute)
         elif self.collectionType == "XML":
             self.collection = parseXML(filePaths)
-        # # elif self.collectionType == "RDF graph":
-        # # elif self.collectionType == "JSON":
+        elif self.collectionType == "RDF":
+            self.collection = RDFParser(filePaths)
+        elif self.collectionType == "JSON":
+            with open(filePaths) as json_file:
+                self.collection = json.load(json_file)
+    
+
+    def getCollection(self):
+        return self.collection
         
