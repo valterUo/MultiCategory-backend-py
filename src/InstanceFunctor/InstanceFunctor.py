@@ -1,3 +1,8 @@
+from SchemaCategory.Objects.PrimitiveDatatype import PrimitiveDatatype
+from SchemaCategory.Objects.NestedDatatype import NestedDatatype
+from SchemaCategory.Morphisms.Morphism import Morphism
+
+
 class InstanceFunctor:
     """
     Instance functor is a mapping from the Instance category to Schema category. The idea is that is describes the current state of the database. 
@@ -8,8 +13,26 @@ class InstanceFunctor:
     Morphism -> Morphism
     """
 
-    def __init__(self, instanceCategory):
+    def __init__(self, instanceCategory, schemaCategory = None):
         self.instanceCategory = instanceCategory
-        self.schemaCategory = constructSchemaCategory(instanceCategory)
+        if schemaCategory == None:
+            self.schemaCategory = constructSchemaCategory(instanceCategory)
+        else:
+            self.schemaCategory = schemaCategory
     
-    def constructSchemaCategory(self, instanceCategory):
+
+    def constructSchemaCategory(self):
+        for mor in self.instanceCategory:
+            target = NestedDatatype(mor.targetObject.name, mor.targetObject.collectionType, [], [])
+            if no_outgoing_morphisms(mor.targetObject):
+                target = PrimitiveDatatype(mor.targetObject.name, mor.targetObject.collectionType, [])
+            nestedTypeSource = NestedDatatype(mor.sourceObject.name, mor.sourceObject.collectionType, [], [])
+            newMorphism = Morphism(mor.name, nestedTypeSource, target)
+            self.schemaCategory.addMorphism(newMorphism)
+
+
+    def no_outgoing_morphisms(self, collectionObject):
+        for m in self.instanceCategory.morphisms:
+            if m.sourceObject == collectionObject:
+                return False
+        return True

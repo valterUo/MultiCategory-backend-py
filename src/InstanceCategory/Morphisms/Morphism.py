@@ -16,12 +16,21 @@ class Morphism:
 
     The composition function in this class needs to satisfy the compostion rule of relation: the composition of relations R : A -> B and S : B -> C is S o R where a(S o R)c
     if there exists such b in B that aSb and bRc.
+
+    The relation can be inputted as a function or as an instance of BinRelation which is slithy generalized 
     """
 
-    def __init__(self, sourceObject, targetObject, relation, functional = False):
+
+    def __init__(self, name, sourceObject, targetObject, relation, functional = False):
+        self.name = name
         self.sourceObject = sourceObject
         self.targetObject = targetObject
         self.functional = functional
         self.relation = relation
 
-    def compose(self, morphism)
+
+    def compose(self, morphism):
+        if self.functional and morphism.functional:
+            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, morphism.relation(self.relation), True)
+        else:
+            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, morphism.relation.compose(self.relation), True)

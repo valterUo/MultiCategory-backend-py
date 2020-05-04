@@ -7,8 +7,9 @@ class NestedDatatype:
     They can serve as a domain or target object for a morphism. 
     """
 
-    def __init__(self, name : str, inComingMorphisms : [Morphism], outGoingMorphisms : [Morphism]):
+    def __init__(self, name : str, typeVar : str, inComingMorphisms : [Morphism], outGoingMorphisms : [Morphism]):
         self.name = name
+        self.typeVar = typeVar
         self.inComingMorphisms = inComingMorphisms
         self.outGoingMorphisms = outGoingMorphisms
 

@@ -7,5 +7,4 @@ def parseDirectedGraph(filePathNodes : str, filePathEdges : str, delimiterNodes 
     edges = readNodesAndEdges(filePathNodes, filePathEdges, delimiterNodes, delimiterEdges, schemaNodes, schemaEdges, keyAttributeNodes, keyAttributeEdges, fromKeyAttribute, toKeyAttribute)
     for e in edges:
         DG.add_edge(e[0], e[1], object= e[2])
-    print(DG.number_of_edges())
     return DG
