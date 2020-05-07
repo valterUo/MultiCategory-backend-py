@@ -1,3 +1,6 @@
+import functools
+
+
 class Morphism:
 
     """
@@ -20,17 +23,42 @@ class Morphism:
     The relation can be inputted as a function or as an instance of BinRelation which is slithy generalized 
     """
 
-
-    def __init__(self, name, sourceObject, targetObject, relation, functional = False):
+    def __init__(self, name, sourceObject, targetObject, relation, functional=False):
         self.name = name
         self.sourceObject = sourceObject
         self.targetObject = targetObject
         self.functional = functional
         self.relation = relation
 
-
     def compose(self, morphism):
-        if self.functional and morphism.functional:
-            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, morphism.relation(self.relation), True)
-        else:
-            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, morphism.relation.compose(self.relation), True)
+        if morphism.targetObject == self.sourceObject:
+            newLambda = None
+            if self.functional and morphism.functional:
+                # Both morphisms can be expressed as functions and thus we have the ordinary function composition.
+                newLambda = morphism.relation(self.relation)
+                isFunctional = True
+            elif self.functional:
+                # Morphism.relation is ''set valued'' function i.e relation. In this case we take each element corresponding the image of x and map those elements using the function self.relation.
+                def newLambda(x): return map(
+                    self.relation, morphism.relation(x))
+                isFunctional = False
+            elif morphism.functional:
+                # The same as the previous case except that the roles of morphism.relation and self.relation have changed. After all, this composition works as a function composition.
+                newLambda = morphism.relation(self.relation)
+                isFunctional = False
+            else:
+                # Both are non-functional relations i.e. we can think that values are mapped to sets.
+                def helper(y, x):
+                    z = y.union(self.relation(x))
+                    return z
+
+                def newLambda(x):
+                    return functools.reduce(helper, morphism.relation(x), set())
+                isFunctional = False
+            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, newLambda, isFunctional)
+
+    def getRelation(self):
+        return self.relation
+
+    def getFunctional(self):
+        return self.functional

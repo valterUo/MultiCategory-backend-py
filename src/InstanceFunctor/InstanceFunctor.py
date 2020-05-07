@@ -13,20 +13,23 @@ class InstanceFunctor:
     Morphism -> Morphism
     """
 
-    def __init__(self, instanceCategory, schemaCategory = None):
+    def __init__(self, instanceCategory, schemaCategory=None):
         self.instanceCategory = instanceCategory
         if schemaCategory == None:
             self.schemaCategory = constructSchemaCategory(instanceCategory)
         else:
             self.schemaCategory = schemaCategory
-    
+
 
     def constructSchemaCategory(self):
         for mor in self.instanceCategory:
-            target = NestedDatatype(mor.targetObject.name, mor.targetObject.collectionType, [], [])
+            target = NestedDatatype(
+                mor.targetObject.name, mor.targetObject.collectionType, [], [])
             if no_outgoing_morphisms(mor.targetObject):
-                target = PrimitiveDatatype(mor.targetObject.name, mor.targetObject.collectionType, [])
-            nestedTypeSource = NestedDatatype(mor.sourceObject.name, mor.sourceObject.collectionType, [], [])
+                target = PrimitiveDatatype(
+                    mor.targetObject.name, mor.targetObject.collectionType, [])
+            nestedTypeSource = NestedDatatype(
+                mor.sourceObject.name, mor.sourceObject.collectionType, [], [])
             newMorphism = Morphism(mor.name, nestedTypeSource, target)
             self.schemaCategory.addMorphism(newMorphism)
 

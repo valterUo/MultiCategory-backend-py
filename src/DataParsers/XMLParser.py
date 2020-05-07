@@ -7,3 +7,7 @@ def parseXML(filePath):
 def printTree(tree):
     for elem in tree.getroot().iter():
         print(elem.tag, elem.text)
+
+def toStringTree(tree):
+    for elem in tree.getroot().iter():
+        return (elem.tag, elem.text)
