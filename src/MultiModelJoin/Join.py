@@ -36,11 +36,15 @@ def join_relational_relational_over_nonfunctional_morphism(collectionObject1, mo
     return newCollection
 
 
-def join_graph_graph(collectionObject1, morphism, collectionObject2, pattern):
+def join_relational_graph():
     return None
 
 
 def join_graph_relational():
+    return None
+
+
+def join_graph_graph(collectionObject1, morphism, collectionObject2, pattern):
     return None
 
 

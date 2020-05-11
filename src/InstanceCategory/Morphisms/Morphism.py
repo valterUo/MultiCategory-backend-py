@@ -1,4 +1,5 @@
 import functools
+from InstanceCategory.Objects.CollectionObject import CollectionObject
 
 
 class Morphism:
@@ -23,12 +24,13 @@ class Morphism:
     The relation can be inputted as a function or as an instance of BinRelation which is slithy generalized 
     """
 
-    def __init__(self, name, sourceObject, targetObject, relation, functional=False):
+    def __init__(self, name, sourceObject, relation, targetObject, functional=False):
         self.name = name
         self.sourceObject = sourceObject
         self.targetObject = targetObject
         self.functional = functional
         self.relation = relation
+
 
     def compose(self, morphism):
         if morphism.targetObject == self.sourceObject:
@@ -51,7 +53,6 @@ class Morphism:
                 def helper(y, x):
                     z = y.union(self.relation(x))
                     return z
-
                 def newLambda(x):
                     return functools.reduce(helper, morphism.relation(x), set())
                 isFunctional = False

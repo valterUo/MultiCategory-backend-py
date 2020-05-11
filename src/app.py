@@ -32,19 +32,23 @@ located = Morphism("located", customersGraph, locationsTable, lambda customer: l
 orderedBy = Morphism("orderedBy", ordersXML, customersGraph, lambda elem:  customersGraph.findFromNodes(
     "id", orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text)), True)
 
-knows = Morphism("knows", customersGraph, customersGraph, lambda customer: set(
-    customersGraph.getCollection().successors(customer)))
+knows = Morphism("knows", customersGraph, lambda customer: set(
+    customersGraph.getCollection().successors(customer)), customersGraph)
 
-products = Morphism("products", ordersXML, ordersXML,
-                    lambda order: order.findall("Product"))
+productsXML = CollectionObject("productsXML", "XML")
 
-siteLocated = Morphism("siteLocated", sitesTable, locationsTable,
-                       lambda site: locationsTable.getCollection().get(site.get("locationId")), True)
+products = Morphism("products", ordersXML,
+                    lambda order: order.findall("Product"), productsXML)
 
-sitesInLocation = Morphism("sitesInLocation", locationsTable, sitesTable, lambda location: reduce(lambda xs, x: add_to_dict(
-    xs, x, sitesTable.getCollection()[x]) if sitesTable.getCollection()[x].get("locationId") == location.get("id") else xs, sitesTable.getCollection(), dict()))
+siteLocated = Morphism("siteLocated", sitesTable,
+                       lambda site: locationsTable.getCollection().get(site.get("locationId")), locationsTable, True)
 
-print(join(sitesTable, siteLocated, locationsTable))
+sitesInLocation = Morphism("sitesInLocation", locationsTable, lambda location: reduce(lambda xs, x: add_to_dict(
+    xs, x, sitesTable.getCollection()[x]) if sitesTable.getCollection()[x].get("locationId") == location.get("id") else xs, sitesTable.getCollection(), dict()), sitesTable)
 
-print(join(locationsTable, sitesInLocation, sitesTable))
+#print(join(sitesTable, siteLocated, locationsTable))
+
+#print(join(locationsTable, sitesInLocation, sitesTable))
+
+print(ordersXML.getCollection().getroot().findall("Order")[0].findall("Product"))
 
