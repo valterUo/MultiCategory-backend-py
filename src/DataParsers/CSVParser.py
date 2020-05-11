@@ -42,12 +42,19 @@ def readEdges(filePath : str, delimiter : str, schema : [str], keyAttribute : st
     return edges
 
 
-def readNodesAndEdges(filePathNodes : str, filePathEdges : str, delimiterNodes : str, delimiterEdges : str, schemaNodes : [str], schemaEdges : [str], 
-keyAttributeNodes : str, keyAttributeEdges : str, fromKeyAttribute : str, toKeyAttribute : str):
-    nodesWithKey = readToTable(filePathNodes, delimiterNodes, schemaNodes, keyAttributeNodes)
-    edges = readEdges(filePathEdges, delimiterEdges, schemaEdges, keyAttributeEdges)
+def readNodesAndEdges(fileDictonaries):
+#filePathNodes : str, filePathEdges : str, delimiterNodes : str, delimiterEdges : str, schemaNodes : [str], schemaEdges : [str], 
+#keyAttributeNodes : str, keyAttributeEdges : str, fromKeyAttribute : str, toKeyAttribute : str):
+    nodesWithKey = dict()
+    edges = []
     edgeList = []
-    for e in edges:
-        edgeList.append((frozenset(nodesWithKey.get(e.get(fromKeyAttribute)).items()), 
-                            frozenset(nodesWithKey.get(e.get(toKeyAttribute)).items()), frozenset(e.items())))
+    nodeDict = fileDictonaries["vertex"]
+    edgeDict = fileDictonaries["edge"]
+    for node in nodeDict:
+        nodesWithKey.update(readToTable(node["filePath"], ";", node["schema"], node["keyAttribute"]))
+    for edge in edgeDict:
+        edges = readEdges(edge["filePath"], ";", edge["schema"], edge["keyAttribute"])
+        for e in edges:
+            edgeList.append((frozenset(nodesWithKey.get(e.get(edge["fromKeyAttribute"])).items()), 
+                                frozenset(nodesWithKey.get(e.get(edge["toKeyAttribute"])).items()), frozenset(e.items())))
     return edgeList

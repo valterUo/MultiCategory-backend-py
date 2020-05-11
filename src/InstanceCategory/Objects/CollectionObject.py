@@ -16,26 +16,25 @@ class CollectionObject:
     – separator: if the file is csv, this field specifies the separator
     """
 
-    def __init__(self, name, collectionType, filePaths = None, fileformat = None, schema=None, keyAttribute=None, separator=";", edgeSchema=None, edgeKeyAttribute=None, fromKeyAttribute=None, toKeyAttribute=None):
-        self.filePaths = filePaths
-        self.fileformat = fileformat
-        self.collectionType = collectionType
+    def __init__(self, name, collectionType, fileDictonaries = None):
         self.name = name
-        self.schema = schema
+        self.collectionType = collectionType
+        self.fileDictonaries = fileDictonaries 
         if self.collectionType == "relational":
-            if self.fileformat == "csv":
+            table = fileDictonaries
+            print(table)
+            if table["fileformat"] == "csv":
                 self.collection = readToTable(
-                    self.filePaths, separator, self.schema, keyAttribute)
+                    table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
         elif self.collectionType == "property graph":
-            if self.fileformat == "csv":
-                self.collection = parseDirectedGraph(
-                    filePaths[0], filePaths[1], separator, separator, schema, edgeSchema, keyAttribute, edgeKeyAttribute, fromKeyAttribute, toKeyAttribute)
+            self.collection = parseDirectedGraph(fileDictonaries)
         elif self.collectionType == "XML":
-            self.collection = parseXML(filePaths)
+            self.collection = parseXML(fileDictonaries["filePath"])
         elif self.collectionType == "RDF":
-            self.collection = RDFParser(filePaths)
+            self.collection = RDFParser(fileDictonaries["filePath"])
         elif self.collectionType == "JSON":
-            with open(filePaths) as json_file:
+            document = fileDictonaries
+            with open(document["filePath"]) as json_file:
                 self.collection = json.load(json_file)
 
     def getCollection(self):
@@ -61,7 +60,6 @@ class CollectionObject:
             return str(self.collection)
 
     def findFromNodes(self, attribute, value):
-        print(attribute, value)
         result = []
         for elem in self.collection.nodes():
             if (attribute, str(value)) in elem:
