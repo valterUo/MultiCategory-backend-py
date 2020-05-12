@@ -9,6 +9,8 @@ from DataParsers.XMLParser import *
 from InstanceCategory.Objects.CollectionObject import CollectionObject
 from DataParsers.RDFParser import *
 from MultiModelJoin.Join import join, add_to_dict
+import networkx as nx
+import matplotlib.pyplot as plt
 
 customersGraph = CollectionObject("customers", "property graph", {
     "vertex": [
@@ -17,14 +19,13 @@ customersGraph = CollectionObject("customers", "property graph", {
             {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerEdge.csv", "fileformat": "csv", "schema": ["source", "target"], "keyAttribute": "source", "fromKeyAttribute": "source", "toKeyAttribute": "target"}]
 })
 
-
-# interestGraph = CollectionObject("interests", "property graph", {
-#     'vertex': [
-#         {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerVertex.csv", "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id" },
-#         {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestVertex.csv", "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id"}], 
-#     "edge": [
-#         {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestEdge.csv", "fileformat": "csv", "schema":["customerId", "targetId", "weight"], 
-#         "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId"}]})
+interestGraph = CollectionObject("interests", "property graph", {
+    'vertex': [
+        {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerVertex.csv", "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id" },
+        {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestVertex.csv", "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id"}], 
+    "edge": [
+        {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestEdge.csv", "fileformat": "csv", "schema":["customerId", "targetId", "weight"], "keyAttribute": "customerId",
+        "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId"}]})
 
 locationsTable = CollectionObject("locations", "relational", { "filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\locationsTable.csv",
                                   "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";" })
@@ -59,15 +60,26 @@ siteLocated = Morphism("siteLocated", sitesTable,
 sitesInLocation = Morphism("sitesInLocation", locationsTable, lambda location: reduce(lambda xs, x: add_to_dict(
     xs, x, sitesTable.getCollection()[x]) if sitesTable.getCollection()[x].get("locationId") == location.get("id") else xs, sitesTable.getCollection(), dict()), sitesTable)
 
-#print(join(sitesTable, siteLocated, locationsTable))
+# print(join(sitesTable, siteLocated, locationsTable))
 
-#join(sitesTable, siteLocated, locationsTable)
+# join(sitesTable, siteLocated, locationsTable)
 
-#print(join(locationsTable, sitesInLocation, sitesTable))
+# print(join(locationsTable, sitesInLocation, sitesTable))
 
 # join(join(locationsTable, sitesInLocation, sitesTable), siteLocated, locationsTable)
 
-#print(ordersXML.getCollection().getroot().findall("Order")[0].findall("Product"))
+# print(ordersXML.getCollection().getroot().findall("Order")[0].findall("Product"))
 
-print(customersGraph)
+# print(interestGraph.getCollection().number_of_edges())
+
+# for edge in interestGraph.getCollection().edges():
+#     print(type(edge))
+
+# Create graph join where we (customer1) -> (customer2) if customer1 = customer2
+
+#def m1(customer):
+
+plt.subplot(111)
+nx.draw(customersGraph.getCollection(), with_labels=False, font_weight='bold')
+plt.show()
 

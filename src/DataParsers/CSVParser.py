@@ -1,21 +1,24 @@
 import csv
 
-def readCSV(filePath : str, delimiter : str, schema : [str], keyAttribute : str):
+
+def readCSV(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
     table = []
     try:
         keyIndex = schema.index(keyAttribute)
         try:
             with open(filePath, newline='') as csvfile:
-                            tableReader = csv.reader(csvfile, delimiter=delimiter)
+                            tableReader = csv.reader(
+                                csvfile, delimiter=delimiter)
                             next(tableReader)
                             for row in tableReader:
-                                table.append((row[keyIndex], readRow(row, schema)))
+                                table.append(
+                                    (row[keyIndex], readRow(row, schema)))
         except:
            print("Error: Error while processing the cvs file!")
     except:
        print("Error: Key attribute not in the provided schema!")
     return table
-    
+
 
 def readRow(row, schema):
     newRow = []
@@ -30,11 +33,11 @@ def readRow(row, schema):
     return dict(newRow)
 
 
-def readToTable(filePath : str, delimiter : str, schema : [str], keyAttribute : str):
+def readToTable(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
     return dict(readCSV(filePath, delimiter, schema, keyAttribute))
 
 
-def readEdges(filePath : str, delimiter : str, schema : [str], keyAttribute : str):
+def readEdges(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
     edgesWithKeys = readCSV(filePath, delimiter, schema, keyAttribute)
     edges = []
     for e in edgesWithKeys:
@@ -43,18 +46,17 @@ def readEdges(filePath : str, delimiter : str, schema : [str], keyAttribute : st
 
 
 def readNodesAndEdges(fileDictonaries):
-#filePathNodes : str, filePathEdges : str, delimiterNodes : str, delimiterEdges : str, schemaNodes : [str], schemaEdges : [str], 
-#keyAttributeNodes : str, keyAttributeEdges : str, fromKeyAttribute : str, toKeyAttribute : str):
     nodesWithKey = dict()
-    edges = []
-    edgeList = []
-    nodeDict = fileDictonaries["vertex"]
-    edgeDict = fileDictonaries["edge"]
+    edges, edgeList = [], []
+    nodeDict, edgeDict = fileDictonaries["vertex"], fileDictonaries["edge"]
     for node in nodeDict:
-        nodesWithKey.update(readToTable(node["filePath"], ";", node["schema"], node["keyAttribute"]))
+        nodesWithKey.update(readToTable(
+            node["filePath"], ";", node["schema"], node["keyAttribute"]))
     for edge in edgeDict:
-        edges = readEdges(edge["filePath"], ";", edge["schema"], edge["keyAttribute"])
+        edges = readEdges(edge["filePath"], ";",
+                          edge["schema"], edge["keyAttribute"])
         for e in edges:
-            edgeList.append((frozenset(nodesWithKey.get(e.get(edge["fromKeyAttribute"])).items()), 
-                                frozenset(nodesWithKey.get(e.get(edge["toKeyAttribute"])).items()), frozenset(e.items())))
+            edgeList.append((frozenset(nodesWithKey.get(e.get(edge["fromKeyAttribute"])).items()),
+                             frozenset(nodesWithKey.get(e.get(edge["toKeyAttribute"])).items()), 
+                             frozenset(e.items())))
     return edgeList
