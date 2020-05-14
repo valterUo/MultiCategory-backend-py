@@ -68,3 +68,29 @@
 
 
 #print(reduce(lambda xs, x : add_to_dict(xs, x, sitesTable.getCollection()[x]), sitesTable.getCollection(), dict()))
+
+
+#getCustomersFromGraph = Morphism("getCustomersFromGraph", customersGraph, lambda customer : )
+
+# print(join(sitesTable, siteLocated, locationsTable))
+
+# join(sitesTable, siteLocated, locationsTable)
+
+# print(join(locationsTable, sitesInLocation, sitesTable))
+
+# join(join(locationsTable, sitesInLocation, sitesTable), siteLocated, locationsTable)
+
+# print(ordersXML.getCollection().getroot().findall("Order")[0].findall("Product"))
+
+# print(interestGraph.getCollection().number_of_edges())
+
+# for edge in interestGraph.getCollection().edges():
+#     print(type(edge))
+
+# Create graph join where we (customer1) -> (customer2) if customer1 = customer2
+
+#def m1(customer):
+
+# plt.subplot(111)
+# nx.draw(customersGraph.getCollection(), with_labels=False, font_weight='bold')
+# plt.show()

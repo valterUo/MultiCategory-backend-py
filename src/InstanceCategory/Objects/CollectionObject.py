@@ -16,26 +16,29 @@ class CollectionObject:
     – separator: if the file is csv, this field specifies the separator
     """
 
-    def __init__(self, name, collectionType, fileDictonaries = None, collection = None):
+    def __init__(self, name, collectionType, datatype, access_to_iterable = lambda x : x, fileDictonaries = None, collection = None):
         self.name = name
         self.collectionType = collectionType
         self.fileDictonaries = fileDictonaries
         self.collection = collection
-        if self.collectionType == "relational":
-            table = fileDictonaries
-            if table["fileformat"] == "csv":
-                self.collection = readToTable(
-                    table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
-        elif self.collectionType == "property graph":
-            self.collection = parseDirectedGraph(fileDictonaries)
-        elif self.collectionType == "XML":
-            self.collection = parseXML(fileDictonaries["filePath"])
-        elif self.collectionType == "RDF":
-            self.collection = RDFParser(fileDictonaries["filePath"])
-        elif self.collectionType == "JSON":
-            document = fileDictonaries
-            with open(document["filePath"]) as json_file:
-                self.collection = json.load(json_file)
+        self.datatype = datatype
+        self.access_to_iterable = access_to_iterable
+        if fileDictonaries != None:
+            if self.collectionType == "relational":
+                table = fileDictonaries
+                if table["fileformat"] == "csv":
+                    self.collection = readToTable(
+                        table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
+            elif self.collectionType == "property graph":
+                self.collection = parseDirectedGraph(fileDictonaries)
+            elif self.collectionType == "XML":
+                self.collection = parseXML(fileDictonaries["filePath"])
+            elif self.collectionType == "RDF":
+                self.collection = RDFParser(fileDictonaries["filePath"])
+            elif self.collectionType == "JSON":
+                document = fileDictonaries
+                with open(document["filePath"]) as json_file:
+                    self.collection = json.load(json_file)
 
 
     def getCollection(self):
@@ -52,6 +55,10 @@ class CollectionObject:
 
     def getName(self):
         return self.name
+
+    
+    def get_access_to_iterable(self, collection):
+        return self.access_to_iterable(collection)
 
 
     def __str__(self):
@@ -77,3 +84,9 @@ class CollectionObject:
             if (attribute, str(value)) in elem:
                 result.append(elem)
         return result
+
+    def findFromList(self, attribute, value):
+        for elem in self.collection:
+            if elem[attribute] == value:
+                return elem
+        return None

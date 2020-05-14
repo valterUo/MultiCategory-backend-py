@@ -55,7 +55,8 @@ def join_graph_relational(collectionObject1, morphism, collectionObject2):
 def join_graph_graph(collectionObject1, morphism, collectionObject2, pattern):
     return None
 
-
+# Graph amalgam in the case that m1 and m2 are injective graph homomorphisms from H i.e. the amalgam construction
+# in the category of graphs and graph homomorphisms
 def amalgam(collectionObject1, collectionObject2, H, m1, m2):
     amalgam = nx.Graph()
     V = list(H.nodes())
@@ -86,6 +87,44 @@ def amalgam(collectionObject1, collectionObject2, H, m1, m2):
     amalgam.add_edges_from(acceptedEdges)
     return amalgam
 
+# Implementation of the amalgam construction in the category of graphs and graph relations
+def rel_amalgam(graph1, graph2, H, rel1, rel2):
+    return None
+
+def join_relational_xml(collectionObject1, morphism, collectionObject2, pattern):
+    tables = collectionObject1.getCollection()
+    if type(tables) == list:
+        resultCollection = []
+        for row in tables:
+            resultRow = dict()
+            for attribute in pattern:
+                if attribute in row.keys():
+                    resultRow[attribute] = row[attribute]
+                else:
+                    xml_elem = morphism.getRelation(row)
+                    result = collect_values_from_xml(xml_elem, attribute)
+                    print(result)
+                    if len(result) == 1:
+                        resultRow[attribute] = result[0]
+                    elif len(result) == 0:
+                        resultRow[attribute] = "null"
+    else:
+        resultCollection = dict()
+        for tableKey in tables:
+            resultRow = dict()
+            row = tables[tableKey]
+            resultRow.update(row)
+            xml_elem = morphism(row)
+            for attribute in pattern:
+                result = collect_values_from_xml(xml_elem, attribute)
+                if len(result) == 1:
+                    resultRow[attribute] = result[0]
+                elif len(result) == 0:
+                    resultRow[attribute] = "null"
+    newCollectionObject = CollectionObject(collectionObject1.getName(
+    ) + " + " + collectionObject2.getName(), "relational", None, resultCollection)
+    return newCollectionObject
+
 
 def merge_two_dicts(x, y):
     z = x.copy()
@@ -102,8 +141,18 @@ def diff(first, second):
         second = set(second)
         return [item for item in first if item not in second]
 
+
 def image(func, collection):
     elems = []
     for elem in collection:
         elems.append(func(elem))
     return set(elems)
+
+def collect_values_from_xml(xml_elem, attibute):
+    result = []
+    root_result = xml_elem.findAll(attibute)
+    for elem in root_result:
+        result.append(elem.text())
+    for child in xml_elem:
+        result = result + collect_values_from_xml(child)
+    return result

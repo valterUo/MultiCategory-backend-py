@@ -30,7 +30,11 @@ class Morphism:
         self.targetObject = targetObject
         self.functional = functional
         self.relation = relation
-
+        if targetObject.getCollection() == None:
+            collection = []
+            for elem in sourceObject.get_access_to_iterable(sourceObject.getCollection()):
+                collection.append(relation(elem))
+            self.targetObject.setCollection(collection)
 
     def compose(self, morphism):
         if morphism.targetObject == self.sourceObject:
@@ -58,8 +62,8 @@ class Morphism:
                 isFunctional = False
             return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, newLambda, isFunctional)
 
-    def getRelation(self):
-        return self.relation
+    def getRelation(self, variable):
+        return self.relation(variable)
 
     def getFunctional(self):
         return self.functional
