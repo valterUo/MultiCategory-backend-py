@@ -11,6 +11,7 @@ from DataParsers.RDFParser import *
 from MultiModelJoin.Join import add_to_dict, join, join_relational_xml
 import networkx as nx
 import matplotlib.pyplot as plt
+from MultiModelJoin.GraphJoin import join_graph_graph
 
 # Objects in the instance category:
 
@@ -72,4 +73,28 @@ customers = Morphism("customers", customersGraph, lambda customer: dict(customer
 
 orderedByCustomer = Morphism("orderedByCustomer", ordersXML, lambda elem : customersTable.findFromList("id", orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text)), customersTable, True)
 
-result = join_relational_xml(customersTable, orderedByCustomer, ordersXML, ["name", "locationId", "Order_no"])
+def findFromOrders(customer):
+    result = []
+    for elem in ordersXML.getCollection().getroot():
+        if orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
+            result.append(elem)
+    return result
+
+#print(customersTable)
+
+#print(findFromOrders({'creditLimit': '2000', 'name': 'John', 'locationId': '10', 'id': '1'}))
+
+customerOrdered = Morphism("customerOrdered", customersTable, lambda customer : findFromOrders(customer), ordersXML)
+
+# result = join_relational_xml(customersTable, customerOrdered, ordersXML, ["name", "locationId", "Order_no"])
+#print(result)
+
+gluing_graph = nx.DiGraph()
+gluing_graph.add_edge("x", "y")
+
+morphism = [("x", frozenset({('id', '23'), ('locationId', '11'), ('name', 'David'), ('creditLimit', '1245')})),
+("y", )]
+
+join_graph_graph(customersGraph, [("x")], interestGraph, gluing_graph)
+
+print(customersGraph)

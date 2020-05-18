@@ -64,9 +64,14 @@ class CollectionObject:
     def __str__(self):
         if self.collectionType == "relational" or self.collection == "JSON":
             elems = ""
-            for elem in self.collection.values():
-                elems += str(elem) + "\n"
-            return elems
+            if type(self.collection) == dict():
+                for elem in self.collection.values():
+                    elems += str(elem) + "\n"
+                return elems
+            else:
+                for elem in self.collection:
+                    elems += str(elem) + "\n"
+                return elems
         elif self.collectionType == "property graph":
             edges = ""
             for edge in self.collection.edges:
