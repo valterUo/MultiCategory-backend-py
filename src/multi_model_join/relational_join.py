@@ -7,10 +7,11 @@ def join_relational_relational_over_functional_morphism(collectionObject1, morph
     newCollection = dict()
     for key in collectionObject1.getCollection():
                     source = collectionObject1.getCollection()[key]
-                    target = morphism.getRelation()(source)
+                    target = morphism.getRelation(source)
                     newCollection[key] = merge_two_dicts(target, source)
+                    print(newCollection)
     newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "relational", None, newCollection)
+    ) + " + " + collectionObject2.getName(), "relational", collectionObject1.getDatatype() + " + " + collectionObject2.getDatatype(), lambda x: x, None, newCollection)
     return newCollectionObject
 
 
@@ -18,12 +19,12 @@ def join_relational_relational_over_nonfunctional_morphism(collectionObject1, mo
     newCollection = dict()
     for key in collectionObject1.getCollection():
                     source = collectionObject1.getCollection()[key]
-                    target = morphism.getRelation()(source)
+                    target = morphism.getRelation(source)
                     for target_key in target:
                         newCollection[key] = merge_two_dicts(
                             target[target_key], source)
     newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "relational", None, newCollection)
+    ) + " + " + collectionObject2.getName(), "relational", collectionObject1.getDatatype() + " + " + collectionObject2.getDatatype(), lambda x: x, None, newCollection)
     return newCollectionObject
 
 
@@ -34,7 +35,8 @@ def join_relational_graph(collectionObject1, morphism, collectionObject2):
         new_table = dict()
         for row_key in table:
             row_from_graph = morphism(table[row_key])
-            new_table[table_key] = merge_two_dicts(table[row_key], dict(row_from_graph))
+            new_table[table_key] = merge_two_dicts(
+                table[row_key], dict(row_from_graph))
     elif type(table) == list():
         new_table = []
         for row in table:
@@ -52,7 +54,6 @@ def join_relational_xml(collectionObject1, morphism, collectionObject2, pattern)
         for row in table:
             resultRows = process_row_xml(row, morphism, pattern)
             resultCollection = resultCollection + resultRows
-        print(resultCollection)
     else:
         resultCollection = []
         for tableKey in table:
@@ -60,5 +61,5 @@ def join_relational_xml(collectionObject1, morphism, collectionObject2, pattern)
             resultRows = process_row_xml(row, morphism, pattern)
             resultCollection = resultCollection + resultRows
     newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "relational", None, resultCollection)
+    ) + " + " + collectionObject2.getName(), "relational", collectionObject1.getDatatype() + " + " + collectionObject2.getDatatype(), lambda x: x, None, resultCollection)
     return newCollectionObject

@@ -26,6 +26,8 @@ class CollectionObject:
         if fileDictonaries != None:
             if self.collectionType == "relational":
                 table = fileDictonaries
+                print(fileDictonaries)
+                print("fkjdalshfjkldhasjfkhdaslkjfhdjksahfkl")
                 if table["fileformat"] == "csv":
                     self.collection = readToTable(
                         table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
@@ -55,6 +57,9 @@ class CollectionObject:
 
     def getName(self):
         return self.name
+
+    def getDatatype(self):
+        return self.datatype
 
     
     def get_access_to_iterable(self, collection):
