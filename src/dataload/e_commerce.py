@@ -1,5 +1,5 @@
-from InstanceCategory.Morphisms.Morphism import Morphism
-from InstanceCategory.Objects.CollectionObject import CollectionObject
+from app.instance_category.objects.collection_object import CollectionObject
+from app.instance_category.morphisms.morphism import Morphism
 
 customersGraph = CollectionObject(["C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerVertex.csv",
 "C:\\Users\\Valter Uotila\\Desktop\\demo-system-backend-Haskell\\MultiCategory\\demoData\\customerEdge.csv"], "csv", "property graph", "customers", ["id", "name", "creditLimit", "locationId"], "id", ";", ["source", "target"], "source", "source", "target")

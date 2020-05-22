@@ -1,5 +1,5 @@
 import functools
-from InstanceCategory.Objects.CollectionObject import CollectionObject
+from instance_category.objects.collection_object import CollectionObject
 
 
 class Morphism:

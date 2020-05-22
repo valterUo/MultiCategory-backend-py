@@ -1,17 +1,11 @@
 from functools import reduce
-from SchemaCategory.Objects.NestedDatatype import NestedDatatype
-from SchemaCategory.Objects.PrimitiveDatatype import PrimitiveDatatype
-from InstanceCategory.Morphisms.Morphism import Morphism
-from SchemaCategory.SchemaCategory import SchemaCategory
-from DataParsers.CSVParser import *
-from DataParsers.PropertyGraphParser import parseDirectedGraph
-from DataParsers.XMLParser import *
-from InstanceCategory.Objects.CollectionObject import CollectionObject
-from DataParsers.RDFParser import *
-from MultiModelJoin.Join import add_to_dict, join, join_relational_xml
 import networkx as nx
 import matplotlib.pyplot as plt
-from MultiModelJoin.GraphJoin import join_graph_graph
+from matplotlib.pyplot import figure
+from instance_category.objects.collection_object import CollectionObject
+from instance_category.morphisms.morphism import Morphism
+from multi_model_join.join import add_to_dict, join, join_relational_xml
+from multi_model_join.graph_join.graph_join import join_graph_graph
 
 # Objects in the instance category:
 
@@ -80,7 +74,7 @@ def findFromOrders(customer):
             result.append(elem)
     return result
 
-#print(customersTable)
+#print(interestGraph)
 
 #print(findFromOrders({'creditLimit': '2000', 'name': 'John', 'locationId': '10', 'id': '1'}))
 
@@ -89,12 +83,59 @@ customerOrdered = Morphism("customerOrdered", customersTable, lambda customer : 
 # result = join_relational_xml(customersTable, customerOrdered, ordersXML, ["name", "locationId", "Order_no"])
 #print(result)
 
+# gluing_graph = nx.DiGraph()
+# elem1 = frozenset({('id', '23'), ('locationId', '11'), ('name', 'David'), ('creditLimit', '1245')})
+# elem2 = frozenset({('locationId', '14'), ('id', '17'), ('creditLimit', '21'), ('name', 'Julia')})
+# gluing_graph.add_node(0)
+# gluing_graph.add_node(1)
+# gluing_graph.add_edge(0, 1)
+# gluing_graph.nodes[0] = 1
+# print(gluing_graph.nodes[0], gluing_graph.nodes[1])
+
+# morphism = [("x", frozenset({('id', '23'), ('locationId', '11'), ('name', 'David'), ('creditLimit', '1245')})),
+# ("y", frozenset({('locationId', '14'), ('id', '17'), ('creditLimit', '21'), ('name', 'Julia')}))]
+
+# morphism_induced_by_function = lambda customer1, customer2 : True if dict(customer1).get("creditLimit") > dict(customer2).get("creditLimit") else False
+
+# join_graph = join_graph_graph(customersGraph, morphism_induced_by_function, customersGraph, gluing_graph)
+
+# print(join_graph)
+
+# plt.subplot(111)
+# nx.draw(join_graph.getCollection(), with_labels=False, font_weight='bold')
+# plt.show()
+
 gluing_graph = nx.DiGraph()
-gluing_graph.add_edge("x", "y")
+gluing_graph.add_node(0)
 
-morphism = [("x", frozenset({('id', '23'), ('locationId', '11'), ('name', 'David'), ('creditLimit', '1245')})),
-("y", )]
+customer1 = frozenset({('id', '14'), ('locationId', '15'), ('creditLimit', '2900'), ('name', 'Lucas')})
+customer2 = frozenset({('locationId', '11'), ('name', 'David'), ('id', '23'), ('creditLimit', '1245')})
+customer3 = frozenset({('id', '7'), ('creditLimit', '9999'), ('locationId', '10'), ('name', 'Bob')})
+customer4 = frozenset({('name', 'Hannah'), ('creditLimit', '7458'), ('id', '16'), ('locationId', '16')})
 
-join_graph_graph(customersGraph, [("x")], interestGraph, gluing_graph)
+customerGraph1 = nx.DiGraph()
+customerGraph1.add_edges_from([(customer1, customer2), (customer2, customer3), (customer3, customer4), (customer4, customer1)])
 
-print(customersGraph)
+interest1 = frozenset({('locationId', '13'), ('topic', 'pottery'), ('id', 'I3')})
+interest2 = frozenset({('locationId', '15'), ('topic', 'volunteering'), ('id', 'I5')})
+interest3 = frozenset({('locationId', '16'), ('id', 'I6'), ('topic', 'dancing')})
+
+customerGraph2 = nx.DiGraph()
+customerGraph2.add_edges_from([(customer1, interest1), (customer2, interest2), (customer1, interest3), (customer2, interest3)])
+
+instanceObject1 = CollectionObject("customers1", "property graph", "customer", lambda graph : list(graph.nodes), None, customerGraph1)
+instanceObject2 = CollectionObject("customers2", "property graph", "customer", lambda graph : list(graph.nodes), None, customerGraph2)
+
+morphism_induced_by_function = lambda customer, customer_or_interest : True if customer == customer_or_interest else False
+
+join_graph = join_graph_graph(instanceObject1, morphism_induced_by_function, instanceObject2, gluing_graph)
+
+print(join_graph)
+
+# for node in join_graph.getCollection().nodes:
+#     print(node)
+
+# print(join_graph.getCollection().nodes())
+plt.subplot(111)
+nx.draw(join_graph.getCollection(), with_labels=False, font_weight='bold')
+plt.show()

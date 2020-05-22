@@ -1,25 +1,6 @@
-from InstanceCategory.Objects.CollectionObject import CollectionObject
-from MultiModelJoin.HelpFunctions import appendToResult, collect_values_from_xml
+from instance_category.objects.collection_object import CollectionObject
+from multi_model_join.help_functions import appendToResult, collect_values_from_xml
 import copy
-
-def join_relational_xml(collectionObject1, morphism, collectionObject2, pattern):
-    table = collectionObject1.getCollection()
-    resultCollection = None
-    if type(table) == list:
-        resultCollection = []
-        for row in table:
-            resultRows = process_row_xml(row, morphism, pattern)
-            resultCollection = resultCollection + resultRows
-        print(resultCollection)
-    else:
-        resultCollection = []
-        for tableKey in table:
-            row = table[tableKey]
-            resultRows = process_row_xml(row, morphism, pattern)
-            resultCollection = resultCollection + resultRows
-    newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "relational", None, resultCollection)
-    return newCollectionObject
 
 
 def process_row_xml(row, morphism, pattern):
@@ -46,3 +27,7 @@ def process_row_xml(row, morphism, pattern):
                         new_resultRows[i][attribute] = result_from_xml[i]
                 resultRows = new_resultRows
     return resultRows
+
+
+def join_xml_relational(collectionObject1, morphism, collectionObject2):
+    return None

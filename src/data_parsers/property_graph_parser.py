@@ -1,7 +1,6 @@
 import networkx as nx
-from DataParsers.CSVParser import readNodesAndEdges
 import matplotlib.pyplot as plt
-
+from data_parsers.csv_parser import readNodesAndEdges
 
 def parseDirectedGraph(fileDictonaries):
     DG = nx.DiGraph()

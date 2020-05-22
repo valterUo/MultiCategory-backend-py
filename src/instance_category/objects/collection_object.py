@@ -1,8 +1,8 @@
-from DataParsers.CSVParser import readToTable
+from data_parsers.csv_parser import readToTable
 import networkx as nx
-from DataParsers.PropertyGraphParser import parseDirectedGraph
-from DataParsers.XMLParser import *
-from DataParsers.RDFParser import RDFParser
+from data_parsers.property_graph_parser import parseDirectedGraph
+from data_parsers.xml_parser import *
+from data_parsers.rdf_parser import RDFParser
 import json
 
 
