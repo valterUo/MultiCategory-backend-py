@@ -1,5 +1,6 @@
 from functools import reduce
 import networkx as nx
+import json
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 from instance_category.objects.collection_object import CollectionObject
@@ -69,13 +70,18 @@ customers = Morphism("customers", customersGraph, lambda customer: dict(customer
 
 orderedByCustomer = Morphism("orderedByCustomer", ordersXML, lambda elem : customersTable.findFromList("id", orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text)), customersTable, True)
 
-joined_tables = join_relational_relational_over_functional_morphism(
-            sitesTable, siteLocated, locationsTable)
+# joined_tables = join_relational_relational_over_functional_morphism(
+#             sitesTable, siteLocated, locationsTable)
 
-joined_tables2 = join_relational_relational_over_nonfunctional_morphism(
-            locationsTable, sitesInLocation, sitesTable)
+# joined_tables2 = join_relational_relational_over_nonfunctional_morphism(
+#             locationsTable, sitesInLocation, sitesTable)
+ 
+# json_object = json.dumps([{'result': str(joined_tables.getCollection())}, {'result': str(joined_tables2.getCollection())}]) 
+  
+# with open("relational_test_result.json", "w") as outfile: 
+#     outfile.write(json_object)
 
-print(joined_tables2.getCollection())
+#print(joined_tables.getCollection())
 
 
 # gluing_graph = nx.DiGraph()
@@ -134,3 +140,51 @@ print(joined_tables2.getCollection())
 # plt.subplot(111)
 # nx.draw(join_graph.getCollection(), with_labels=False, font_weight='bold')
 # plt.show()
+
+
+# def findFromOrders(customer):
+#     result = []
+#     for elem in ordersXML.getCollection().getroot():
+#         if orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
+#             result.append(elem)
+#     return result
+
+# customerOrdered = Morphism(
+#     "customerOrdered", customersTable, lambda customer: findFromOrders(customer), ordersXML)
+
+# print(customersTable.getCollection())
+
+# join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
+#                                     "name", "locationId", "Order_no"])
+
+# print(join_result)
+
+result = [{'name': 'Mary', 'locationId': '14', 'Order_no': '3qqqeq9'},
+            {'name': 'Nora', 'locationId': '12', 'Order_no': 'null'},
+            {'name': 'John', 'locationId': '10', 'Order_no': '34e5e79'},
+            {'name': 'John', 'locationId': '10', 'Order_no': '4dwtfuu'},
+            {'name': 'Mill', 'locationId': '11', 'Order_no': '4839fh'},
+            {'name': 'Alice', 'locationId': '12', 'Order_no': '77idy65'},
+            {'name': 'William', 'locationId': '13', 'Order_no': '0cbdf508'},
+            {'name': 'Erica', 'locationId': '16', 'Order_no': 'ery63rg'},
+            {'name': 'William', 'locationId': '15', 'Order_no': 'null'},
+            {'name': 'Bob', 'locationId': '10', 'Order_no': 'reuihf54'},
+            {'name': 'Isabella', 'locationId': '14', 'Order_no': 'null'},
+            {'name': 'Olivia', 'locationId': '13', 'Order_no': 'null'},
+            {'name': 'Adrian', 'locationId': '13', 'Order_no': 'null'},
+            {'name': 'David', 'locationId': '11', 'Order_no': 'null'},
+            {'name': 'Charles', 'locationId': '10', 'Order_no': 'null'},
+            {'name': 'Benjamin', 'locationId': '16', 'Order_no': 'null'},
+            {'name': 'Lucas', 'locationId': '14', 'Order_no': 'null'},
+            {'name': 'Ava', 'locationId': '10', 'Order_no': 'null'},
+            {'name': 'Aaron', 'locationId': '14', 'Order_no': 'null'},
+            {'name': 'Alexander', 'locationId': '10', 'Order_no': 'null'},
+            {'name': 'Hannah', 'locationId': '16', 'Order_no': 'null'},
+            {'name': 'Max', 'locationId': '13', 'Order_no': 'null'},
+            {'name': 'Lucas', 'locationId': '15', 'Order_no': 'null'},
+            {'name': 'Lucy', 'locationId': '10', 'Order_no': 'null'},
+            {'name': 'Julia', 'locationId': '14', 'Order_no': 'null'},
+            {'name': 'David', 'locationId': '11', 'Order_no': 'null'},
+            {'name': 'Charlotte', 'locationId': '14', 'Order_no': 'null'}]
+
+print(str(result))

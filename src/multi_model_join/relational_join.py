@@ -9,7 +9,6 @@ def join_relational_relational_over_functional_morphism(collectionObject1, morph
                     source = collectionObject1.getCollection()[key]
                     target = morphism.getRelation(source)
                     newCollection[key] = merge_two_dicts(target, source)
-                    print(newCollection)
     newCollectionObject = CollectionObject(collectionObject1.getName(
     ) + " + " + collectionObject2.getName(), "relational", collectionObject1.getDatatype() + " + " + collectionObject2.getDatatype(), lambda x: x, None, newCollection)
     return newCollectionObject
