@@ -35,25 +35,17 @@ customersTable = CollectionObject("customersTable", "relational", "customer")
 
 customers = Morphism("customers", customersGraph, lambda customer: dict(customer), customersTable, True)
 
-class TestRelationalJoin(unittest.TestCase):
-
-    def findFromOrders(self, customer):
+def findFromOrders(customer):
         result = []
         for elem in ordersXML.getCollection().getroot():
             if orderToCustomerKeyValuePairs.getCollection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
                 result.append(elem)
         return result
 
-    def test_relational_join_xml_twig1(self):
-        customerOrdered = Morphism(
-            "customerOrdered", customersTable, lambda customer: self.findFromOrders(customer), ordersXML)
-        join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
-                                          "name", "locationId", "Order_no"])
-        with open('relational_test_result.json', 'r') as openfile: 
-            result_file = json.load(openfile)
-        result = result_file[0].get("result")
-        self.assertEqual(result, str(join_result.getCollection()))
+customerOrdered = Morphism(
+            "customerOrdered", customersTable, lambda customer: findFromOrders(customer), ordersXML)
 
+class TestRelationalJoin(unittest.TestCase):
 
     def test_relational_join_relational_functional(self):
         with open('relational_test_result.json', 'r') as openfile: 
@@ -71,6 +63,33 @@ class TestRelationalJoin(unittest.TestCase):
         joined_tables = join_relational_relational_over_nonfunctional_morphism(
             locationsTable, sitesInLocation, sitesTable)
         self.assertEqual(result, str(joined_tables.getCollection()))
+
+
+    def test_relational_join_xml_twig1(self):
+        join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
+                                          "name", "locationId", "Order_no"])
+        with open('relational_test_result.json', 'r') as openfile: 
+            result_file = json.load(openfile)
+        result = result_file[0].get("result")
+        self.assertEqual(result, str(join_result.getCollection()))
+
+
+    def test_relational_join_xml_twig2_attribute_not_existing(self):
+        join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
+                                          "name", "locationid", "Order_no"])
+        with open('relational_test_result.json', 'r') as openfile: 
+            result_file = json.load(openfile)
+        result = result_file[3].get("result")
+        self.assertEqual(result, str(join_result.getCollection()))
+
+
+    def test_relational_join_xml_twig3_multiple_attributes_from_xml_doc(self):
+        join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
+                                          "name", "locationId", "Order_no", "Product_Name"])
+        with open('relational_test_result.json', 'r') as openfile: 
+            result_file = json.load(openfile)
+        result = result_file[4].get("result")
+        self.assertEqual(result, str(join_result.getCollection()))
 
 if __name__ == '__main__':
     unittest.main()

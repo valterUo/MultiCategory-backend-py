@@ -15,17 +15,19 @@ def process_row_xml(row, morphism, pattern):
             if len(xml_elems) == 0:
                 appendToResult(resultRows, "null", attribute)
             else:
-                new_resultRows = []
-                result_from_xml = []
+                new_resultRows, result_from_xml = [], []
                 for elem in xml_elems:
                     for result in collect_values_from_xml(elem, attribute):
                         result_from_xml.append(result)
-                for j in range(len(resultRows)):
-                    for elem in result_from_xml:
-                        new_resultRows.append(copy.deepcopy(resultRows[j]))
-                for i in range(len(result_from_xml)):
-                        new_resultRows[i][attribute] = result_from_xml[i]
-                resultRows = new_resultRows
+                if len(result_from_xml) != 0:
+                    for j in range(len(resultRows)):
+                        for elem in result_from_xml:
+                            new_resultRows.append(copy.deepcopy(resultRows[j]))
+                    for i in range(len(result_from_xml)):
+                            new_resultRows[i][attribute] = result_from_xml[i]
+                    resultRows = new_resultRows
+                else:
+                    appendToResult(resultRows, "null", attribute)
     return resultRows
 
 

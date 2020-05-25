@@ -152,9 +152,9 @@ def findFromOrders(customer):
 customerOrdered = Morphism(
     "customerOrdered", customersTable, lambda customer: findFromOrders(customer), ordersXML)
 
-print(customersTable.getCollection())
+#print(customersTable.getCollection())
 
 join_result = join_relational_xml(customersTable, customerOrdered, ordersXML, [
-                                    "name", "locationId", "Order_no"])
+                                    "name", "locationId", "Order_no", "Product_Name"])
 
-print(join_result)
+print(join_result.getCollection())
