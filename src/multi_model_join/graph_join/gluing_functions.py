@@ -1,5 +1,5 @@
 import networkx as nx
-from multi_model_join.graph_join.join_error import JoinPatternError
+from multi_model_join.graph_join.graph_join_error import JoinPatternError
 
 def glue_graphs(graph1, node0, graph2, node1, gluing_pattern):
     copy_gluing_graph = gluing_pattern.copy()

@@ -1,3 +1,5 @@
+from multi_model_join.relational_join_errors import RelationalJoinError
+
 def merge_two_dicts(x, y):
     z = x.copy()
     z.update(y)
@@ -31,5 +33,8 @@ def collect_values_from_xml(xml_elem, attibute):
 
 def appendToResult(resultRows, result, attribute):
     for row in resultRows:
-        row[attribute] = result
+        if attribute in row.keys():
+            row[attribute] = result
+        else:
+            raise RelationalJoinError(attribute, "The attribute " + attribute + " is not among the attributes of the table.")
     return resultRows
