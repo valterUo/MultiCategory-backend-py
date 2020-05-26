@@ -32,7 +32,7 @@ class Morphism:
         self.relation = relation
         if targetObject.getCollection() == None:
             collection = []
-            for elem in sourceObject.get_access_to_iterable(sourceObject.getCollection()):
+            for elem in sourceObject.get_access_to_iterable():
                 collection.append(relation(elem))
             self.targetObject.setCollection(collection)
 

@@ -1,3 +1,5 @@
+import networkx as nx
+import copy
 from multi_model_join.relational_join_errors import RelationalJoinError
 
 def merge_two_dicts(x, y):
@@ -22,6 +24,7 @@ def image(func, collection):
         elems.append(func(elem))
     return set(elems)
 
+
 def collect_values_from_xml(xml_elem, attibute):
     result = []
     root_result = xml_elem.findall(attibute)
@@ -31,7 +34,14 @@ def collect_values_from_xml(xml_elem, attibute):
         result = result + collect_values_from_xml(child, attibute)
     return result
 
+
 def appendToResult(resultRows, result, attribute):
     for row in resultRows:
         row[attribute] = result
     return resultRows
+
+def deep_copy_graph(graph):
+    z = copy.deepcopy(list(graph.edges))
+    new_graph = nx.DiGraph()
+    new_graph.add_edges_from(z)
+    return new_graph

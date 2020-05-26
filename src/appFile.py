@@ -6,7 +6,7 @@ from matplotlib.pyplot import figure
 from instance_category.objects.collection_object import CollectionObject
 from instance_category.morphisms.morphism import Morphism
 from multi_model_join.join import add_to_dict, join, join_relational_xml
-from multi_model_join.graph_join.graph_join import join_graph_graph
+from multi_model_join.graph_join.graph_join import join_graph_graph, join_graph_relational_over_functional_morphism
 from multi_model_join.relational_join import join_relational_relational_over_functional_morphism
 from multi_model_join.relational_join import join_relational_relational_over_nonfunctional_morphism
 
@@ -159,73 +159,9 @@ orderedByCustomer = Morphism("orderedByCustomer", ordersXML, lambda elem : custo
 
 # print(join_result.getCollection())
 
-customer1 = frozenset(
-    {('id', '14'), ('locationId', '15'), ('creditLimit', '2900'), ('name', 'Lucas')})
-customer2 = frozenset(
-    {('locationId', '11'), ('name', 'David'), ('id', '23'), ('creditLimit', '1245')})
-customer3 = frozenset(
-    {('id', '7'), ('creditLimit', '9999'), ('locationId', '10'), ('name', 'Bob')})
-customer4 = frozenset(
-    {('name', 'Hannah'), ('creditLimit', '7458'), ('id', '16'), ('locationId', '16')})
+join_graph = join_graph_relational_over_functional_morphism(customersGraph, located, locationsTable)
 
-interest1 = frozenset(
-    {('locationId', '13'), ('topic', 'pottery'), ('id', 'I3')})
-interest2 = frozenset(
-    {('locationId', '15'), ('topic', 'volunteering'), ('id', 'I5')})
-interest3 = frozenset(
-    {('locationId', '16'), ('id', 'I6'), ('topic', 'dancing')})
-
-gluing_graph = nx.DiGraph()
-gluing_graph.add_node(0)
-
-customerGraph1 = nx.DiGraph()
-customerGraph1.add_edges_from(
-    [(customer1, customer2), (customer2, customer3), (customer3, customer4), (customer4, customer1)])
-
-customerGraph2 = nx.DiGraph()
-customerGraph2.add_edges_from(
-    [(customer1, interest1), (customer2, interest2), (customer1, interest3), (customer2, interest3)])
-
-instanceObject1 = CollectionObject(
-    "customers1", "property graph", "customer", lambda graph: list(graph.nodes), None, customerGraph1)
-instanceObject2 = CollectionObject(
-    "customers2", "property graph", "customer", lambda graph: list(graph.nodes), None, customerGraph2)
-
-def morphism_induced_by_function(
-    customer, customer_or_interest): return True if customer == customer_or_interest else False
-
-join_graph = join_graph_graph(
-    instanceObject1, morphism_induced_by_function, instanceObject2, gluing_graph)
-
-resultGraph = nx.DiGraph()
-# resultGraph.add_edges_from([(frozenset({('creditLimit', '9999'), ('locationId', '10'), ('id', '7'), ('name', 'Bob')}), 
-#                                 frozenset({('creditLimit', '7458'), ('locationId', '16'), ('id', '16'), ('name', 'Hannah')}))
-#                             (frozenset({('creditLimit', '7458'), ('locationId', '16'), ('id', '16'), ('name', 'Hannah')}),
-#                                 frozenset({('creditLimit', '2900'), ('name', 'Lucas'), ('id', '14'), ('locationId', '15')}))
-#                             (frozenset({('creditLimit', '2900'), ('name', 'Lucas'), ('id', '14'), ('locationId', '15')}), 
-#                                 frozenset({('topic', 'pottery'), ('id', 'I3'), ('locationId', '13')}))
-#                             (frozenset({('creditLimit', '2900'), ('name', 'Lucas'), ('id', '14'), ('locationId', '15')}), 
-#                                 frozenset({('locationId', '16'), ('topic', 'dancing'), ('id', 'I6')}))
-#                             (frozenset({('creditLimit', '2900'), ('name', 'Lucas'), ('id', '14'), ('locationId', '15')}), 
-#                                 frozenset({('creditLimit', '1245'), ('locationId', '11'), ('name', 'David'), ('id', '23')}))
-#                             (frozenset({('creditLimit', '1245'), ('locationId', '11'), ('name', 'David'), ('id', '23')}), 
-#                                 frozenset({('creditLimit', '9999'), ('locationId', '10'), ('id', '7'), ('name', 'Bob')}))
-#                             (frozenset({('creditLimit', '1245'), ('locationId', '11'), ('name', 'David'), ('id', '23')}), 
-#                                 frozenset({('id', 'I5'), ('topic', 'volunteering'), ('locationId', '15')}))
-#                             (frozenset({('creditLimit', '1245'), ('locationId', '11'), ('name', 'David'), ('id', '23')}), 
-#                                 frozenset({('locationId', '16'), ('topic', 'dancing'), ('id', 'I6')}))])
-
-resultGraph.add_edges_from([
-    (frozenset({('locationId', '15'), ('creditLimit', '2900'), ('id', '14'), ('name', 'Lucas')}), frozenset({('id', '23'), ('name', 'David'), ('locationId', '11'), ('creditLimit', '1245')})),
-(frozenset({('id', '23'), ('name', 'David'), ('locationId', '11'), ('creditLimit', '1245')}), frozenset({('name', 'Bob'), ('creditLimit', '9999'), ('id', '7'), ('locationId', '10')})),
-(frozenset({('name', 'Bob'), ('creditLimit', '9999'), ('id', '7'), ('locationId', '10')}), frozenset({('id', '16'), ('creditLimit', '7458'), ('name', 'Hannah'), ('locationId', '16')})),
-(frozenset({('id', '16'), ('creditLimit', '7458'), ('name', 'Hannah'), ('locationId', '16')}), frozenset({('locationId', '15'), ('creditLimit', '2900'), ('id', '14'), ('name', 'Lucas')}))
-])
-
-#print(join_graph)
-
-print(join_graph.getCollection().edges() == nx.compose(customerGraph1, customerGraph2).edges())
-
+print(join_graph)
 plt.subplot(111)
 nx.draw(join_graph.getCollection(), with_labels=False, font_weight='bold')
 plt.show()

@@ -60,8 +60,8 @@ class CollectionObject:
         return self.datatype
 
     
-    def get_access_to_iterable(self, collection):
-        return self.access_to_iterable(collection)
+    def get_access_to_iterable(self):
+        return self.access_to_iterable(self.collection)
 
 
     def __str__(self):

@@ -1,6 +1,8 @@
 import networkx as nx
-from multi_model_join.graph_join.gluing_functions import glue_graphs
+from multi_model_join.graph_join.gluing_functions import glue_graphs, replace_node
 from instance_category.objects.collection_object import CollectionObject
+from multi_model_join.help_functions import deep_copy_graph, merge_two_dicts
+from multi_model_join.graph_join.graph_join_error import GraphRelationalJoinError
 
 # Implementation of the amalgam construction in the category of graphs and graph relations
 # We assume that morphism is a collection of pairs of nodes so that the first term comes from
@@ -27,5 +29,16 @@ def join_graph_graph(collectionObject1, morphism, collectionObject2, gluing_grap
     return newCollectionObject
 
 
-def join_graph_relational(collectionObject1, morphism, collectionObject2):
-    return None
+def join_graph_relational_over_functional_morphism(collectionObject1, morphism, collectionObject2):
+    result = deep_copy_graph(collectionObject1.getCollection())
+    for graph_elem in collectionObject1.get_access_to_iterable():
+        row = morphism.getRelation(graph_elem)
+        if type(row) == dict:
+            new_node = merge_two_dicts(row, dict(graph_elem))
+            print(new_node)
+            result = replace_node(result, graph_elem, frozenset(new_node))
+        else:
+            raise GraphRelationalJoinError(row, "The row needs to be a dictionary.")
+    newCollectionObject = CollectionObject(collectionObject1.getName(
+    ) + " + " + collectionObject2.getName(), "property graph", None, lambda graph : list(graph.nodes), None, result)
+    return newCollectionObject
