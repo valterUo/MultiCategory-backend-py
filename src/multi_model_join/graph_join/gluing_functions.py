@@ -1,19 +1,19 @@
 import networkx as nx
-from multi_model_join.graph_join.graph_join_error import JoinPatternError
+from multi_model_join.graph_join.graph_join_error import GraphJoinError
 
 def glue_graphs(graph1, node0, graph2, node1, gluing_pattern):
     copy_gluing_graph = gluing_pattern.copy()
     composition_graph = graph1
     if node0 not in graph1:
-        raise JoinPatternError("Node 1 not in the graph 1!", "Node 1 not in the graph 1!") 
+        raise GraphJoinError(node0, "Node 1 not in the graph 1!") 
     if node1 not in graph2:
-        raise JoinPatternError("Node 2 not in the graph 2!", "Node 1 not in the graph 1!")
+        raise GraphJoinError(node1, "Node 1 not in the graph 1!")
     if gluing_pattern.number_of_nodes() > 1:
         fst_pattern = replace_node(copy_gluing_graph, 0, node0)
         sn_pattern = replace_node(fst_pattern, 1, node1)
         composition_graph = nx.compose_all([graph1, graph2, sn_pattern])
     elif gluing_pattern.number_of_nodes() == 0:
-        raise JoinPatternError("Join pattern is empty graph!")
+        raise GraphJoinError(gluing_pattern, "Join pattern is empty graph!")
     elif gluing_pattern.number_of_nodes() == 1:
         composition_graph = overlay_on_single_node(composition_graph, node0, graph2, node1)
     return composition_graph
