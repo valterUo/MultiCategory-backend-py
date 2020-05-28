@@ -1,7 +1,7 @@
 from SchemaCategory.Morphisms.Morphism import Morphism
 from SchemaCategory.Objects.PrimitiveDatatype import PrimitiveDatatype
 
-class NestedDatatype:
+class DatatypeObject:
     """Nested datatype models those objects that are constructed from primitive datatypes or other nested datatypes. 
     
     They can serve as a domain or target object for a morphism. 

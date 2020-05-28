@@ -19,6 +19,8 @@ def glue_graphs(graph1, node0, graph2, node1, gluing_pattern):
     return composition_graph
 
 def replace_node(graph, old_node, new_node):
+    # print(new_node)
+    # print(old_node)
     new_graph = graph.copy()
     predecessors_of_old_node = new_graph.predecessors(old_node)
     successors_of_old_node = new_graph.successors(old_node)

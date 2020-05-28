@@ -24,21 +24,25 @@ def join_graph_graph(collectionObject1, morphism, collectionObject2, gluing_grap
             for node2 in graph2.nodes:
                 if morphism(node1, node2):
                     composition_graph = glue_graphs(composition_graph, node1, graph2, node2, gluing_graph)
-    newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "property graph", None, lambda graph : list(graph.nodes), None, composition_graph)
+    newCollectionObject = CollectionObject(collectionObject1.getName() 
+    + " + " + collectionObject2.getName(), "property graph", None, lambda graph : list(graph.nodes), None, composition_graph)
     return newCollectionObject
 
 
-def join_graph_relational_over_functional_morphism(collectionObject1, morphism, collectionObject2):
-    result = deep_copy_graph(collectionObject1.getCollection())
+def join_graph_relational(collectionObject1, morphism, collectionObject2):
+    result = collectionObject1.getCollection()
     for graph_elem in collectionObject1.get_access_to_iterable():
         row = morphism.getRelation(graph_elem)
         if type(row) == dict:
             new_node = merge_two_dicts(row, dict(graph_elem))
-            print(new_node)
-            result = replace_node(result, graph_elem, frozenset(new_node))
+            result = replace_node(result, graph_elem, frozenset(new_node.items()))
+        elif type(row) == set or type(row) == list:
+            row_name = collectionObject2.getName()
+            graph_element = dict(graph_elem)
+            graph_element[row_name] = frozenset(row)
+            result = replace_node(result, graph_elem, frozenset(new_node.items()))
         else:
             raise GraphRelationalJoinError(row, "The row needs to be a dictionary.")
-    newCollectionObject = CollectionObject(collectionObject1.getName(
-    ) + " + " + collectionObject2.getName(), "property graph", None, lambda graph : list(graph.nodes), None, result)
+    newCollectionObject = CollectionObject(collectionObject1.getName() 
+    + " + " + collectionObject2.getName(), "property graph", None, lambda graph : list(graph.nodes), None, result)
     return newCollectionObject

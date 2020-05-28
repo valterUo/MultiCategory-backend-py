@@ -26,7 +26,7 @@ sitesInLocation = Morphism("sitesInLocation", locationsTable, lambda location: r
     xs, x, sitesTable.getCollection()[x]) if sitesTable.getCollection()[x].get("locationId") == location.get("id") else xs, sitesTable.getCollection(), dict()), sitesTable)
 
 orderToCustomerKeyValuePairs = CollectionObject(
-    "orderToCustomerKeyValuePairs", "JSON", "pairs", lambda json: json, {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\src\\keyValuePairs.json"})
+    "orderToCustomerKeyValuePairs", "JSON", "pairs", lambda json: json, {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\keyValuePairs.json"})
 
 ordersXML = CollectionObject(
     "orders", "XML", "order", lambda document: document.getroot(), {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\orders.xml"})

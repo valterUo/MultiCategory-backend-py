@@ -1,7 +1,12 @@
 import unittest
 import networkx as nx
-from multi_model_join.graph_join.graph_join import join_graph_graph
+from multi_model_join.graph_join.graph_join import join_graph_graph, join_graph_relational
 from instance_category.objects.collection_object import CollectionObject
+import initialize_demo_datasets.initialize_ecommerce as commerce
+
+commerce.init()
+objects = commerce.e_commerce_instance.get_objects()
+morphisms = commerce.e_commerce_instance.get_morphisms()
 
 customer1 = frozenset(
     {('id', '14'), ('locationId', '15'), ('creditLimit', '2900'), ('name', 'Lucas')})
@@ -153,8 +158,9 @@ class TestGraphJoin(unittest.TestCase):
         self.assertEqual(join_graph.getCollection().edges(), nx.compose(customerGraph1, customerGraph2).edges())
 
 
-    # def test_graph_join_relational(self):
-    #     self.assertEqual(True, False)
+    def test_graph_join_relational_with_functional_morphism(self):
+
+        join_graph = join_graph_relational(objects["customersGraph"], morphisms["located"], objects["locations_table"])
 
 
     # def test_graph_join_xml(self):
