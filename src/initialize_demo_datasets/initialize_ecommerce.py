@@ -3,6 +3,8 @@ from instance_category.morphisms.morphism import Morphism
 from instance_category.instance_category import InstanceCategory
 from multi_model_join.help_functions import add_to_dict
 from functools import reduce
+import os
+dirname = os.path.dirname(__file__)
 e_commerce_instance = None
 
 
@@ -10,41 +12,54 @@ def init():
     objects = dict()
     morphisms = dict()
 
+    customers_vertex_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\customerVertex.csv")
+    customers_edge_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\customerEdge.csv")
+    interest_vertex_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\interestVertex.csv")
+    interest_edge_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\interestEdge.csv")
+    locations_table_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\locationsTable.csv")
+    orders_xml_path = os.path.join(
+        dirname, "..\\..\\data\\eCommerce\\orders.xml")
+
     # Objects in the instance category:
 
     customers_graph = CollectionObject("customers_graph", "property graph", "customer", lambda graph: list(graph.nodes), {
         "vertex": [
-            {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerVertex.csv", "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id"}],
+            {"filePath": customers_vertex_path, "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id"}],
         "edge": [
-            {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerEdge.csv", "fileformat": "csv", "schema": ["source", "target"], "keyAttribute": "source", "fromKeyAttribute": "source", "toKeyAttribute": "target"}]
+            {"filePath": customers_edge_path, "fileformat": "csv", "schema": ["source", "target"], "keyAttribute": "source", "fromKeyAttribute": "source", "toKeyAttribute": "target"}]
     })
 
     interest_graph = CollectionObject("interest_graph", "property graph", "interest", lambda graph: list(graph.nodes), {
         'vertex': [
-            {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\customerVertex.csv",
+            {"filePath": customers_vertex_path,
                 "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id"},
-            {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestVertex.csv", "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id"}],
+            {"filePath": interest_vertex_path, "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id"}],
         "edge": [
-            {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\interestEdge.csv", "fileformat": "csv", "schema": ["customerId", "targetId", "weight"], "keyAttribute": "customerId",
+            {"filePath": interest_edge_path, "fileformat": "csv", "schema": ["customerId", "targetId", "weight"], "keyAttribute": "customerId",
              "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId"}]})
 
-    locations_table = CollectionObject("locations_table", "relational", "location", lambda table: table, {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\locationsTable.csv",
-                                                                                                   "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";"})
+    locations_table = CollectionObject("locations_table", "relational", "location", lambda table: table, {"filePath": locations_table_path, "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";"})
 
     orders_xml = CollectionObject(
-        "orders_xml", "XML", "order", lambda document: document.getroot(), {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\orders.xml"})
+        "orders_xml", "XML", "order", lambda document: document.getroot(), {"filePath": orders_xml_path})
 
     order_to_customer_key_value_pairs = CollectionObject(
-        "order_to_customer_key_value_pairs", "JSON", "pairs", lambda json: json, {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\keyValuePairs.json"})
+        "order_to_customer_key_value_pairs", "JSON", "pairs", lambda json: json, {"filePath": os.path.join(dirname, "..\\..\\data\\eCommerce\\keyValuePairs.json")})
 
-    sitesTable = CollectionObject("sites", "relational", "site", lambda table: table, {"filePath": "C:\\Users\\Valter Uotila\\Desktop\\MultiCategory-backend-py\\data\\eCommerce\\sites.csv",
+    sitesTable = CollectionObject("sites", "relational", "site", lambda table: table, {"filePath": os.path.join(dirname, "..\\..\\data\\eCommerce\\sites.csv"),
                                                                                        "fileformat": "csv", "schema": ["id", "locationId", "name", "year", "description"], "keyAttribute": "id", "separator": ";"})
 
     # Following objects are results to queries that we want to add to the initial instance category
 
     products_xml = CollectionObject("products_xml", "XML", "product")
 
-    customers_table = CollectionObject("customers_table", "relational", "customer")
+    customers_table = CollectionObject(
+        "customers_table", "relational", "customer")
 
     objects["customers_graph"] = customers_graph
     objects["interest_graph"] = interest_graph

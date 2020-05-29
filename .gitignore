@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+processed_dataset/
+Patent_dataset/
+person.graph
+person.json
+University_dataset.zip
+Film_dataset.zip

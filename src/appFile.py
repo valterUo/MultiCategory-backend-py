@@ -62,3 +62,8 @@ commerce.init()
 
 functor = InstanceFunctor(commerce.e_commerce_instance)
 print(functor.get_instance_category().get_d3js_graph())
+
+# import os
+# dirname = os.path.dirname(__file__)
+# filename = os.path.join(dirname, 'data\\eCommerce\\customerVertex.csv')
+# print(filename)
