@@ -1,25 +1,27 @@
-from SchemaCategory.Morphisms.Morphism import Morphism
-
 class SchemaCategory:
 
-    def __init__(self, objects, morphisms):
+    def __init__(self, name, objects, morphisms):
+        self.name = name
         self.objects = objects
         self.morphisms = morphisms
     
     def __str__(self):
         allmorphisms = ""
-        for morphism in self.morphisms:
+        for morphism in self.morphisms.values():
             allmorphisms += str(morphism) + "\n"
         return allmorphisms
 
-    def addMorphism(self, morphism):
+    def add_morphism(self, morphism):
             self.objects.add(morphism.sourceObject)
             self.objects.add(morphism.targetObject)
             self.morphisms.add(morphism)
 
-    def addObject(self, obj):
+    def add_object(self, obj):
         self.objects.add(obj)
 
-    def containsObject(self, obj):
+    def contains_object(self, obj):
         return self.objects.contains(obj)
+
+    def get_name(self):
+        return self.name
                 

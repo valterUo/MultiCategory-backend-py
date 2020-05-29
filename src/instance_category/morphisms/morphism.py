@@ -14,7 +14,7 @@ class Morphism:
     If the relation is function between the source object and target object, then functional parameter is true otherwise it is false. Certain category
     theoretical constructions require functions.
 
-    The relation parameter can be defined as a function that takes an element from sourceObject and identifies some amount of objects from the target object.
+    The relation parameter can be defined as a function that takes an element from source_object and identifies some amount of objects from the target object.
     The relation is a subset of source object x target object where we consider source and target objects suitable as sets of elements from the collections
     which are stored in the objects.
 
@@ -24,20 +24,20 @@ class Morphism:
     The relation can be inputted as a function or as an instance of BinRelation which is slithy generalized 
     """
 
-    def __init__(self, name, sourceObject, relation, targetObject, functional=False):
+    def __init__(self, name, source_object, relation, target_object, functional=False):
         self.name = name
-        self.sourceObject = sourceObject
-        self.targetObject = targetObject
+        self.source_object = source_object
+        self.target_object = target_object
         self.functional = functional
         self.relation = relation
-        if targetObject.getCollection() == None:
+        if target_object.getCollection() == None:
             collection = []
-            for elem in sourceObject.get_access_to_iterable():
+            for elem in source_object.get_access_to_iterable():
                 collection.append(relation(elem))
-            self.targetObject.setCollection(collection)
+            self.target_object.setCollection(collection)
 
     def compose(self, morphism):
-        if morphism.targetObject == self.sourceObject:
+        if morphism.target_object == self.source_object:
             newLambda = None
             if self.functional and morphism.functional:
                 # Both morphisms can be expressed as functions and thus we have the ordinary function composition.
@@ -60,10 +60,19 @@ class Morphism:
                 def newLambda(x):
                     return functools.reduce(helper, morphism.relation(x), set())
                 isFunctional = False
-            return Morphism(morphism.name + " o " + self.name, self.sourceObject, morphism.targetObject, newLambda, isFunctional)
+            return Morphism(morphism.name + " o " + self.name, self.source_object, morphism.target_object, newLambda, isFunctional)
 
     def getRelation(self, variable):
         return self.relation(variable)
 
     def getFunctional(self):
         return self.functional
+
+    def get_name(self):
+        return self.name
+    
+    def get_source_object(self):
+        return self.source_object
+
+    def get_target_object(self):
+        return self.target_object

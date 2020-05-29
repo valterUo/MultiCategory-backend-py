@@ -22,6 +22,7 @@ def join_graph_graph(collectionObject1, morphism, collectionObject2, gluing_grap
         # which are mapped to true values i.e. included in the relation.
         for node1 in graph1.nodes:
             for node2 in graph2.nodes:
+                print(node1, node2)
                 if morphism(node1, node2):
                     composition_graph = glue_graphs(composition_graph, node1, graph2, node2, gluing_graph)
     newCollectionObject = CollectionObject(collectionObject1.getName() 
