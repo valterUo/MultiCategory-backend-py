@@ -76,3 +76,9 @@ class Morphism:
 
     def get_target_object(self):
         return self.target_object
+
+    def get_source_object_name(self):
+        return self.source_object.getName()
+
+    def get_target_object_name(self):
+        return self.target_object.getName()

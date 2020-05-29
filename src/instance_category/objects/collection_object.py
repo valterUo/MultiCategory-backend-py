@@ -16,7 +16,7 @@ class CollectionObject:
     – separator: if the file is csv, this field specifies the separator
     """
 
-    def __init__(self, name, collectionType, datatype, access_to_iterable = lambda x : x, fileDictonaries = None, collection = None):
+    def __init__(self, name, collectionType, datatype, access_to_iterable=lambda x: x, fileDictonaries=None, collection=None):
         self.name = name
         self.collectionType = collectionType
         self.fileDictonaries = fileDictonaries
@@ -40,18 +40,14 @@ class CollectionObject:
                 with open(document["filePath"]) as json_file:
                     self.collection = json.load(json_file)
 
-
     def getCollection(self):
         return self.collection
-
 
     def setCollection(self, newcollection):
         self.collection = newcollection
 
-
     def getCollectionType(self):
         return self.collectionType
-
 
     def getName(self):
         return self.name
@@ -59,10 +55,8 @@ class CollectionObject:
     def getDatatype(self):
         return self.datatype
 
-    
     def get_access_to_iterable(self):
         return self.access_to_iterable(self.collection)
-
 
     def __str__(self):
         if self.collectionType == "relational" or self.collection == "JSON":
@@ -85,7 +79,6 @@ class CollectionObject:
         elif self.collectionType == "RDF":
             return str(self.collection)
 
-
     def findFromNodes(self, attribute, value):
         result = []
         for elem in self.collection.nodes():
@@ -98,3 +91,6 @@ class CollectionObject:
             if elem[attribute] == value:
                 return elem
         return None
+
+    def get_d3js_element(self):
+        return { 'name': self.name, 'collectionType': self.collectionType, 'datatype': self.datatype }
