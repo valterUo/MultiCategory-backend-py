@@ -12,8 +12,14 @@ class DatatypeObject:
     def __str__(self):
         return self.name
 
+    def get_name(self):
+        return self.name
+
     def add_incoming_morphism(self, morphism):
         self.incoming_morphisms.append(morphism)
 
     def add_outgoing_morphism(self, morphism):
         self.outgoing_morphisms.append(morphism)
+
+    def get_d3js_element(self):
+        return { 'name': self.name, 'model': self.typeVar }

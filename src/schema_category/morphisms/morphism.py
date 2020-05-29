@@ -16,8 +16,17 @@ class Morphism:
         else: 
             raise CompositionError(self, "Not composable morphisms.")
 
+    def get_name(self):
+        return self.name
+
     def get_source_object(self):
         return self.source_object
 
     def get_target_object(self):
         return self.target_object
+
+    def get_source_object_name(self):
+        return self.source_object.get_name()
+
+    def get_target_object_name(self):
+        return self.target_object.get_name()

@@ -61,4 +61,4 @@ commerce.init()
 #     instanceObject1, morphism_induced_by_function, instanceObject2, gluing_graph)
 
 functor = InstanceFunctor(commerce.e_commerce_instance)
-print(functor.get_schema_category())
+print(functor.get_schema_category().get_d3js_graph())
