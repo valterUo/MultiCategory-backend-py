@@ -94,3 +94,6 @@ class CollectionObject:
 
     def get_d3js_element(self):
         return { 'name': self.name, 'collectionType': self.collectionType, 'datatype': self.datatype }
+
+    def __eq__(self, other):
+        return self.name == other.name

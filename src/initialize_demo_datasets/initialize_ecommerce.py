@@ -51,33 +51,32 @@ def init():
     order_to_customer_key_value_pairs = CollectionObject(
         "order_to_customer_key_value_pairs", "JSON", "pairs", lambda json: json, {"filePath": os.path.join(dirname, "..\\..\\data\\eCommerce\\keyValuePairs.json")})
 
-    sitesTable = CollectionObject("sites", "relational", "site", lambda table: table, {"filePath": os.path.join(dirname, "..\\..\\data\\eCommerce\\sites.csv"),
+    sites_table = CollectionObject("sites_table", "relational", "site", lambda table: table, {"filePath": os.path.join(dirname, "..\\..\\data\\eCommerce\\sites.csv"),
                                                                                        "fileformat": "csv", "schema": ["id", "locationId", "name", "year", "description"], "keyAttribute": "id", "separator": ";"})
 
     # Following objects are results to queries that we want to add to the initial instance category
 
     products_xml = CollectionObject("products_xml", "XML", "product")
 
-    customers_table = CollectionObject(
-        "customers_table", "relational", "customer")
+    customers_table = CollectionObject("customers_table", "relational", "customer")
 
     objects["customers_graph"] = customers_graph
     objects["interest_graph"] = interest_graph
     objects["locations_table"] = locations_table
     objects["orders_xml"] = orders_xml
     objects["order_to_customer_key_value_pairs"] = order_to_customer_key_value_pairs
-    objects["sitesTable"] = sitesTable
+    objects["sites_table"] = sites_table
     objects["products_xml"] = products_xml
     objects["customers_table"] = customers_table
 
     # Morphisms in the instance category:
-    # Example: Because orders_xml -> customers_graph -> locations_table is composable, then orderedBy o located is well-defined
+    # Example: Because orders_xml -> customers_graph -> locations_table is composable, then ordered_by o located is well-defined
     # function that assigns for each order the location where the ordered customer is. For example, composition = located.compose(knows).
 
     located = Morphism("located", customers_graph, lambda customer: locations_table.getCollection(
     ).get(dict(customer).get("locationId"), "Key not in the dictonary!"), locations_table, True)
 
-    orderedBy = Morphism("orderedBy", orders_xml, lambda elem:  customers_graph.findFromNodes(
+    ordered_by = Morphism("ordered_by", orders_xml, lambda elem:  customers_graph.findFromNodes(
         "id", order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text)), customers_graph, True)
 
     knows = Morphism("knows", customers_graph, lambda customer: set(
@@ -86,11 +85,11 @@ def init():
     products = Morphism("products", orders_xml,
                         lambda order: order.findall("Product"), products_xml)
 
-    site_located = Morphism("site_located", sitesTable,
+    site_located = Morphism("site_located", sites_table,
                             lambda site: locations_table.getCollection().get(site.get("locationId")), locations_table, True)
 
     sites_in_location = Morphism("sites_in_location", locations_table, lambda location: reduce(lambda xs, x: add_to_dict(
-        xs, x, sitesTable.getCollection()[x]) if sitesTable.getCollection()[x].get("locationId") == location.get("id") else xs, sitesTable.getCollection(), dict()), sitesTable)
+        xs, x, sites_table.getCollection()[x]) if sites_table.getCollection()[x].get("locationId") == location.get("id") else xs, sites_table.getCollection(), dict()), sites_table)
 
     customers = Morphism("customers", customers_graph,
                          lambda customer: dict(customer), customers_table, True)
@@ -98,14 +97,25 @@ def init():
     ordered_by_customer = Morphism("ordered_by_customer", orders_xml, lambda elem: customers_table.findFromList(
         "id", order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text)), customers_table, True)
 
+    def findFromOrders(customer):
+        result = []
+        for elem in orders_xml.getCollection().getroot():
+            if order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
+                result.append(elem)
+        return result
+
+    customer_ordered = Morphism(
+            "customer_ordered", customers_table, lambda customer: findFromOrders(customer), orders_xml)
+
     morphisms["located"] = located
-    morphisms["orderedBy"] = orderedBy
+    morphisms["ordered_by"] = ordered_by
     morphisms["knows"] = knows
     morphisms["products"] = products
     morphisms["site_located"] = site_located
     morphisms["sites_in_location"] = sites_in_location
     morphisms["customers"] = customers
     morphisms["ordered_by_customer"] = ordered_by_customer
+    morphisms["customer_ordered"] = customer_ordered
 
     global e_commerce_instance
 

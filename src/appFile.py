@@ -9,10 +9,14 @@ from multi_model_join.join import add_to_dict, join, join_relational_xml
 from multi_model_join.graph_join.graph_join import join_graph_graph, join_graph_relational
 import initialize_demo_datasets.initialize_ecommerce as commerce
 from instance_functor.instance_functor import InstanceFunctor
+import os
+dirname = os.path.dirname(__file__)
+orders_xml_path = os.path.join(
+        dirname, "..\\data\\eCommerce\\orders.xml")
 
 commerce.init()
-# objects = commerce.e_commerce_instance.get_objects()
-# morphisms = commerce.e_commerce_instance.get_morphisms()
+objects = commerce.e_commerce_instance.get_objects()
+morphisms = commerce.e_commerce_instance.get_morphisms()
 
 # join_graph = join_graph_relational(objects["customersGraph"], morphisms["located"], objects["locationsTable"])
 
@@ -60,8 +64,16 @@ commerce.init()
 # join_graph = join_graph_graph(
 #     instanceObject1, morphism_induced_by_function, instanceObject2, gluing_graph)
 
+orders_xml = CollectionObject(
+        "orders_xml", "XML", "order", lambda document: document.getroot(), {"filePath": orders_xml_path})
+
 functor = InstanceFunctor(commerce.e_commerce_instance)
-print(functor.get_instance_category().get_d3js_graph())
+print(functor.instance_map(orders_xml).get_incoming_morphisms())
+
+customers = Morphism("customers", objects["customers_graph"],
+                        lambda customer: dict(customer), objects["customers_table"], True)
+
+print(functor.instance_map(customers).get_name())
 
 # import os
 # dirname = os.path.dirname(__file__)

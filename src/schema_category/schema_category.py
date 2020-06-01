@@ -25,6 +25,12 @@ class SchemaCategory:
     def get_name(self):
         return self.name
 
+    def get_objects(self):
+        return self.objects
+
+    def get_morphisms(self):
+        return self.morphisms
+
     def get_d3js_graph(self):
         graph = dict()
         graph["nodes"] = list(map(lambda x : x.get_d3js_element(), list(self.objects.values())))
