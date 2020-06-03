@@ -1,18 +1,24 @@
 import csv
 
-
-def readCSV(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
-    table = []
+def read_to_table(filePath: str, delimiter: str, schema: [str], keyAttribute):
+    table = dict()
     try:
-        keyIndex = schema.index(keyAttribute)
+        if type(keyAttribute) == list:
+            keyIndex = []
+            for attribute in keyAttribute:
+                keyIndex.append(schema.index(keyAttribute))
+        else:
+            keyIndex = [schema.index(keyAttribute)]
         try:
-            with open(filePath, newline='') as csvfile:
+            with open(filePath) as csvfile:
                             tableReader = csv.reader(
                                 csvfile, delimiter=delimiter)
                             next(tableReader)
                             for row in tableReader:
-                                table.append(
-                                    (row[keyIndex], readRow(row, schema)))
+                                key = ""
+                                for key_attribute in keyIndex:
+                                    key = key + row[keyIndex]
+                                table[row[key]] = readRow(row, schema)
         except:
            print("Error: Error while processing the cvs file!")
     except:
@@ -21,36 +27,32 @@ def readCSV(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
 
 
 def readRow(row, schema):
-    newRow = []
+    newRow = dict()
     for i in range(len(schema)):
         try:
-            newRow.append((schema[i], row[i]))
+            newRow[schema[i]] = row[i]
         except:
             try:
-                newRow.append((schema[i], None))
+                newRow[schema[i]] = None
             except:
                 print("Error: Schema does not match to data in the file!")
-    return dict(newRow)
-
-
-def readToTable(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
-    return dict(readCSV(filePath, delimiter, schema, keyAttribute))
+    return newRow
 
 
 def readEdges(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
-    edgesWithKeys = readCSV(filePath, delimiter, schema, keyAttribute)
+    edges_with_keys = read_to_table(filePath, delimiter, schema, keyAttribute)
     edges = []
-    for e in edgesWithKeys:
+    for e in edges_with_keys:
         edges.append(e[1])
     return edges
 
 
-def readNodesAndEdges(fileDictonaries):
+def readNodesAndEdges(file_dictionaries):
     nodesWithKey = dict()
     edges, edgeList = [], []
-    nodeDict, edgeDict = fileDictonaries["vertex"], fileDictonaries["edge"]
+    nodeDict, edgeDict = file_dictionaries["vertex"], file_dictionaries["edge"]
     for node in nodeDict:
-        nodesWithKey.update(readToTable(
+        nodesWithKey.update(read_to_table(
             node["filePath"], ";", node["schema"], node["keyAttribute"]))
     for edge in edgeDict:
         edges = readEdges(edge["filePath"], ";",
@@ -60,3 +62,8 @@ def readNodesAndEdges(fileDictonaries):
                              frozenset(nodesWithKey.get(e.get(edge["toKeyAttribute"])).items()), 
                              frozenset(e.items())))
     return edgeList
+
+def dump_big_file_into_pickle(file_dictionaries, file_name):
+    with open(file_name) as db_file:
+        pickle.dump(table, db_file, protocol=pickle.HIGHEST_PROTOCOL)
+    return file_name

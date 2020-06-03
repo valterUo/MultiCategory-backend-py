@@ -49,7 +49,7 @@ class InstanceFunctor:
 
     def construct_collection_object(self, collection_object):
         schema_object = DatatypeObject(
-            collection_object.getName(), collection_object.getCollectionType())
+            collection_object.getName(), collection_object.get_collection_type())
         return schema_object
 
     def instance_map(self, object_or_morphism):

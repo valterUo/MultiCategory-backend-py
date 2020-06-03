@@ -5,8 +5,8 @@ from multi_model_join.xml_join import process_row_xml
 
 def join_relational_relational_over_functional_morphism(collectionObject1, morphism, collectionObject2):
     newCollection = dict()
-    for key in collectionObject1.getCollection():
-                    source = collectionObject1.getCollection()[key]
+    for key in collectionObject1.get_collection():
+                    source = collectionObject1.get_collection()[key]
                     target = morphism.getRelation(source)
                     newCollection[key] = merge_two_dicts(target, source)
     newCollectionObject = CollectionObject(collectionObject1.getName(
@@ -16,8 +16,8 @@ def join_relational_relational_over_functional_morphism(collectionObject1, morph
 
 def join_relational_relational_over_nonfunctional_morphism(collectionObject1, morphism, collectionObject2):
     newCollection = dict()
-    for key in collectionObject1.getCollection():
-                    source = collectionObject1.getCollection()[key]
+    for key in collectionObject1.get_collection():
+                    source = collectionObject1.get_collection()[key]
                     target = morphism.getRelation(source)
                     for target_key in target:
                         newCollection[key] = merge_two_dicts(
@@ -28,7 +28,7 @@ def join_relational_relational_over_nonfunctional_morphism(collectionObject1, mo
 
 
 def join_relational_graph(collectionObject1, morphism, collectionObject2):
-    table = collectionObject1.getCollection()
+    table = collectionObject1.get_collection()
     new_table = None
     if type(table) == dict():
         new_table = dict()
@@ -46,7 +46,7 @@ def join_relational_graph(collectionObject1, morphism, collectionObject2):
 
 
 def join_relational_xml(collectionObject1, morphism, collectionObject2, pattern):
-    table = collectionObject1.getCollection()
+    table = collectionObject1.get_collection()
     resultCollection = None
     if type(table) == list:
         resultCollection = []

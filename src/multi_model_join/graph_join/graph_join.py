@@ -9,8 +9,8 @@ from multi_model_join.graph_join.graph_join_error import GraphRelationalJoinErro
 # the gluing graph and the second term is either from graph1 or graph2
 
 def join_graph_graph(collectionObject1, morphism, collectionObject2, gluing_graph):
-    graph1 = collectionObject1.getCollection()
-    graph2 = collectionObject2.getCollection()
+    graph1 = collectionObject1.get_collection()
+    graph2 = collectionObject2.get_collection()
     if nx.number_of_nodes(graph1) == 0:
         composition_graph = nx.DiGraph()
     elif nx.number_of_nodes(graph2) == 0:
@@ -31,7 +31,7 @@ def join_graph_graph(collectionObject1, morphism, collectionObject2, gluing_grap
 
 
 def join_graph_relational(collectionObject1, morphism, collectionObject2):
-    result = collectionObject1.getCollection()
+    result = collectionObject1.get_collection()
     for graph_elem in collectionObject1.get_access_to_iterable():
         row = morphism.getRelation(graph_elem)
         if type(row) == dict:

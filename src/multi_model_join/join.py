@@ -5,11 +5,12 @@ from multi_model_join.xml_join import *
 from multi_model_join.help_functions import *
 import networkx as nx
 import copy
+from multi_model_join.graph_join.graph_join import join_graph_graph
 
 
 def join(collectionObject1, morphism, collectionObject2, pattern=None):
-    type1 = collectionObject1.getCollectionType()
-    type2 = collectionObject2.getCollectionType()
+    type1 = collectionObject1.get_collectionType()
+    type2 = collectionObject2.get_collectionType()
     if type1 == "relational":
         if type2 == "relational":
             if morphism.getFunctional():

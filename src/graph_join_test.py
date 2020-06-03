@@ -52,10 +52,10 @@ class TestGraphJoin(unittest.TestCase):
         resultGraph.add_edges_from([(customer4, customer1)])
 
         for edge in resultGraph.edges:
-            if edge not in join_graph.getCollection().edges:
+            if edge not in join_graph.get_collection().edges:
                 self.assertFalse(False)
         else:
-            for edge in join_graph.getCollection().edges:
+            for edge in join_graph.get_collection().edges:
                 if edge not in resultGraph.edges:
                     self.assertFalse(False)
             else:
@@ -87,10 +87,10 @@ class TestGraphJoin(unittest.TestCase):
         resultGraph.add_nodes_from([customer1])
 
         for edge in resultGraph.edges:
-            if edge not in join_graph.getCollection().edges:
+            if edge not in join_graph.get_collection().edges:
                 self.assertFalse(False)
         else:
-            for edge in join_graph.getCollection().edges:
+            for edge in join_graph.get_collection().edges:
                 if edge not in resultGraph.edges:
                     self.assertFalse(False)
             else:
@@ -122,10 +122,10 @@ class TestGraphJoin(unittest.TestCase):
         resultGraph.add_nodes_from([frozenset({customer1, customer4})])
 
         for edge in resultGraph.edges:
-            if edge not in join_graph.getCollection().edges:
+            if edge not in join_graph.get_collection().edges:
                 self.assert_(False, edge)
         else:
-            for edge in join_graph.getCollection().edges:
+            for edge in join_graph.get_collection().edges:
                 if edge not in resultGraph.edges:
                     self.assert_(False, edge)
             else:
@@ -155,7 +155,7 @@ class TestGraphJoin(unittest.TestCase):
         join_graph = join_graph_graph(
             instanceObject1, morphism_induced_by_function, instanceObject2, gluing_graph)
 
-        self.assertEqual(join_graph.getCollection().edges(), nx.compose(customerGraph1, customerGraph2).edges())
+        self.assertEqual(join_graph.get_collection().edges(), nx.compose(customerGraph1, customerGraph2).edges())
 
 
     def test_graph_join_relational_with_functional_morphism(self):

@@ -19,7 +19,7 @@ class TestRelationalJoin(unittest.TestCase):
         result = result_file[1].get("result")
         joined_tables = join_relational_relational_over_functional_morphism(
             objects["sites_table"], morphisms["site_located"], objects["locations_table"])
-        self.assertEqual(result, str(joined_tables.getCollection()))
+        self.assertEqual(result, str(joined_tables.get_collection()))
 
 
     def test_relational_join_relational_nonfunctional(self):
@@ -28,7 +28,7 @@ class TestRelationalJoin(unittest.TestCase):
         result = result_file[2].get("result")
         joined_tables = join_relational_relational_over_nonfunctional_morphism(
             objects["locations_table"], morphisms["sites_in_location"], objects["sites_table"])
-        self.assertEqual(result, str(joined_tables.getCollection()))
+        self.assertEqual(result, str(joined_tables.get_collection()))
 
 
     def test_relational_join_xml_twig1(self):
@@ -37,7 +37,7 @@ class TestRelationalJoin(unittest.TestCase):
         with open('relational_test_result.json', 'r') as openfile: 
             result_file = json.load(openfile)
         result = result_file[0].get("result")
-        self.assertEqual(result, str(join_result.getCollection()))
+        self.assertEqual(result, str(join_result.get_collection()))
 
 
     def test_relational_join_xml_twig2_attribute_not_existing(self):
@@ -46,7 +46,7 @@ class TestRelationalJoin(unittest.TestCase):
         with open('relational_test_result.json', 'r') as openfile: 
             result_file = json.load(openfile)
         result = result_file[3].get("result")
-        self.assertEqual(result, str(join_result.getCollection()))
+        self.assertEqual(result, str(join_result.get_collection()))
 
 
     def test_relational_join_xml_twig3_multiple_attributes_from_xml_doc(self):
@@ -55,7 +55,7 @@ class TestRelationalJoin(unittest.TestCase):
         with open('relational_test_result.json', 'r') as openfile: 
             result_file = json.load(openfile)
         result = result_file[4].get("result")
-        self.assertEqual(result, str(join_result.getCollection()))
+        self.assertEqual(result, str(join_result.get_collection()))
 
 if __name__ == '__main__':
     unittest.main()

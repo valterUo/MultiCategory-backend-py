@@ -27,6 +27,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+.vscode/
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -134,3 +136,9 @@ person.graph
 person.json
 University_dataset.zip
 Film_dataset.zip
+assignee.table
+category.table
+citation.graph
+class.table
+inventor.table
+patent.table

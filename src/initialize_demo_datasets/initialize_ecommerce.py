@@ -43,7 +43,8 @@ def init():
             {"filePath": interest_edge_path, "fileformat": "csv", "schema": ["customerId", "targetId", "weight"], "keyAttribute": "customerId",
              "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId"}]})
 
-    locations_table = CollectionObject("locations_table", "relational", "location", lambda table: table, {"filePath": locations_table_path, "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";"})
+    locations_table = CollectionObject("locations_table", "relational", "location", lambda table: table, 
+        {"filePath": locations_table_path, "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";"})
 
     orders_xml = CollectionObject(
         "orders_xml", "XML", "order", lambda document: document.getroot(), {"filePath": orders_xml_path})
@@ -73,34 +74,34 @@ def init():
     # Example: Because orders_xml -> customers_graph -> locations_table is composable, then ordered_by o located is well-defined
     # function that assigns for each order the location where the ordered customer is. For example, composition = located.compose(knows).
 
-    located = Morphism("located", customers_graph, lambda customer: locations_table.getCollection(
+    located = Morphism("located", customers_graph, lambda customer: locations_table.get_collection(
     ).get(dict(customer).get("locationId"), "Key not in the dictonary!"), locations_table, True)
 
     ordered_by = Morphism("ordered_by", orders_xml, lambda elem:  customers_graph.findFromNodes(
-        "id", order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text)), customers_graph, True)
+        "id", order_to_customer_key_value_pairs.get_collection().get(elem.findall("Order_no")[0].text)), customers_graph, True)
 
     knows = Morphism("knows", customers_graph, lambda customer: set(
-        customers_graph.getCollection().successors(customer)), customers_graph)
+        customers_graph.get_collection().successors(customer)), customers_graph)
 
     products = Morphism("products", orders_xml,
                         lambda order: order.findall("Product"), products_xml)
 
     site_located = Morphism("site_located", sites_table,
-                            lambda site: locations_table.getCollection().get(site.get("locationId")), locations_table, True)
+                            lambda site: locations_table.get_collection().get(site.get("locationId")), locations_table, True)
 
     sites_in_location = Morphism("sites_in_location", locations_table, lambda location: reduce(lambda xs, x: add_to_dict(
-        xs, x, sites_table.getCollection()[x]) if sites_table.getCollection()[x].get("locationId") == location.get("id") else xs, sites_table.getCollection(), dict()), sites_table)
+        xs, x, sites_table.get_collection()[x]) if sites_table.get_collection()[x].get("locationId") == location.get("id") else xs, sites_table.get_collection(), dict()), sites_table)
 
     customers = Morphism("customers", customers_graph,
                          lambda customer: dict(customer), customers_table, True)
 
     ordered_by_customer = Morphism("ordered_by_customer", orders_xml, lambda elem: customers_table.findFromList(
-        "id", order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text)), customers_table, True)
+        "id", order_to_customer_key_value_pairs.get_collection().get(elem.findall("Order_no")[0].text)), customers_table, True)
 
     def findFromOrders(customer):
         result = []
-        for elem in orders_xml.getCollection().getroot():
-            if order_to_customer_key_value_pairs.getCollection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
+        for elem in orders_xml.get_collection().getroot():
+            if order_to_customer_key_value_pairs.get_collection().get(elem.findall("Order_no")[0].text) == int(customer.get("id")):
                 result.append(elem)
         return result
 

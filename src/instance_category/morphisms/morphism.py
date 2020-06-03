@@ -30,7 +30,7 @@ class Morphism:
         self.target_object = target_object
         self.functional = functional
         self.relation = relation
-        if target_object.getCollection() == None:
+        if target_object.get_collection() == None:
             collection = []
             for elem in source_object.get_access_to_iterable():
                 collection.append(relation(elem))
