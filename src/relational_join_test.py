@@ -1,4 +1,5 @@
 import unittest
+import ast
 from functools import reduce
 import json
 from instance_category.objects.collection_object import CollectionObject
@@ -19,7 +20,8 @@ class TestRelationalJoin(unittest.TestCase):
         result = result_file[1].get("result")
         joined_tables = join_relational_relational_over_functional_morphism(
             objects["sites_table"], morphisms["site_located"], objects["locations_table"])
-        self.assertEqual(result, str(joined_tables.get_collection()))
+        result_dict = ast.literal_eval(result)
+        self.assertEqual(result_dict, joined_tables.get_collection())
 
 
     def test_relational_join_relational_nonfunctional(self):
@@ -28,7 +30,8 @@ class TestRelationalJoin(unittest.TestCase):
         result = result_file[2].get("result")
         joined_tables = join_relational_relational_over_nonfunctional_morphism(
             objects["locations_table"], morphisms["sites_in_location"], objects["sites_table"])
-        self.assertEqual(result, str(joined_tables.get_collection()))
+        result_dict = ast.literal_eval(result)
+        self.assertEqual(result_dict, joined_tables.get_collection())
 
 
     def test_relational_join_xml_twig1(self):

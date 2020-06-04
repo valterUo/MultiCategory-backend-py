@@ -1,6 +1,5 @@
-from data_parsers.csv_parser import read_to_table, dump_big_file_into_pickle
+from data_parsers.csv_parser import read_to_table, dump_big_file_into_pickle, read_nodes_and_edges
 import networkx as nx
-from data_parsers.property_graph_parser import parseDirectedGraph
 from data_parsers.xml_parser import *
 from data_parsers.rdf_parser import RDFParser
 from instance_category.objects.collection_object_error import CollectionObjectError
@@ -28,66 +27,64 @@ class CollectionObject:
         self.datatype = datatype
         self.access_to_iterable = access_to_iterable
         if self.file_dictionary != None:
-            if self.check_file_size_in_bytes(file_dictionary["filePath"]) < 1875000:
-                self.parse_small_file_in_memory()
+            if self.collection_type == "property graph":
+                file_name = self.parse_db_file_name(file_dictionary["vertex"][0]["filePath"])
             else:
                 file_name = self.parse_db_file_name(file_dictionary["filePath"])
-                if self.check_if_file_exists(file_name):
+            if self.check_if_file_exists(file_name):
                     print(file_name)
                     self.collection = file_name
+            else:
+                if self.check_file_size_in_bytes(file_dictionary) < 1875000:
+                    self.big_file = False
+                    self.parse_file_into_collection(None)
                 else:
-                    self.parse_big_file_on_disc(file_name)
+                    self.big_file = True
+                    self.parse_file_into_collection(file_name)
+                        
 
-    def parse_small_file_in_memory(self):
-        if self.collection_type == "relational":
-            table = self.file_dictionary
-            if table["fileformat"] == "csv":
-                self.collection = read_to_table(table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
-        elif self.collection_type == "property graph":
-            self.collection = parseDirectedGraph(self.file_dictionary)
-        elif self.collection_type == "XML":
-            self.collection = parseXML(self.file_dictionary["filePath"])
-        elif self.collection_type == "RDF":
-            self.collection = RDFParser(self.file_dictionary["filePath"])
-        elif self.collection_type == "JSON":
-            with open(self.file_dictionary["filePath"]) as json_file:
-                self.collection = json.load(json_file)
+    def check_file_size_in_bytes(self, file_dictionary):
+        total = 0
+        if self.collection_type == "property graph":
+            for node in file_dictionary["vertex"]:
+               total += Path(node["filePath"]).stat().st_size
+            for edge in file_dictionary["edge"]:
+                total += Path(edge["filePath"]).stat().st_size
+            return total
         else:
-            raise CollectionObjectError(self.collection_type, "The collection type is not known.")
-
-    def check_file_size_in_bytes(self, file_name):
-        return Path(file_name).stat().st_size
+            return Path(file_dictionary["filePath"]).stat().st_size
 
     def parse_db_file_name(self, file_path):
         dir_name = os.path.dirname(file_path)
         base = os.path.basename(file_path)
         base_without_extension = os.path.splitext(base)[0]
         return dir_name + "\\" + base_without_extension + ".pyc"
-        
-    def check_if_file_exists(self, file_name):
-        return os.path.isfile(file_name) 
 
-    def parse_big_file_on_disc(self, file_name):
+    def check_if_file_exists(self, file_name):
+        return os.path.isfile(file_name)
+
+    def parse_file_into_collection(self, file_name):
         if self.collection_type == "relational":
-            table = file_dictionary
+            table = self.file_dictionary
             if table["fileformat"] == "csv":
-                data_set = read_to_table(table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
-                self.collection = dump_big_file_into_pickle(data_set, file_name)
+                data_set = read_to_table(
+                    table["filePath"], table["separator"], table["schema"], table["keyAttribute"])
         elif self.collection_type == "property graph":
-            data_set = parseDirectedGraph(file_dictionary)
-            self.collection = dump_big_file_into_pickle(data_set, file_name)
+            data_set = read_nodes_and_edges(self.file_dictionary)
         elif self.collection_type == "XML":
-            data_set = parseXML(file_dictionary["filePath"])
-            self.collection = dump_big_file_into_pickle(data_set, file_name)
+            data_set = parseXML(self.file_dictionary["filePath"])
         elif self.collection_type == "RDF":
-            data_set = RDFParser(file_dictionary["filePath"])
-            self.collection = dump_big_file_into_pickle(data_set, file_name)
+            data_set = RDFParser(self.file_dictionary["filePath"])
         elif self.collection_type == "JSON":
-            with open(file_dictionary["filePath"]) as json_file:
+            with open(self.file_dictionary["filePath"]) as json_file:
                 data_set = json.load(json_file)
+        else:
+            raise CollectionObjectError(
+                self.collection_type, "The collection type is not known.")
+        if self.big_file:
             self.collection = dump_big_file_into_pickle(data_set, file_name)
         else:
-            raise CollectionObjectError(self.collection_type, "The collection type is not known.")
+            self.collection = data_set
 
     def get_collection(self):
         if type(self.collection) == str:
@@ -99,6 +96,9 @@ class CollectionObject:
 
     def get_collection_type(self):
         return self.collection_type
+
+    def set_collection(self, new):
+        self.collection = new
 
     def getName(self):
         return self.name
@@ -144,7 +144,7 @@ class CollectionObject:
         return None
 
     def get_d3js_element(self):
-        return { 'name': self.name, 'collectionType': self.collection_type, 'datatype': self.datatype }
+        return {'name': self.name, 'collectionType': self.collection_type, 'datatype': self.datatype}
 
     def __eq__(self, other):
         return self.name == other.name

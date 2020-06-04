@@ -29,19 +29,19 @@ def init():
 
     customers_graph = CollectionObject("customers_graph", "property graph", "customer", lambda graph: list(graph.nodes), {
         "vertex": [
-            {"filePath": customers_vertex_path, "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id"}],
+            {"filePath": customers_vertex_path, "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id", "separator": ";"}],
         "edge": [
-            {"filePath": customers_edge_path, "fileformat": "csv", "schema": ["source", "target"], "keyAttribute": "source", "fromKeyAttribute": "source", "toKeyAttribute": "target"}]
+            {"filePath": customers_edge_path, "fileformat": "csv", "schema": ["source", "target"], "keyAttribute": "source", "fromKeyAttribute": "source", "toKeyAttribute": "target", "separator": ";"}]
     })
 
     interest_graph = CollectionObject("interest_graph", "property graph", "interest", lambda graph: list(graph.nodes), {
         'vertex': [
             {"filePath": customers_vertex_path,
-                "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id"},
-            {"filePath": interest_vertex_path, "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id"}],
+                "fileformat": "csv", "schema": ["id", "name", "creditLimit", "locationId"], "keyAttribute": "id", "separator": ";"},
+            {"filePath": interest_vertex_path, "fileformat": "csv", "schema": ["id", "topic", "locationId"], "keyAttribute": "id", "separator": ";"}],
         "edge": [
             {"filePath": interest_edge_path, "fileformat": "csv", "schema": ["customerId", "targetId", "weight"], "keyAttribute": "customerId",
-             "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId"}]})
+             "fromKeyAttribute": "customerId", "toKeyAttribute": "targetId", "separator": ";"}]})
 
     locations_table = CollectionObject("locations_table", "relational", "location", lambda table: table, 
         {"filePath": locations_table_path, "fileformat": "csv", "schema": ["id", "address", "city", "zipCode", "country"], "keyAttribute": "id", "separator": ";"})

@@ -1,14 +1,16 @@
 import csv
+import networkx as nx
+import pickle
 
 def read_to_table(filePath: str, delimiter: str, schema: [str], keyAttribute):
     table = dict()
     try:
         if type(keyAttribute) == list:
-            keyIndex = []
+            key_indexes = []
             for attribute in keyAttribute:
-                keyIndex.append(schema.index(keyAttribute))
+                key_indexes.append(schema.index(attribute))
         else:
-            keyIndex = [schema.index(keyAttribute)]
+            key_indexes = [schema.index(keyAttribute)]
         try:
             with open(filePath) as csvfile:
                             tableReader = csv.reader(
@@ -16,17 +18,17 @@ def read_to_table(filePath: str, delimiter: str, schema: [str], keyAttribute):
                             next(tableReader)
                             for row in tableReader:
                                 key = ""
-                                for key_attribute in keyIndex:
-                                    key = key + row[keyIndex]
-                                table[row[key]] = readRow(row, schema)
+                                for key_index in key_indexes:
+                                    key = key + row[key_index]
+                                table[key] = read_row(row, schema)
         except:
-           print("Error: Error while processing the cvs file!")
+           print("Error: Error while processing the csv file!")
     except:
        print("Error: Key attribute not in the provided schema!")
     return table
 
 
-def readRow(row, schema):
+def read_row(row, schema):
     newRow = dict()
     for i in range(len(schema)):
         try:
@@ -39,31 +41,21 @@ def readRow(row, schema):
     return newRow
 
 
-def readEdges(filePath: str, delimiter: str, schema: [str], keyAttribute: str):
-    edges_with_keys = read_to_table(filePath, delimiter, schema, keyAttribute)
-    edges = []
-    for e in edges_with_keys:
-        edges.append(e[1])
-    return edges
-
-
-def readNodesAndEdges(file_dictionaries):
-    nodesWithKey = dict()
-    edges, edgeList = [], []
+def read_nodes_and_edges(file_dictionaries):
+    DG = nx.DiGraph()
+    nodes_with_key, edges = dict(), dict()
     nodeDict, edgeDict = file_dictionaries["vertex"], file_dictionaries["edge"]
     for node in nodeDict:
-        nodesWithKey.update(read_to_table(
-            node["filePath"], ";", node["schema"], node["keyAttribute"]))
+        nodes_with_key.update(read_to_table(node["filePath"], node["separator"], node["schema"], node["keyAttribute"]))
     for edge in edgeDict:
-        edges = readEdges(edge["filePath"], ";",
-                          edge["schema"], edge["keyAttribute"])
-        for e in edges:
-            edgeList.append((frozenset(nodesWithKey.get(e.get(edge["fromKeyAttribute"])).items()),
-                             frozenset(nodesWithKey.get(e.get(edge["toKeyAttribute"])).items()), 
-                             frozenset(e.items())))
-    return edgeList
+        edges = read_to_table(edge["filePath"], edge["separator"], edge["schema"], edge["keyAttribute"])
+        for e in edges.values():
+            DG.add_edge(frozenset(nodes_with_key.get(e.get(edge["fromKeyAttribute"])).items()),
+                             frozenset(nodes_with_key.get(e.get(edge["toKeyAttribute"])).items()), 
+                             object=frozenset(e.items()))
+    return DG
 
-def dump_big_file_into_pickle(file_dictionaries, file_name):
-    with open(file_name) as db_file:
-        pickle.dump(table, db_file, protocol=pickle.HIGHEST_PROTOCOL)
+def dump_big_file_into_pickle(data_set, file_name):
+    with open(file_name, "wb+") as db_file:
+        pickle.dump(data_set, db_file, protocol=pickle.HIGHEST_PROTOCOL)
     return file_name

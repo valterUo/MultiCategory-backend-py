@@ -158,9 +158,9 @@ class TestGraphJoin(unittest.TestCase):
         self.assertEqual(join_graph.get_collection().edges(), nx.compose(customerGraph1, customerGraph2).edges())
 
 
-    def test_graph_join_relational_with_functional_morphism(self):
+    # def test_graph_join_relational_with_functional_morphism(self):
 
-        join_graph = join_graph_relational(objects["customersGraph"], morphisms["located"], objects["locations_table"])
+    #     join_graph = join_graph_relational(objects["customersGraph"], morphisms["located"], objects["locations_table"])
 
 
     # def test_graph_join_xml(self):

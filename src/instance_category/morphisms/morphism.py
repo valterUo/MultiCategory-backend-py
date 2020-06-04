@@ -34,7 +34,7 @@ class Morphism:
             collection = []
             for elem in source_object.get_access_to_iterable():
                 collection.append(relation(elem))
-            self.target_object.setCollection(collection)
+            self.target_object.set_collection(collection)
 
     def __eq__(self, other):
         return self.name == other.name #and self.get_source_object == other.source_object and self.target_object == other.target_object)
@@ -60,7 +60,6 @@ class Morphism:
                 def helper(y, x):
                     z = y.union(self.relation(x))
                     return z
-
                 def newLambda(x):
                     return functools.reduce(helper, morphism.relation(x), set())
                 isFunctional = False
