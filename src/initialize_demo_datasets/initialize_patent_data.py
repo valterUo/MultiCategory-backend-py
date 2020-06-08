@@ -25,7 +25,6 @@ def init():
 
     # Objects
 
-
     patent_table = CollectionObject("patent_table", "relational", "patent", lambda x: x,
                                     {"filePath": patent_data_path, "fileformat": "csv",
                                     "schema": ["patent", "gyear", "gdate", "appyear", "country", "postate", "assignee", "asscode", "claims", "nclass", "cat", "subcat", "cmade", "creceive", "ratiocit", "general", "original", "fwdaplag", "bckgtlag", "selfctub", "selfctlb", "secdupbd", "secdlwbd"],
@@ -47,13 +46,14 @@ def init():
                                     {"filePath": inventor_data_path, "fileformat": "csv",
                                     "schema": ["patent", "lastnam", "firstnam", "midnam", "modifnam", "street", "city", "postate", "country", "zip", "invseq"], "keyAttribute": ["lastnam", "firstnam", "midnam"], "separator": ","})
 
-    # citation_graph = CollectionObject("citation_graph", "property graph", "citation", lambda graph: list(graph.nodes),
-    # {
-    #     "vertex": [
-    #         {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing", "cited"], "keyAttribute": ["citing", "cited"], "separator": ","}],
-    #     "edge": [
-    #         {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing", "cited"], "keyAttribute": "source", "fromKeyAttribute": "citing", "toKeyAttribute": "cited", "separator": ","}]
-    # })
+    citation_graph = CollectionObject("citation_graph", "property graph", "citation", lambda graph: list(graph.nodes),
+        {
+            "vertex": [
+                {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing","cited"], "keyAttribute": ["citing","cited"], "separator": ","}],
+            "edge": [
+                {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing","cited"], "keyAttribute": ["citing","cited"], "fromKeyAttribute": "citing", 
+                "toKeyAttribute": "cited", "separator": ","}]
+        })
 
     objects["patent_table"] = patent_table
     objects["assignee_table"] = assignee_table

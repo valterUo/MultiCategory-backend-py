@@ -43,16 +43,23 @@ def read_row(row, schema):
 
 def read_nodes_and_edges(file_dictionaries):
     DG = nx.DiGraph()
-    nodes_with_key, edges = dict(), dict()
     nodeDict, edgeDict = file_dictionaries["vertex"], file_dictionaries["edge"]
-    for node in nodeDict:
-        nodes_with_key.update(read_to_table(node["filePath"], node["separator"], node["schema"], node["keyAttribute"]))
-    for edge in edgeDict:
-        edges = read_to_table(edge["filePath"], edge["separator"], edge["schema"], edge["keyAttribute"])
-        for e in edges.values():
-            DG.add_edge(frozenset(nodes_with_key.get(e.get(edge["fromKeyAttribute"])).items()),
-                             frozenset(nodes_with_key.get(e.get(edge["toKeyAttribute"])).items()), 
-                             object=frozenset(e.items()))
+    nodes_with_key, edges = dict(), dict()
+    if file_dictionaries["vertex"][0]["filePath"] == file_dictionaries["edge"][0]["filePath"]:
+        for edge in edgeDict:
+            edges.update(read_to_table(edge["filePath"], edge["separator"], edge["schema"], edge["keyAttribute"]))
+        for edge in edgeDict:
+            for e in edges.values():
+                DG.add_edge(e.get(edge["fromKeyAttribute"]), e.get(edge["toKeyAttribute"]), object=frozenset(e.items()))
+    else:
+        for node in nodeDict:
+            nodes_with_key.update(read_to_table(node["filePath"], node["separator"], node["schema"], node["keyAttribute"]))
+        for edge in edgeDict:
+            edges.update(read_to_table(edge["filePath"], edge["separator"], edge["schema"], edge["keyAttribute"]))
+            for e in edges.values():
+                DG.add_edge(frozenset(nodes_with_key.get(e.get(edge["fromKeyAttribute"])).items()),
+                                frozenset(nodes_with_key.get(e.get(edge["toKeyAttribute"])).items()), 
+                                object=frozenset(e.items()))
     return DG
 
 def dump_big_file_into_pickle(data_set, file_name):

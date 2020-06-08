@@ -8,16 +8,22 @@ from multi_model_join.relational_join import join_relational_relational_over_fun
 import initialize_demo_datasets.initialize_ecommerce as commerce
 from instance_functor.instance_functor import InstanceFunctor
 import os
+import networkx as nx
 dirname = os.path.dirname(__file__)
 
-citation_data_path = os.path.join(
-    dirname, "..\\data\\Patent\\citation.graph")
+# citation_data_path = os.path.join(
+#     dirname, "..\\data\\Patent\\citation.graph")
 
 # citation_graph = CollectionObject("citation_graph", "property graph", "citation", lambda graph: list(graph.nodes),
 # {
 #     "vertex": [
 #         {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing","cited"], "keyAttribute": ["citing","cited"], "separator": ","}],
 #     "edge": [
-#         {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing","cited"], "keyAttribute": "source", "fromKeyAttribute": "citing", "toKeyAttribute": "cited", "separator": ","}]
+#         {"filePath": citation_data_path, "fileformat": "csv", "schema": ["citing","cited"], "keyAttribute": ["citing","cited"], "fromKeyAttribute": "citing", 
+#         "toKeyAttribute": "cited", "separator": ","}]
 # })
 
+# print(nx.number_of_edges(citation_graph.get_collection()))
+
+# for elem in nx.neighbors(citation_graph.get_collection(), "3897377"):
+#     print(elem)
