@@ -24,16 +24,20 @@ class Morphism:
     The relation can be inputted as a function or as an instance of BinRelation which is slithy generalized 
     """
 
-    def __init__(self, name, source_object, relation, target_object, functional=False):
+    def __init__(self, name, source_object, relation, target_object, functional=False, constant = False):
         self.name = name
         self.source_object = source_object
         self.target_object = target_object
         self.functional = functional
         self.relation = relation
+        self.constant = constant
         if target_object.get_collection() == None:
             collection = []
-            for elem in source_object.get_access_to_iterable():
-                collection.append(relation(elem))
+            if self.constant:
+                collection.append(self.relation(None))
+            else:
+                for elem in source_object.get_access_to_iterable():
+                    collection.append(self.relation(elem))
             self.target_object.set_collection(collection)
 
     def __eq__(self, other):

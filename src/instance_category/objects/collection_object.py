@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import os
 import pickle
-
+from data_parsers.json_parser import parse_json
 
 class CollectionObject:
 
@@ -77,7 +77,7 @@ class CollectionObject:
             data_set = RDFParser(self.file_dictionary["filePath"])
         elif self.collection_type == "JSON":
             with open(self.file_dictionary["filePath"]) as json_file:
-                data_set = json.load(json_file)
+                data_set = parse_json(json_file)
         else:
             raise CollectionObjectError(
                 self.collection_type, "The collection type is not known.")

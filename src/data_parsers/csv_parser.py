@@ -4,27 +4,35 @@ import pickle
 
 def read_to_table(filePath: str, delimiter: str, schema: [str], keyAttribute):
     table = dict()
-    try:
-        if type(keyAttribute) == list:
-            key_indexes = []
-            for attribute in keyAttribute:
-                key_indexes.append(schema.index(attribute))
-        else:
-            key_indexes = [schema.index(keyAttribute)]
-        try:
-            with open(filePath) as csvfile:
-                            tableReader = csv.reader(
-                                csvfile, delimiter=delimiter)
-                            next(tableReader)
-                            for row in tableReader:
-                                key = ""
-                                for key_index in key_indexes:
-                                    key = key + row[key_index]
-                                table[key] = read_row(row, schema)
-        except:
-           print("Error: Error while processing the csv file!")
-    except:
-       print("Error: Key attribute not in the provided schema!")
+    saved = ""
+    if type(keyAttribute) == list:
+        key_indexes = []
+        for attribute in keyAttribute:
+            key_indexes.append(schema.index(attribute))
+    else:
+        key_indexes = [schema.index(keyAttribute)]
+        
+    with open(filePath, encoding='utf8') as csvfile:
+                    tableReader = csv.reader(
+                        csvfile, delimiter=delimiter)
+                    next(tableReader)
+                    while True:
+                        try:
+                            row = next(tableReader)
+                            key = ""
+                            for key_index in key_indexes:
+                                key = key + row[key_index]
+                            table[key] = read_row(row, schema)
+                        except StopIteration:
+                            break
+                        except csv.Error:
+                            print("Error while processing the row: ", row)
+                        except UnicodeDecodeError:
+                            #print("Unicode error. The row is be skipped: ", row)
+                            continue
+                        except IndexError:
+                            print("Index error on the row: ", row)
+                            continue
     return table
 
 
