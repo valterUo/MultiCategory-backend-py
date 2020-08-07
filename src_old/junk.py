@@ -94,3 +94,34 @@
 # plt.subplot(111)
 # nx.draw(customersGraph.get_collection(), with_labels=False, font_weight='bold')
 # plt.show()
+
+# app = Flask(__name__)
+
+
+# def execute_query(query):
+#     print(query)
+#     return None
+
+
+# @app.route('/selectDataSet', methods=['POST'])
+# def select_data_set():
+#     if request.method == 'POST':
+#         if request.headers['Content-Type'] == 'application/json':
+#             if request.json["dataSet"] == "eCommerce":
+#                 selected_data_set = initialize_ecommerce.e_commerce_instance
+#             elif request.json["dataSet"] == "patent":
+#                 initialize_patent_data.init()
+#                 selected_data_set = initialize_patent_data.patent_instance
+#             elif request.json["dataSet"] == "unibenchSF10":
+#                 initialize_unibench_sf10.init()
+#                 selected_data_set = initialize_unibench_sf10.unibench_sf10
+
+
+# @app.route('/executeQuery', methods=['POST'])
+# def execute():
+#     if request.method == 'POST':
+#         if request.headers['Content-Type'] == 'application/json':
+#             query_json = request.json
+#             result = execute_query(query_json)
+#             return {'result': result, 'model': query_json['model']}
+#     return 'Bad request!', 400
