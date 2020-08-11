@@ -11,6 +11,17 @@ class TableCollection:
     This class utilizes pytables which stores relational data in h5files and uses persistent memory. 
     PyTables requires some parameter modifications to chunk sizes because the output file size is huge.
     JSON file is assumed to be "flat" i.e. there are no JSON objects inside JSON objects.
+
+    Different data types that are supported:
+
+            StringCol(16)   # 16-character String
+            Int64Col()      # Signed 64-bit integer
+            UInt16Col()     # Unsigned short integer
+            UInt8Col()      # unsigned byte
+            Int32Col()      # 32-bit integer
+            Float32Col()    # float  (single-precision)
+            Float64Col()    # double (double-precision)
+            
     """
 
     def __init__(self, name, attributes_datatypes_dict, source_file_path, h5file_path, delimiter = "|"):
@@ -56,6 +67,7 @@ class TableCollection:
                 try:
                     row = next(table_reader)
                     for j in range(len(key_list)):
+                        #print(key_list[j], row[j])
                         tablerow[key_list[j]] = row[j]
                     tablerow.append()
                 except StopIteration:

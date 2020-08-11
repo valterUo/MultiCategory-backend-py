@@ -13,3 +13,9 @@ class CollectionRelationshipCompositionError(Error):
     def __init__(self, expression, message):
         self.expression = expression
         self.message = message
+
+class FormatNotSupportedError(Error):
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message

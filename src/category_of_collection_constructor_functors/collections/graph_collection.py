@@ -29,7 +29,7 @@ class GraphCollection:
         filename = os.path.splitext(base)[0]
         file_extension = os.path.splitext(edge_info[0]["file_path"])[1]
 
-        self.target_file_path = self.target_folder_path + "//" + filename + ".pyc"
+        self.target_file_path = self.target_folder_path + "//" + self.name + ".pyc"
 
         file_exists = os.path.isfile(self.target_file_path)
 
@@ -50,7 +50,7 @@ class GraphCollection:
             self.read_vertex_csv_to_dict()
             for edge in self.edge_list:
                 DG.add_edge(
-                    self.vertex_dict[edge[0]], self.vertex_dict[edge[1]], object=edge[2])
+                    frozenset(self.vertex_dict[edge[0]].items()), frozenset(self.vertex_dict[edge[1]].items()), object=edge[2])
             return DG
 
     def read_vertex_csv_to_dict(self):
@@ -58,14 +58,14 @@ class GraphCollection:
             file_path = vertex["file_path"]
             schema = vertex["schema"]
             key_attribute_index = vertex["key_attribute_index"]
-            delimeter = vertex["delimeter"]
+            delimiter = vertex["delimiter"]
             with open(file_path, encoding='utf8') as csvfile:
                 table_reader = csv.reader(csvfile, delimiter=delimiter)
                 next(table_reader)  # Remove headers from csv file
                 while True:
                     try:
                         row = next(table_reader)
-                        self.vertex_dict[row[key_attribute_index]] = read_row(
+                        self.vertex_dict[row[key_attribute_index]] = self.read_row(
                             row, schema)
                     except StopIteration:
                         break
@@ -118,3 +118,6 @@ class GraphCollection:
                     except IndexError:
                         print("Index error on the row: ", row)
                         continue
+
+    def get_graph(self):
+        return nx.read_gpickle(self.target_file_path)

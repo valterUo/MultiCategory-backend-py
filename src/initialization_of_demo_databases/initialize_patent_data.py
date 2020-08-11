@@ -12,7 +12,7 @@ from category_of_collection_constructor_functors.collection_constructor_morphism
 import os
 dirname = os.path.dirname(__file__)
 
-class PatentMultiModelDatabase:
+class PatentMultiModelDatabase():
 
     def __init__(self):
         objects = dict()
@@ -33,6 +33,7 @@ class PatentMultiModelDatabase:
         target_folder = os.path.join(
             dirname, "..\\..\\db_files\\patent")
 
+        ## Constructing objects
         ## Patent table
 
         patent_attributes_datatypes = dict()
