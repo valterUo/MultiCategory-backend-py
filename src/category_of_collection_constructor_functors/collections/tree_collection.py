@@ -22,6 +22,24 @@ class TreeCollection:
             else:
                 raise FormatNotSupportedError("The format is not supported", self.format)
 
+    def get_name(self):
+        return self.name
+
+    def get_source_file(self):
+        return self.source_file
+
+    def get_target_folder(self):
+        return self.target_folder
+
+    def get_format(self):
+        return self.format
+
+    def get_target_file_name(self):
+        return self.target_file_name
+
+    def get_iterable_collection_of_objects(self):
+        return self.get_tree()
+
     def parse_json(self):
         d = shelve.open(self.target_file_name)
         with open(self.source_file) as json_file:
@@ -75,4 +93,4 @@ class TreeCollection:
             return data
         elif self.format == "XML":
             tree = pickle.loads(self.target_file_name)
-            return tree
+            return tree.getroot()

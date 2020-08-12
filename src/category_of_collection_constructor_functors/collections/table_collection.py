@@ -37,6 +37,21 @@ class TableCollection:
         if not h5file_exists:
             self.create_h5_file(file_extension, delimiter)
 
+    def get_name(self):
+        return self.name
+
+    def get_source_file_path(self):
+        return self.source_file_path
+
+    def get_attributes_datatypes_dict(self):
+        return self.attributes_datatypes_dict
+
+    def get_h5file_path(self):
+        return self.h5file_path
+
+    def get_iterable_collection_of_objects(self):
+        return self.get_rows()
+
     def get_rows(self):
         self.h5file = open_file(self.h5file_path, mode="r", title= self.name + " file")
         table = self.h5file.get_node("/" + self.name, self.name)

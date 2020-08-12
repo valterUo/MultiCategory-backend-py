@@ -38,6 +38,25 @@ class GraphCollection:
             nx.write_gpickle(graph, self.target_file_path,
                              protocol=pickle.HIGHEST_PROTOCOL)
 
+    def get_name(self):
+        return self.name
+
+    def get_vertex_info(self):
+        return self.vertex_info
+
+    def get_edge_info(self):
+        return self.edge_info
+
+    def get_target_folder_path(self):
+        return self.target_folder_path
+
+    def get_target_file_path(self):
+        return self.target_file_path
+
+    def get_iterable_collection_of_objects(self):
+        graph = self.get_graph()
+        return list(graph.nodes) + list(graph.edges)
+
     def parse_directed_graph(self):
         DG = nx.DiGraph()
         if self.vertex_info == []:

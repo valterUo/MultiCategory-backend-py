@@ -1,3 +1,5 @@
+from multi_model_join.model_category_join import join as model_join
+
 class MultiModelJoin:
 
     """
@@ -17,7 +19,9 @@ class MultiModelJoin:
         self.second_leg
 
     def join_models(self):
-        return None
+        model_join_result = model_join(self.first_collection.get_model_category(), self.collection_constructor_morphism.get_model_relationship(), self.second_collection.get_model_category())
+        return model_join_result
 
     def join_collections(self):
-        return None
+        collection_join_result = None
+        return collection_join_result
