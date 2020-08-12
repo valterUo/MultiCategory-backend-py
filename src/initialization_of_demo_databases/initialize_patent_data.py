@@ -9,6 +9,9 @@ from multi_model_db.multi_model_db import MultiModelDB
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
+
+from multi_model_join.model_category_join import join
+
 import os
 dirname = os.path.dirname(__file__)
 
@@ -62,7 +65,7 @@ class PatentMultiModelDatabase():
         patent_attributes_datatypes["SECDLWBD"] = StringCol(64)
 
         patent_table = TableCollection("patent", patent_attributes_datatypes, patent_data_path, target_folder, ",")
-        patent_table_model = TableModelCategory("patent", patent_attributes_datatypes, "PATENT")
+        patent_table_model = TableModelCategory("patent", patent_attributes_datatypes.keys(), "PATENT")
         patent_collection = CollectionConstructor("patent", patent_table_model, patent_table)
 
         ## Inventor table
@@ -81,7 +84,7 @@ class PatentMultiModelDatabase():
         inventor_attributes_datatypes["INVSEQ"] = StringCol(64)
 
         inventor_table = TableCollection("inventor", inventor_attributes_datatypes, inventor_data_path, target_folder, ",")
-        inventor_table_model = TableModelCategory("inventor", inventor_attributes_datatypes)
+        inventor_table_model = TableModelCategory("inventor", inventor_attributes_datatypes.keys())
         inventor_collection = CollectionConstructor("inventor", inventor_table_model, inventor_table)
 
         ## Assignee table
@@ -96,7 +99,7 @@ class PatentMultiModelDatabase():
         assignee_attributes_datatypes["SNAME"] = StringCol(64)
 
         assignee_table = TableCollection("assignee", assignee_attributes_datatypes, assignee_data_path, target_folder, ",")
-        assignee_table_model = TableModelCategory("assignee", assignee_attributes_datatypes, "ASSIGNEE")
+        assignee_table_model = TableModelCategory("assignee", assignee_attributes_datatypes.keys(), "ASSIGNEE")
         assignee_collection = CollectionConstructor("assignee", assignee_table_model, assignee_table)
 
         ## Category table
@@ -109,7 +112,7 @@ class PatentMultiModelDatabase():
         category_attributes_datatypes["CATENAMELONG"] = StringCol(64)
 
         category_table = TableCollection("category", category_attributes_datatypes, category_data_path, target_folder, ",")
-        category_table_model = TableModelCategory("category", category_attributes_datatypes, "CAT")
+        category_table_model = TableModelCategory("category", category_attributes_datatypes.keys(), "CAT")
         category_collection = CollectionConstructor("category", category_table_model, category_table)
 
         ## Class table
@@ -120,7 +123,7 @@ class PatentMultiModelDatabase():
         class_attributes_datatypes["SUBCAT"] = StringCol(64)
         class_attributes_datatypes["CAT"] = StringCol(64)
 
-        class_table = TableCollection("class", class_attributes_datatypes, class_data_path, target_folder, ",")
+        class_table = TableCollection("class", class_attributes_datatypes.keys(), class_data_path, target_folder, ",")
         class_table_model = TableModelCategory("class", class_attributes_datatypes, "CLASS")
         class_collection = CollectionConstructor("class", class_table_model, class_table)
 
@@ -128,8 +131,8 @@ class PatentMultiModelDatabase():
 
         edge_info = [{"file_path": citation_data_path, "delimiter": ",", "schema": ["CITING","CITED"], "source_attribute_index": 0, "target_attribute_index": 1}]
         vertex_info = []
+        citation_graph_model = GraphModelCategory("citation", vertex_object = ["PATENTID"], edge_object = ["CITED"])
         citation_graph = GraphCollection("citation", vertex_info, edge_info, target_folder)
-        citation_graph_model = GraphModelCategory("citation", vertex_schema = { "PATENTID": "String" })
         citation_graph_collection = CollectionConstructor("citation", citation_graph_model, citation_graph)
 
         ## Collect the functors together to form the collection of objects
@@ -141,15 +144,16 @@ class PatentMultiModelDatabase():
         objects["class"] = class_collection
         objects["citation"] = citation_graph_collection
 
+
         ## Next we create some morphisms i.e. relationships between the collections. The following relationships can be considered to be initial. By the definition the relationship is defined
         ## to be a pair of functors such that the certain diagram commutes.
 
         ## Each node in the citation graph is functionally in a relationship with a unique row in the patent table: PATENTID  in graph nodes --> PATENT in patent table
 
-        citation_patent_model_relationship = ModelRelationship("citation_patent_model_relationship", citation_graph_model, { "PATENTID": "PATENT" }, patent_table_model)
-        citation_patent_collection_relationship = CollectionRelationship("citation_patent_collection_relationship", citation_graph_collection, 
-                                                        lambda patentid : [ x for x in patent_collection.get_collection().get_rows() if x['PATENT'] == patentid], 
-                                                                patent_collection)
+        citation_patent_model_relationship = ModelRelationship("citation_patent_model_relationship", citation_graph_model, [{ "PATENTID": "PATENT" }], patent_table_model)
+        citation_patent_collection_relationship = CollectionRelationship("citation_patent_collection_relationship", citation_graph, 
+                        lambda graph_elem : [ patent_row for patent_row in patent_collection.get_collection().get_rows() if patent_row['PATENT'] == graph_elem["PATENTID"]], 
+                                patent_table)
 
         ## This data all together forms the following morphism
 
@@ -158,50 +162,50 @@ class PatentMultiModelDatabase():
 
         ## Every row in the inventor table is functionally in a relationship with a unique row in the patent table: PATENT in inventor table --> PATENT in patent table
 
-        inventor_patent_model_relationship = ModelRelationship("inventor_patent_model_relationship", inventor_table_model, { "PATENT": "PATENT" }, patent_table_model)
+        inventor_patent_model_relationship = ModelRelationship("inventor_patent_model_relationship", inventor_table_model, [{ "PATENT": "PATENT" }], patent_table_model)
         inventor_patent_collection_relationship = CollectionRelationship("inventor_patent_collection_relationship", inventor_table, 
-                                                        lambda inventor_patent : [ x for x in patent_collection.get_collection().get_rows() if x['PATENT'] == inventor_patent], 
-                                                                patent_collection)
+                        lambda inventor_row : [ x for x in patent_collection.get_collection().get_rows() if x['PATENT'] == inventor_row["PATENT"]], 
+                                                                patent_table)
 
         inventor_to_patent_morphism = CollectionConstructorMorphism("inventor_to_patent_morphism", inventor_collection, inventor_patent_model_relationship, inventor_patent_collection_relationship, patent_collection)
         morphisms["inventor_to_patent_morphism"] = inventor_to_patent_morphism
 
         ## Each row in the patent table is functionally in a relationship with a unique row in the assignee table: ASSIGNEE in patent table --> ASSIGNEE in assignee table
 
-        patent_assignee_model_relationship = ModelRelationship("patent_assignee_model_relationship", patent_table_model, { "ASSIGNEE": "ASSIGNEE" }, assignee_table_model)
+        patent_assignee_model_relationship = ModelRelationship("patent_assignee_model_relationship", patent_table_model, [{ "ASSIGNEE": "ASSIGNEE" }], assignee_table_model)
         patent_assignee_collection_relationship = CollectionRelationship("patent_assignee_collection_relationship", patent_table, 
-                                                        lambda assignee_id : [ x for x in assignee_collection.get_collection().get_rows() if x['ASSIGNEE'] == assignee_id], 
-                                                                assignee_collection)
+                         lambda patent_row : [ x for x in assignee_collection.get_collection().get_rows() if x['ASSIGNEE'] == patent_row["ASSIGNEE"]], 
+                                                                assignee_table)
 
         patent_to_assignee_morphism = CollectionConstructorMorphism("patent_to_assignee_morphism", patent_collection, patent_assignee_model_relationship, patent_assignee_collection_relationship, assignee_collection)
         morphisms["patent_to_assignee_morphism"] = patent_to_assignee_morphism
 
         ## Each row in the patent table is functionally in a relationship with a unique row in the class table: NCLASS in patent table --> CLASS in class table
 
-        patent_class_model_relationship = ModelRelationship("patent_class_model_relationship", patent_table_model, { "NCLASS": "CLASS" }, class_table_model)
+        patent_class_model_relationship = ModelRelationship("patent_class_model_relationship", patent_table_model, [{ "NCLASS": "CLASS" }], class_table_model)
         patent_class_collection_relationship = CollectionRelationship("patent_class_collection_relationship", patent_table, 
-                                                        lambda nclass : [ x for x in class_collection.get_collection().get_rows() if x['CLASS'] == nclass], 
-                                                                class_collection)
+                        lambda patent_row : [ x for x in class_collection.get_collection().get_rows() if x['CLASS'] == patent_row["NCLASS"]], 
+                                                                class_table)
 
         patent_to_class_morphism = CollectionConstructorMorphism("patent_to_class_morphism", patent_collection, patent_class_model_relationship, patent_class_collection_relationship, class_collection)
         morphisms["patent_to_class_morphism"] = patent_to_class_morphism
 
         ## Each row in the patent table is functionally in a relationship with a unique row in the category table: CAT in patent table --> CAT in category table
 
-        patent_category_model_relationship = ModelRelationship("patent_category_model_relationship", patent_table_model, { "CAT": "CAT" }, class_table_model)
+        patent_category_model_relationship = ModelRelationship("patent_category_model_relationship", patent_table_model, [{ "CAT": "CAT" }], category_table_model)
         patent_category_collection_relationship = CollectionRelationship("patent_category_collection_relationship", patent_table, 
-                                                        lambda cat : [ x for x in category_collection.get_collection().get_rows() if x['CAT'] == cat], 
-                                                                category_collection)
+                        lambda patent_row : [ cat_row for cat_row in category_collection.get_collection().get_rows() if cat_row['CAT'] == patent_row["CAT"]], 
+                                                                category_table)
 
         patent_to_category_morphism = CollectionConstructorMorphism("patent_to_category_morphism", patent_collection, patent_category_model_relationship, patent_category_collection_relationship, category_collection)
         morphisms["patent_to_category_morphism"] = patent_to_category_morphism
 
         ## Each row in the patent table is functionally in a relationship with a unique row in the category table: SUBCAT in patent table --> CAT in category table
 
-        patent_subcategory_model_relationship = ModelRelationship("patent_subcategory_model_relationship", patent_table_model, { "SUBCAT": "CAT" }, category_table_model)
+        patent_subcategory_model_relationship = ModelRelationship("patent_subcategory_model_relationship", patent_table_model, [{ "SUBCAT": "CAT" }], category_table_model)
         patent_subcategory_collection_relationship = CollectionRelationship("patent_subcategory_collection_relationship", patent_table, 
-                                                        lambda nclass : [ x for x in category_collection.get_collection().get_rows() if x['CAT'] == nclass], 
-                                                                category_collection)
+                        lambda patent_row : [ cat_row for cat_row in category_collection.get_collection().get_rows() if cat_row['CAT'] == patent_row["SUBCAT"]], 
+                                                                category_table)
 
         patent_to_subcategory_morphism = CollectionConstructorMorphism("patent_to_subcategory_morphism", patent_collection, patent_subcategory_model_relationship, patent_subcategory_collection_relationship, category_collection)
         morphisms["patent_to_subcategory_morphism"] = patent_to_subcategory_morphism
@@ -217,3 +221,56 @@ class PatentMultiModelDatabase():
 
     def get_instance(self):
         return self.patent_multi_model_database_instance
+
+    def run_model_category_join_examples(self):
+        ## Model level join between patent and category tables with the functional dependency SUBCAT -> CAT. This means that after the join, the SUBCAT column defines the CAT
+        ## column in the category table i.e. each patent row is appended with the SUBCAT corresponding row from the category table
+
+        patent_table_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["patent"].get_model_category()
+        category_table_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["category"].get_model_category()
+        patent_subcategory_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_subcategory_morphism"].get_model_relationship()
+        patent_category_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_category_morphism"].get_model_relationship()
+        
+        print()
+        print("Patent to category model join:")
+        result = join(patent_table_model, patent_category_model_relationship, category_table_model)
+        print(result)
+
+        print()
+        print("Patent to subcategory model join:")
+        result = join(patent_table_model, patent_subcategory_model_relationship, category_table_model)
+        print(result)
+
+        ## Similarly we can define model level joins with respect to all the morphisms defined in the instance category
+
+        citation_graph_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["citation"].get_model_category()
+        citation_patent_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["citation_to_patent_morphism"].get_model_relationship()
+        
+        print()
+        print("Citation in graph to patent in table model join:")
+        result = join(citation_graph_model, citation_patent_model_relationship, patent_table_model)
+        print(result)
+
+        inventor_table_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["inventor"].get_model_category()
+        inventor_patent_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["inventor_to_patent_morphism"].get_model_relationship()
+        
+        print()
+        print("Inventor to patent model join:")
+        result = join(inventor_table_model, inventor_patent_model_relationship, patent_table_model)
+        print(result)
+
+        assignee_table_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["assignee"].get_model_category()
+        patent_assignee_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_assignee_morphism"].get_model_relationship()
+
+        print()
+        print("Patent to Assignee model join:")
+        result = join(patent_table_model, patent_assignee_model_relationship, assignee_table_model)
+        print(result)
+
+        class_table_model = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["class"].get_model_category()
+        patent_class_model_relationship = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_class_morphism"].get_model_relationship()
+
+        print()
+        print("Patent to Class model join:")
+        result = join(patent_table_model, patent_class_model_relationship, class_table_model)
+        print(result)

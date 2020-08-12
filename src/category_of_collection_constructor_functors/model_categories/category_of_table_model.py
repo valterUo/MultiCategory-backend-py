@@ -18,7 +18,10 @@ class TableModelCategory:
         return self.attributes
 
     def get_objects(self):
-        return self.attributes
+        return [self.attributes]
+
+    def get_primary_key(self):
+        return self.primary_key
 
     def __str__(self):
         return ", ".join(self.attributes)

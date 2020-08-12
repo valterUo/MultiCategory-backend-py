@@ -1,5 +1,11 @@
 from abstract_category.abstract_object import AbstractObject
 from abstract_category.abstract_morphism import AbstractMorphism
+import copy
+
+class RootObject:
+    
+    def __init__(self, name):
+        self.name = name
 
 class TreeModelCategory:
 
@@ -14,12 +20,17 @@ class TreeModelCategory:
 
     def __init__(self, name, nodes = None, parent_of = None):
         self.name = name
-        if nodes == None and parent_of == None:
+        self.nodes = nodes
+        self.root = RootObject(name)
+        self.parent_of = parent_of
+        if nodes != None:
+            self.nodes_with_disjoint_root = copy.deepcopy(nodes).append(self.root)
+        
+        if nodes == None:
             self.nodes = AbstractObject("nodes")
-            self.parent_of = AbstractMorphism("parent_of", self.nodes, AbstractObject("nodes + *"))
-        else:
-            self.nodes = nodes
-            self.parent_of = parent_of # has type: nodes -> nodes + {*} where parent_of(root) = *.
+            self.nodes_with_disjoint_root = [self.nodes, self.root]
+        if parent_of == None:
+            self.parent_of = AbstractMorphism("parent_of", self.nodes, self.nodes_with_disjoint_root)
 
     def get_name(self):
         return self.name
@@ -27,8 +38,8 @@ class TreeModelCategory:
     def get_nodes(self):
         return self.nodes
 
-    def get_object(self):
-        return self.nodes
+    def get_objects(self):
+        return [self.nodes]
 
     def __str__(self):
         return "nodes -- parent_of --> nodes + {*}"

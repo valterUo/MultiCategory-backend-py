@@ -9,6 +9,9 @@ from category_of_collection_constructor_functors.model_categories.category_of_tr
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
 from multi_model_db.multi_model_db_instance.multi_model_db_instance import MultiModelDBInstance
 from multi_model_db.multi_model_db import MultiModelDB
+from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
+from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
+from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 dirname = os.path.dirname(__file__)
 e_commerce_instance = None
 
@@ -42,9 +45,11 @@ class ECommerceMultiModelDatabase():
         name = "customer"
         edge_info = [{"file_path": customers_edge_path, "delimiter": ";", "schema": ["source","target"], "source_attribute_index": 0, "target_attribute_index": 1}]
         vertex_info = [ { "file_path": customers_vertex_path, "schema": ["id", "name", "creditLimit", "locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
+        
         customer_graph = GraphCollection(name, vertex_info, edge_info, target_folder)
-        customer_graph_model = GraphModelCategory(name, vertex_schema = { "id": "String", "name": "String", "creditLimit": "Int", "locationId": "Int" })
+        customer_graph_model = GraphModelCategory(name, vertex_object = ["id", "name", "creditLimit", "locationId"], edge_object = ["knows"])
         customer_graph_collection = CollectionConstructor(name, customer_graph_model, customer_graph)
+        
         morphisms[name] = customer_graph_collection
 
         ## Interest graph
@@ -52,9 +57,11 @@ class ECommerceMultiModelDatabase():
         edge_info = [{"file_path": interest_edge_path, "delimiter": ";", "schema": ["customerId","targetId", "weight"], "source_attribute_index": 0, "target_attribute_index": 1}]
         vertex_info = [ { "file_path": interest_vertex_path, "schema": ["id", "topic", "locationId"], "key_attribute_index": 0, "delimiter": ";" },
         { "file_path": customers_vertex_path, "schema": ["id", "name", "creditLimit", "locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
+        
         interest_graph = GraphCollection(name, vertex_info, edge_info, target_folder)
-        interest_graph_model = GraphModelCategory(name, vertex_schema = { "id": "String", "name": "String", "creditLimit": "Int", "locationId": "Int", "topic": "String" })
+        interest_graph_model = GraphModelCategory(name, vertex_object = ["id", "name", "creditLimit", "locationId", "topic"], edge_object=["interested"])
         interest_graph_collection = CollectionConstructor(name, interest_graph_model, interest_graph)
+        
         morphisms[name] = interest_graph_collection
 
         ## Location table
@@ -67,7 +74,7 @@ class ECommerceMultiModelDatabase():
 
         name = "location"
         primary_key = "id"
-        location_table_model = TableModelCategory(name, location_attributes_datatypes, primary_key)
+        location_table_model = TableModelCategory(name, location_attributes_datatypes.keys(), primary_key)
         location_table = TableCollection(name, location_attributes_datatypes, locations_table_path, target_folder, ";")
         location_collection = CollectionConstructor(name, location_table_model, location_table)
         morphisms[name] = location_collection
@@ -90,7 +97,7 @@ class ECommerceMultiModelDatabase():
 
         name = "site"
         primary_key = "id"
-        site_table_model = TableModelCategory(name, site_attributes_datatypes, primary_key)
+        site_table_model = TableModelCategory(name, site_attributes_datatypes.keys(), primary_key)
         site_table = TableCollection(name, site_attributes_datatypes, sites_table_path, target_folder, ";")
         site_collection = CollectionConstructor(name, site_table_model, site_table)
         morphisms[name] = site_collection
@@ -104,15 +111,15 @@ class ECommerceMultiModelDatabase():
 
         ## Morphisms
 
-        ## Every site is functionally in relationship with some location: locationId in site table -> id in location table. This is foreign 
+        ## Every site is functionally in relationship with some location: locationId in site table -> id in location table. This is foreign key primary key pair.
 
-        inventor_patent_model_relationship = ModelRelationship("inventor_patent_model_relationship", inventor_table_model, { "locationId": "id" }, patent_table_model)
-        inventor_patent_collection_relationship = CollectionRelationship("inventor_patent_collection_relationship", inventor_table, 
-                                                        lambda inventor_patent : [ x for x in patent_collection.get_collection().get_rows() if x['PATENT'] == inventor_patent], 
-                                                                patent_collection)
+        site_location_model_relationship = ModelRelationship("site_location_model_relationship", site_table_model, { "locationId": "id" }, location_table_model)
+        site_location_collection_relationship = CollectionRelationship("inventor_patent_collection_relationship", site_table, 
+                    lambda site_row : [ location_row for location_row in location_collection.get_collection().get_rows() if location_row['id'] == site_row["locationId"]], 
+                            location_table)
 
-        inventor_to_patent_morphism = CollectionConstructorMorphism("inventor_to_patent_morphism", inventor_collection, inventor_patent_model_relationship, inventor_patent_collection_relationship, patent_collection)
-        morphisms["inventor_to_patent_morphism"] = inventor_to_patent_morphism
+        site_to_location_morphism = CollectionConstructorMorphism("inventor_to_patent_morphism", site_collection, site_location_model_relationship, site_location_collection_relationship, location_collection)
+        morphisms["site_to_location_morphism"] = site_to_location_morphism
 
         ecommerce_instance_category = MultiModelDBInstance("ecommerce instance", objects, morphisms)
 
