@@ -29,3 +29,8 @@ def compose_lambda_functions(lambda1, lambda2):
                 result.append(z)
         return result
     return composition_function
+
+def merge_two_dicts(x, y):
+      z = x.copy()
+      z.update(y)
+      return z

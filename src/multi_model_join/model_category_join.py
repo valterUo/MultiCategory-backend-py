@@ -13,21 +13,38 @@ def join(first_model_category, model_relationship, second_model_category):
     for first_object in first_model_category.get_objects():
         try:
             for attribute in first_object:
-                for rel in model_relationship.get_relationship():
-                    if attribute in rel.keys():
-                        target_attribute = rel[attribute]
-                        for second_object in second_model_category.get_objects():
-                            try:
-                                if target_attribute in second_object:
-                                    new_object = []
-                                    for attribute1 in first_object:
-                                        new_object.append(attribute1)
-                                    for attribute2 in second_object:
-                                        if attribute2 != target_attribute:
-                                            new_object.append(attribute2)
-                                    new_objects.append(new_object)
-                            except:
-                                print("second_object is not iterable", second_object)
+                if type(model_relationship.get_relationship()) == list:
+                    for rel in model_relationship.get_relationship():
+                        if attribute in rel:
+                            target_attribute = rel[attribute]
+                            for second_object in second_model_category.get_objects():
+                                try:
+                                    if target_attribute in second_object:
+                                        new_object = []
+                                        for attribute1 in first_object:
+                                            new_object.append(attribute1)
+                                        for attribute2 in second_object:
+                                            if attribute2 != target_attribute:
+                                                new_object.append(attribute2)
+                                        new_objects.append(new_object)
+                                except:
+                                    print("second_object is not iterable", second_object)
+                elif type(model_relationship.get_relationship()) == dict:
+                    rel = model_relationship.get_relationship()
+                    if attribute in rel:
+                            target_attribute = rel[attribute]
+                            for second_object in second_model_category.get_objects():
+                                try:
+                                    if target_attribute in second_object:
+                                        new_object = []
+                                        for attribute1 in first_object:
+                                            new_object.append(attribute1)
+                                        for attribute2 in second_object:
+                                            if attribute2 != target_attribute:
+                                                new_object.append(attribute2)
+                                        new_objects.append(new_object)
+                                except:
+                                    print("second_object is not iterable", second_object)
         except:
             print("first_object is not iterable", first_object)
 

@@ -77,7 +77,7 @@ class ECommerceMultiModelDatabase():
 
         name = "location"
         primary_key = "id"
-        location_table_model = TableModelCategory(name, location_attributes_datatypes.keys(), primary_key)
+        location_table_model = TableModelCategory(name, list(location_attributes_datatypes.keys()), primary_key)
         location_table = TableCollection(name, location_attributes_datatypes, locations_table_path, target_folder, ";")
         location_collection = CollectionConstructor(name, location_table_model, location_table)
         objects[name] = location_collection
@@ -100,7 +100,7 @@ class ECommerceMultiModelDatabase():
 
         name = "site"
         primary_key = "id"
-        site_table_model = TableModelCategory(name, site_attributes_datatypes.keys(), primary_key)
+        site_table_model = TableModelCategory(name, list(site_attributes_datatypes.keys()), primary_key)
         site_table = TableCollection(name, site_attributes_datatypes, sites_table_path, target_folder, ";")
         site_collection = CollectionConstructor(name, site_table_model, site_table)
         objects[name] = site_collection
@@ -116,7 +116,7 @@ class ECommerceMultiModelDatabase():
 
         ## Every site is functionally in relationship with some location: locationId in site table -> id in location table. This is foreign key primary key pair.
 
-        site_location_model_relationship = ModelRelationship("site_location_model_relationship", site_table_model, { "locationId": "id" }, location_table_model)
+        site_location_model_relationship = ModelRelationship("site_location_model_relationship", site_table_model, [{ "locationId": "id" }], location_table_model)
         site_location_collection_relationship = CollectionRelationship("site_location_model_relationship", site_table, 
                     lambda site_row : [row_to_dictionary(location_row) for location_row in location_collection.get_collection().get_rows() if site_row['locationId'] == location_row["id"]], 
                             location_table)

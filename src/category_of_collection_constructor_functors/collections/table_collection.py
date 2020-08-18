@@ -51,7 +51,7 @@ class TableCollection:
     def get_attributes_datatypes_dict(self):
         return self.attributes_datatypes_dict
 
-    def get_h5file_path(self):
+    def get_target_file_path(self):
         return self.h5file_path
 
     def get_iterable_collection_of_objects(self):
