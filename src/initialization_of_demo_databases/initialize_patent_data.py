@@ -9,8 +9,8 @@ from multi_model_db.multi_model_db import MultiModelDB
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
-
 from multi_model_join.model_category_join import join
+from multi_model_join.collection_join import table_join_table
 
 import os
 dirname = os.path.dirname(__file__)
@@ -274,3 +274,9 @@ class PatentMultiModelDatabase():
         print("Patent to Class model join:")
         result = join(patent_table_model, patent_class_model_relationship, class_table_model)
         print(result)
+
+    def run_multi_model_join_examples(self):
+        patent = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["patent"]
+        category = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["category"]
+        morphism = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_category_morphism"]
+        print(table_join_table(patent, morphism, category))

@@ -3,7 +3,7 @@ from tables import *
 import csv
 import json
 from json import JSONDecodeError
-from category_of_collection_constructor_functors.collections.collection_errors import UnknownRelationalFileExtension
+from category_of_collection_constructor_functors.collections.collection_errors import UnknownRelationalFileExtension, DatabaseFileDoesNotExists
 
 class TableCollection:
 
@@ -24,18 +24,23 @@ class TableCollection:
             
     """
 
-    def __init__(self, name, attributes_datatypes_dict, source_file_path, h5file_path, delimiter = "|"):
+    def __init__(self, name, attributes_datatypes_dict = None, source_file_path = None, h5file_path = None, delimiter = "|"):
         self.name = name
-        self.source_file_path = source_file_path
         self.attributes_datatypes_dict = attributes_datatypes_dict
-        #dir_name = os.path.dirname(source_file_path)
-        base = os.path.basename(source_file_path)
-        filename = os.path.splitext(base)[0]
-        file_extension = os.path.splitext(source_file_path)[1]
-        self.h5file_path = h5file_path + "//" + filename + ".h5"
-        h5file_exists = os.path.isfile(self.h5file_path)
-        if not h5file_exists:
-            self.create_h5_file(file_extension, delimiter)
+        self.source_file_path = source_file_path
+        self.h5file_path = h5file_path
+        self.h5file = None
+        self.table = None
+        if attributes_datatypes_dict != None and source_file_path != None and h5file_path != None:
+            base = os.path.basename(source_file_path)
+            filename = os.path.splitext(base)[0]
+            file_extension = os.path.splitext(source_file_path)[1]
+            self.h5file_path = h5file_path + "//" + filename + ".h5"
+            h5file_exists = os.path.isfile(self.h5file_path)
+            if not h5file_exists:
+                self.create_h5_file(file_extension, delimiter)
+            self.h5file = open_file(self.h5file_path, mode="r", title= self.name + " file")
+            self.table = self.h5file.get_node("/" + self.name, self.name)
 
     def get_name(self):
         return self.name
@@ -53,10 +58,19 @@ class TableCollection:
         return self.get_rows()
 
     def get_rows(self):
-        self.h5file = open_file(self.h5file_path, mode="r", title= self.name + " file")
-        table = self.h5file.get_node("/" + self.name, self.name)
-        return table.iterrows()
+        if self.table != None:
+            return self.table.iterrows()
+        else:
+            raise DatabaseFileDoesNotExists("h5file is not defined", "h5file is not defined")
 
+    def get_table(self):
+        return self.table
+
+    def set_h5file_path(self, new_h5file_path):
+        self.h5file_path = new_h5file_path
+    
+    def set_attributes_datatypes_dict(self, new_attributes_datatypes_dict):
+        self.attributes_datatypes_dict = attributes_datatypes_dict
 
     def create_h5_file(self, file_extension, delimiter):
         self.h5file = open_file(self.h5file_path, mode="w", title= self.name + " file")

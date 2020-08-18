@@ -18,8 +18,8 @@ class CollectionRelationship:
     def get_target_collection(self):
         return self.target_collection
 
-    def get_relationship(self):
-        return self.relationship
+    def get_relationship(self, value):
+        return self.relationship(value)
 
     ## Composition operation: compose_relationships(self, m) = self o m = self(m(-))
     ## If the domain and the target do no match, then the error is raised

@@ -12,6 +12,9 @@ from multi_model_db.multi_model_db import MultiModelDB
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
+from multi_model_join.collection_join import table_join_table
+from copy import deepcopy
+from supportive_functions.row_manipulations import row_to_dictionary
 dirname = os.path.dirname(__file__)
 e_commerce_instance = None
 
@@ -50,7 +53,7 @@ class ECommerceMultiModelDatabase():
         customer_graph_model = GraphModelCategory(name, vertex_object = ["id", "name", "creditLimit", "locationId"], edge_object = ["knows"])
         customer_graph_collection = CollectionConstructor(name, customer_graph_model, customer_graph)
         
-        morphisms[name] = customer_graph_collection
+        objects[name] = customer_graph_collection
 
         ## Interest graph
         name = "interest"
@@ -62,7 +65,7 @@ class ECommerceMultiModelDatabase():
         interest_graph_model = GraphModelCategory(name, vertex_object = ["id", "name", "creditLimit", "locationId", "topic"], edge_object=["interested"])
         interest_graph_collection = CollectionConstructor(name, interest_graph_model, interest_graph)
         
-        morphisms[name] = interest_graph_collection
+        objects[name] = interest_graph_collection
 
         ## Location table
         location_attributes_datatypes = dict()
@@ -77,7 +80,7 @@ class ECommerceMultiModelDatabase():
         location_table_model = TableModelCategory(name, location_attributes_datatypes.keys(), primary_key)
         location_table = TableCollection(name, location_attributes_datatypes, locations_table_path, target_folder, ";")
         location_collection = CollectionConstructor(name, location_table_model, location_table)
-        morphisms[name] = location_collection
+        objects[name] = location_collection
 
         ## Orders XML
 
@@ -85,7 +88,7 @@ class ECommerceMultiModelDatabase():
         orders_tree_model = TreeModelCategory(name)
         orders_tree_collection = TreeCollection(name, orders_xml_path, target_folder, "XML")
         orders_collection = CollectionConstructor(name, orders_tree_model, orders_tree_collection)
-        morphisms[name] = orders_collection
+        objects[name] = orders_collection
 
         ## Sites table
         site_attributes_datatypes = dict()
@@ -100,25 +103,25 @@ class ECommerceMultiModelDatabase():
         site_table_model = TableModelCategory(name, site_attributes_datatypes.keys(), primary_key)
         site_table = TableCollection(name, site_attributes_datatypes, sites_table_path, target_folder, ";")
         site_collection = CollectionConstructor(name, site_table_model, site_table)
-        morphisms[name] = site_collection
+        objects[name] = site_collection
 
         ## Key-value pairs
         name = "key_value_pairs"
         key_value_tree_model = TreeModelCategory(name)
         key_value_pairs = TreeCollection(name, key_value_pairs_path, target_folder)
         key_value_pairs_collection = CollectionConstructor(name, key_value_tree_model, key_value_pairs)
-        morphisms[name] = key_value_pairs_collection
+        objects[name] = key_value_pairs_collection
 
         ## Morphisms
 
         ## Every site is functionally in relationship with some location: locationId in site table -> id in location table. This is foreign key primary key pair.
 
         site_location_model_relationship = ModelRelationship("site_location_model_relationship", site_table_model, { "locationId": "id" }, location_table_model)
-        site_location_collection_relationship = CollectionRelationship("inventor_patent_collection_relationship", site_table, 
-                    lambda site_row : [ location_row for location_row in location_collection.get_collection().get_rows() if location_row['id'] == site_row["locationId"]], 
+        site_location_collection_relationship = CollectionRelationship("site_location_model_relationship", site_table, 
+                    lambda site_row : [row_to_dictionary(location_row) for location_row in location_collection.get_collection().get_rows() if site_row['locationId'] == location_row["id"]], 
                             location_table)
 
-        site_to_location_morphism = CollectionConstructorMorphism("inventor_to_patent_morphism", site_collection, site_location_model_relationship, site_location_collection_relationship, location_collection)
+        site_to_location_morphism = CollectionConstructorMorphism("site_to_location_morphism", site_collection, site_location_model_relationship, site_location_collection_relationship, location_collection)
         morphisms["site_to_location_morphism"] = site_to_location_morphism
 
         ecommerce_instance_category = MultiModelDBInstance("ecommerce instance", objects, morphisms)
@@ -128,3 +131,9 @@ class ECommerceMultiModelDatabase():
 
     def get_instance(self):
         return self.ecommerce_multi_model_db_instance
+
+    def run_multi_model_join_examples(self):
+        site = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["site"]
+        location = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["location"]
+        site_to_location_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["site_to_location_morphism"]
+        print(table_join_table(site, site_to_location_morphism, location))
