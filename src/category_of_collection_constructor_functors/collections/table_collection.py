@@ -24,13 +24,14 @@ class TableCollection:
             
     """
 
-    def __init__(self, name, attributes_datatypes_dict = None, source_file_path = None, h5file_path = None, delimiter = "|"):
+    def __init__(self, name, attributes_datatypes_dict = None, source_file_path = None, h5file_path = None, delimiter = "|", primary_key = None):
         self.name = name
         self.attributes_datatypes_dict = attributes_datatypes_dict
         self.source_file_path = source_file_path
         self.h5file_path = h5file_path
         self.h5file = None
         self.table = None
+        self.primary_key = primary_key
         if attributes_datatypes_dict != None and source_file_path != None and h5file_path != None:
             base = os.path.basename(source_file_path)
             filename = os.path.splitext(base)[0]
@@ -38,9 +39,18 @@ class TableCollection:
             self.h5file_path = h5file_path + "//" + filename + ".h5"
             h5file_exists = os.path.isfile(self.h5file_path)
             if not h5file_exists:
+                print("The database file in path " + self.h5file_path + " does not exists. The file will be created.")
                 self.create_h5_file(file_extension, delimiter)
-            self.h5file = open_file(self.h5file_path, mode="r", title= self.name + " file")
+            else:
+                print("The database file for " + self.name + " exsits.")
+            self.h5file = open_file(self.h5file_path, mode="r+", title= self.name + " file")
             self.table = self.h5file.get_node("/" + self.name, self.name)
+            if self.primary_key != None:
+                if not self.table.cols._f_col(primary_key).is_indexed:
+                    print("Creating index for column: " + primary_key)
+                    self.table.cols._f_col(primary_key).create_index()
+                else:
+                    print("Index has already been created for " + primary_key)
 
     def get_name(self):
         return self.name
@@ -55,7 +65,7 @@ class TableCollection:
         return self.h5file_path
 
     def get_iterable_collection_of_objects(self):
-        return self.get_rows()
+        return self.table
 
     def get_rows(self):
         if self.table != None:

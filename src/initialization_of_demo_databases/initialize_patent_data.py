@@ -64,7 +64,7 @@ class PatentMultiModelDatabase():
         patent_attributes_datatypes["SECDUPBD"] = StringCol(64)
         patent_attributes_datatypes["SECDLWBD"] = StringCol(64)
 
-        patent_table = TableCollection("patent", patent_attributes_datatypes, patent_data_path, target_folder, ",")
+        patent_table = TableCollection("patent", patent_attributes_datatypes, patent_data_path, target_folder, ",", "PATENT")
         patent_table_model = TableModelCategory("patent", list(patent_attributes_datatypes.keys()), "PATENT")
         patent_collection = CollectionConstructor("patent", patent_table_model, patent_table)
 
@@ -98,7 +98,7 @@ class PatentMultiModelDatabase():
         assignee_attributes_datatypes["PNAME"] = StringCol(64)
         assignee_attributes_datatypes["SNAME"] = StringCol(64)
 
-        assignee_table = TableCollection("assignee", assignee_attributes_datatypes, assignee_data_path, target_folder, ",")
+        assignee_table = TableCollection("assignee", assignee_attributes_datatypes, assignee_data_path, target_folder, ",", "ASSIGNEE")
         assignee_table_model = TableModelCategory("assignee", list(assignee_attributes_datatypes.keys()), "ASSIGNEE")
         assignee_collection = CollectionConstructor("assignee", assignee_table_model, assignee_table)
 
@@ -111,7 +111,7 @@ class PatentMultiModelDatabase():
         category_attributes_datatypes["CATNAMESHORT"] = StringCol(64)
         category_attributes_datatypes["CATENAMELONG"] = StringCol(64)
 
-        category_table = TableCollection("category", category_attributes_datatypes, category_data_path, target_folder, ",")
+        category_table = TableCollection("category", category_attributes_datatypes, category_data_path, target_folder, ",", "CAT")
         category_table_model = TableModelCategory("category", list(category_attributes_datatypes.keys()), "CAT")
         category_collection = CollectionConstructor("category", category_table_model, category_table)
 
@@ -123,7 +123,7 @@ class PatentMultiModelDatabase():
         class_attributes_datatypes["SUBCAT"] = StringCol(64)
         class_attributes_datatypes["CAT"] = StringCol(64)
 
-        class_table = TableCollection("class", class_attributes_datatypes, class_data_path, target_folder, ",")
+        class_table = TableCollection("class", class_attributes_datatypes, class_data_path, target_folder, ",", "CLASS")
         class_table_model = TableModelCategory("class", list(class_attributes_datatypes.keys()), "CLASS")
         class_collection = CollectionConstructor("class", class_table_model, class_table)
 
@@ -150,9 +150,20 @@ class PatentMultiModelDatabase():
 
         ## Each node in the citation graph is functionally in a relationship with a unique row in the patent table: PATENTID  in graph nodes --> PATENT in patent table
 
+        def fun(graph_elem):
+            result = []
+            condition = "PATENT == b'" + str(graph_elem[0]) + "'"
+            if len(graph_elem) == 3:
+                return result
+            else:
+                #print(patent_collection.get_collection().get_table().will_query_use_indexing(condition))
+                for patent_row in patent_collection.get_collection().get_table().where(condition):
+                    result.append(row_to_dictionary(patent_row))
+                return result
+
         citation_patent_model_relationship = ModelRelationship("citation_patent_model_relationship", citation_graph_model, [{ "PATENTID": "PATENT" }], patent_table_model)
         citation_patent_collection_relationship = CollectionRelationship("citation_patent_collection_relationship", citation_graph, 
-                        lambda graph_elem : [ row_to_dictionary(patent_row) for patent_row in patent_collection.get_collection().get_rows() if len(graph_elem) == 3 or patent_row['PATENT'] == graph_elem[0]], 
+                        lambda graph_elem : fun(graph_elem), #row_to_dictionary(patent_row) for patent_row in patent_collection.get_collection().get_rows() if len(graph_elem) == 3 or patent_row['PATENT'] == graph_elem[0]], 
                                 patent_table)
 
         ## This data all together forms the following morphism
@@ -284,7 +295,7 @@ class PatentMultiModelDatabase():
         morphism = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["citation_to_patent_morphism"]
         citation_graph = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["citation"]#.get_collection().get_iterable_collection_of_objects()
         
-        print(join(citation_graph, morphism, patent))
+        print(join(citation_graph, morphism, patent, True))
         # i = 0
         # for obj in citation_graph:
         #     if i % 100000 == 0:
