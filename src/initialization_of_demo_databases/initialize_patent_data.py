@@ -10,7 +10,7 @@ from category_of_collection_constructor_functors.model_categories.model_relation
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
 from multi_model_join.model_category_join import join as model_join
-from multi_model_join.collection_join import join
+from multi_model_join.multi_model_join import MultiModelJoin
 from supportive_functions.row_manipulations import row_to_dictionary
 import os
 dirname = os.path.dirname(__file__)
@@ -40,29 +40,29 @@ class PatentMultiModelDatabase():
         ## Patent table
 
         patent_attributes_datatypes = dict()
-        patent_attributes_datatypes["PATENT"] = StringCol(64)
-        patent_attributes_datatypes["GYEAR"] = StringCol(64)
-        patent_attributes_datatypes["GDATE"] = StringCol(64)
-        patent_attributes_datatypes["APPYEAR"] = StringCol(64)
-        patent_attributes_datatypes["COUNTRY"] = StringCol(64)
-        patent_attributes_datatypes["POSTATE"] = StringCol(64)
-        patent_attributes_datatypes["ASSIGNEE"] = StringCol(64)
-        patent_attributes_datatypes["ASSCODE"] = StringCol(64)
-        patent_attributes_datatypes["CLAIMS"] = StringCol(64)
-        patent_attributes_datatypes["NCLASS"] = StringCol(64)
-        patent_attributes_datatypes["CAT"] = StringCol(64)
-        patent_attributes_datatypes["SUBCAT"] = StringCol(64)
-        patent_attributes_datatypes["CMADE"] = StringCol(64)
-        patent_attributes_datatypes["CRECEIVE"] = StringCol(64)
-        patent_attributes_datatypes["RATIOCIT"] = StringCol(64)
-        patent_attributes_datatypes["GENERAL"] = StringCol(64)
-        patent_attributes_datatypes["ORIGINAL"] = StringCol(64)
-        patent_attributes_datatypes["FWDAPLAG"] = StringCol(64)
-        patent_attributes_datatypes["BCKGTLAG"] = StringCol(64)
-        patent_attributes_datatypes["SELFCTUB"] = StringCol(64)
-        patent_attributes_datatypes["SELFCTLB"] = StringCol(64)
-        patent_attributes_datatypes["SECDUPBD"] = StringCol(64)
-        patent_attributes_datatypes["SECDLWBD"] = StringCol(64)
+        patent_attributes_datatypes["PATENT"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["GYEAR"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["GDATE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["APPYEAR"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["COUNTRY"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["POSTATE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["ASSIGNEE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["ASSCODE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["CLAIMS"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["NCLASS"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["CAT"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["SUBCAT"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["CMADE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["CRECEIVE"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["RATIOCIT"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["GENERAL"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["ORIGINAL"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["FWDAPLAG"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["BCKGTLAG"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["SELFCTUB"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["SELFCTLB"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["SECDUPBD"] = StringCol(64, dflt='NULL')
+        patent_attributes_datatypes["SECDLWBD"] = StringCol(64, dflt='NULL')
 
         patent_table = TableCollection("patent", patent_attributes_datatypes, patent_data_path, target_folder, ",", "PATENT")
         patent_table_model = TableModelCategory("patent", list(patent_attributes_datatypes.keys()), "PATENT")
@@ -71,17 +71,17 @@ class PatentMultiModelDatabase():
         ## Inventor table
 
         inventor_attributes_datatypes = dict()
-        inventor_attributes_datatypes["PATENT"] = StringCol(64)
-        inventor_attributes_datatypes["LASTNAM"] = StringCol(64)
-        inventor_attributes_datatypes["FIRSTNAM"] = StringCol(64)
-        inventor_attributes_datatypes["MIDNAM"] = StringCol(64)
-        inventor_attributes_datatypes["MODIFNAM"] = StringCol(64)
-        inventor_attributes_datatypes["STREET"] = StringCol(64)
-        inventor_attributes_datatypes["CITY"] = StringCol(64)
-        inventor_attributes_datatypes["POSTATE"] = StringCol(64)
-        inventor_attributes_datatypes["COUNTRY"] = StringCol(64)
-        inventor_attributes_datatypes["ZIP"] = StringCol(64) 
-        inventor_attributes_datatypes["INVSEQ"] = StringCol(64)
+        inventor_attributes_datatypes["PATENT"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["LASTNAM"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["FIRSTNAM"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["MIDNAM"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["MODIFNAM"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["STREET"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["CITY"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["POSTATE"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["COUNTRY"] = StringCol(64, dflt='NULL')
+        inventor_attributes_datatypes["ZIP"] = StringCol(64, dflt='NULL') 
+        inventor_attributes_datatypes["INVSEQ"] = StringCol(64, dflt='NULL')
 
         inventor_table = TableCollection("inventor", inventor_attributes_datatypes, inventor_data_path, target_folder, ",")
         inventor_table_model = TableModelCategory("inventor", list(inventor_attributes_datatypes.keys()))
@@ -90,13 +90,13 @@ class PatentMultiModelDatabase():
         ## Assignee table
 
         assignee_attributes_datatypes = dict()
-        assignee_attributes_datatypes["ASSIGNEE"] = StringCol(64)
-        assignee_attributes_datatypes["ASSNAME"] = StringCol(64)
-        assignee_attributes_datatypes["CNAME"] = StringCol(64)
-        assignee_attributes_datatypes["CUSIP"] = StringCol(64)
-        assignee_attributes_datatypes["OWN"] = StringCol(64)
-        assignee_attributes_datatypes["PNAME"] = StringCol(64)
-        assignee_attributes_datatypes["SNAME"] = StringCol(64)
+        assignee_attributes_datatypes["ASSIGNEE"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["ASSNAME"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["CNAME"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["CUSIP"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["OWN"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["PNAME"] = StringCol(64, dflt='NULL')
+        assignee_attributes_datatypes["SNAME"] = StringCol(64, dflt='NULL')
 
         assignee_table = TableCollection("assignee", assignee_attributes_datatypes, assignee_data_path, target_folder, ",", "ASSIGNEE")
         assignee_table_model = TableModelCategory("assignee", list(assignee_attributes_datatypes.keys()), "ASSIGNEE")
@@ -105,11 +105,11 @@ class PatentMultiModelDatabase():
         ## Category table
 
         category_attributes_datatypes = dict()
-        category_attributes_datatypes["CAT"] = StringCol(64)
-        category_attributes_datatypes["SUBCAT"] = StringCol(64)
-        category_attributes_datatypes["SUBCATNAME"] = StringCol(64)
-        category_attributes_datatypes["CATNAMESHORT"] = StringCol(64)
-        category_attributes_datatypes["CATENAMELONG"] = StringCol(64)
+        category_attributes_datatypes["CAT"] = StringCol(64, dflt='NULL')
+        category_attributes_datatypes["SUBCAT"] = StringCol(64, dflt='NULL')
+        category_attributes_datatypes["SUBCATNAME"] = StringCol(64, dflt='NULL')
+        category_attributes_datatypes["CATNAMESHORT"] = StringCol(64, dflt='NULL')
+        category_attributes_datatypes["CATENAMELONG"] = StringCol(64, dflt='NULL')
 
         category_table = TableCollection("category", category_attributes_datatypes, category_data_path, target_folder, ",", "CAT")
         category_table_model = TableModelCategory("category", list(category_attributes_datatypes.keys()), "CAT")
@@ -118,10 +118,10 @@ class PatentMultiModelDatabase():
         ## Class table
 
         class_attributes_datatypes = dict()
-        class_attributes_datatypes["CLASS"] = StringCol(64)
-        class_attributes_datatypes["CNAME"] = StringCol(64)
-        class_attributes_datatypes["SUBCAT"] = StringCol(64)
-        class_attributes_datatypes["CAT"] = StringCol(64)
+        class_attributes_datatypes["CLASS"] = StringCol(64, dflt='NULL')
+        class_attributes_datatypes["CNAME"] = StringCol(64, dflt='NULL')
+        class_attributes_datatypes["SUBCAT"] = StringCol(64, dflt='NULL')
+        class_attributes_datatypes["CAT"] = StringCol(64, dflt='NULL')
 
         class_table = TableCollection("class", class_attributes_datatypes, class_data_path, target_folder, ",", "CLASS")
         class_table_model = TableModelCategory("class", list(class_attributes_datatypes.keys()), "CLASS")
@@ -290,14 +290,9 @@ class PatentMultiModelDatabase():
         patent = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["patent"]
         category = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["category"]
         morphism = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["patent_to_category_morphism"]
-        #print(join(patent, morphism, category))
+        #print(MultiModelJoin(patent, morphism, category))
 
         morphism = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_morphisms()["citation_to_patent_morphism"]
-        citation_graph = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["citation"]#.get_collection().get_iterable_collection_of_objects()
+        citation_graph = self.patent_multi_model_database_instance.get_multi_model_db_instance().get_objects()["citation"]
         
-        print(join(citation_graph, morphism, patent, True))
-        # i = 0
-        # for obj in citation_graph:
-        #     if i % 100000 == 0:
-        #         print(obj)
-        #     i+=1
+        #print(MultiModelJoin(citation_graph, morphism, patent, True))

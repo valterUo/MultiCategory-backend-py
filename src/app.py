@@ -8,6 +8,6 @@ print(ecommerce_db.get_instance())
 
 ecommerce_db.run_multi_model_join_examples()
 
-patent_db.run_model_category_join_examples()
-patent_db.run_multi_model_join_examples()
+#patent_db.run_model_category_join_examples()
+#patent_db.run_multi_model_join_examples()
 

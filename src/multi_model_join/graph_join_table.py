@@ -5,6 +5,7 @@ from tables import *
 import networkx as nx
 from supportive_functions.compositions import merge_two_dicts
 import pickle
+from multi_model_join.file_path_functions import parse_file_name, parse_file_path
 
 def graph_join_table(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left = False):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
@@ -29,8 +30,9 @@ def graph_join_table(first_collection_constructor, collection_constructor_morphi
         for elem in objects:
             if i % 1000 == 0 and i != 0:
                 print("Nodes or edges processed: " + str(i))
-                
+
             result_list = collection_relationship.get_relationship(elem)
+            #print(result_list)
             if len(result_list) > 0:
                 if len(elem) == 2:
                     merged_dict = dict()

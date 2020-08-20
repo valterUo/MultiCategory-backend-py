@@ -1,3 +1,5 @@
+import networkx as nx
+
 def compose_list_of_dictionaries(list1, list2):
     new_list = list()
     for dict1 in list1:
@@ -31,6 +33,55 @@ def compose_lambda_functions(lambda1, lambda2):
     return composition_function
 
 def merge_two_dicts(x, y):
-      z = x.copy()
-      z.update(y)
-      return z
+    #print(x)
+    z = x.copy()
+    z.update(y)
+    return z
+
+## Graph union that works as vertex set G union vertex set H and edge set G union edge set H.
+## I wonder the default graph union of networkx requires that G and H are disjoint.
+## This union identifies nodes that have same id and combines the dictionaries together.
+
+def graph_union(G, H):
+    union_graph = nx.DiGraph()
+    ## Processing nodes
+    G_nodes_with_data = dict(G.nodes.data())
+    H_nodes_with_data = dict(H.nodes.data())
+    for key in G_nodes_with_data:
+        if key in H_nodes_with_data.keys():
+            new_dict = merge_two_dicts(G_nodes_with_data[key], H_nodes_with_data[key])
+            union_graph.add_nodes_from([(key, new_dict)])
+        else:
+            union_graph.add_nodes_from([(key, G_nodes_with_data[key])])
+    for key in H_nodes_with_data:
+        if key not in G_nodes_with_data.keys():
+            union_graph.add_nodes_from([(key, H_nodes_with_data[key])])
+    ## Processing edges
+    G_edges_with_data = nx.to_dict_of_dicts(G)
+    H_edges_with_data = nx.to_dict_of_dicts(H)
+    for G_key1 in G_edges_with_data:
+        if G_key1 in H_edges_with_data.keys():
+            for G_key2 in G_edges_with_data[G_key1]:
+                if G_key2 in H_edges_with_data[G_key1]:
+                    G_data = G_edges_with_data[G_key1][G_key2]
+                    H_data = H_edges_with_data[G_key1][G_key2]
+                    new_dict = merge_two_dicts(G_data, H_data)
+                    union_graph.add_edges_from([(G_key1, G_key2, new_dict)])
+                else:
+                    G_data = G_edges_with_data[G_key1][G_key2]
+                    union_graph.add_edges_from([(G_key1, G_key2, G_data)])
+        else:
+            for G_key2 in G_edges_with_data[G_key1]:
+                G_data = G_edges_with_data[G_key1][G_key2]
+                union_graph.add_edges_from([(G_key1, G_key2, G_data)])
+    for H_key1 in H_edges_with_data:
+        if H_key1 not in G_edges_with_data.keys():
+            for H_key2 in H_edges_with_data[H_key1]:
+                H_data = H_edges_with_data[H_key1][H_key2]
+                union_graph.add_edges_from([(H_key1, H_key2, H_data)])
+        else:
+            for H_key2 in H_edges_with_data[H_key1]:
+                if H_key2 not in G_edges_with_data[H_key1]:
+                    H_data = H_edges_with_data[H_key1][H_key2]
+                    union_graph.add_edges_from([(H_key1, H_key2, H_data)])
+    return union_graph

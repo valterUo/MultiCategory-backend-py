@@ -5,7 +5,7 @@ from tables import *
 from supportive_functions.compositions import merge_two_dicts
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
 
-def table_join_table(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left = False):
+def table_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False, right = False):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()
@@ -15,15 +15,18 @@ def table_join_table(first_collection_constructor, collection_constructor_morphi
         second_model = second_collection_constructor.get_model_category()
 
         first_collection_description = first_collection.get_attributes_datatypes_dict()
+
+        if len(set(first_collection_description.keys()).intersection(set(second_description.keys()))) > 0:
+            print("Warning: The descriptions are not disjoint. This might cause problems in the evaluation.")
+        
+        result_description = merge_two_dicts(first_collection_description, second_description)
         length_of_first_collection_description = len(first_collection_description)
-        second_collection_description = second_collection.get_attributes_datatypes_dict()
-        result_description = merge_two_dicts(first_collection_description, second_collection_description)
 
-        first_old_h5_file_path = first_collection.get_target_file_path()
-        second_old_h5_file_path = second_collection.get_target_file_path()
+        first_file_path = first_collection.get_target_file_path()
+        second_file_path = second_collection.get_target_file_path()
 
-        result_file_name = parse_file_name(first_old_h5_file_path) + "_" + collection_constructor_morphism.get_name() + "_" + parse_file_name(second_old_h5_file_path)
-        result_h5file_path = parse_file_path(first_old_h5_file_path, result_file_name)
+        result_file_name = parse_file_name(first_file_path) + "_" + collection_constructor_morphism.get_name() + "_" + parse_file_name(second_file_path)
+        result_h5file_path = parse_file_path(first_file_path, result_file_name)
         result_h5file = open_file(result_h5file_path, mode="w", title = result_file_name + " file")
         result_group = result_h5file.create_group("/", result_file_name, result_file_name + " information")
         result_table = result_h5file.create_table(result_group, result_file_name, result_description, result_file_name + " table")
@@ -37,12 +40,16 @@ def table_join_table(first_collection_constructor, collection_constructor_morphi
                 print("Rows processed: " + str(i))
 
             result_list = collection_relationship.get_relationship(elem)
+            ## We implicitly assume that the elements in the result are in right format i.e. they follow the given second
+            ## description in the parameters.
+            print(result_list)
             if len(result_list) > 0:
                 for elem2 in result_list:
                     j = 0
                     for key in result_description:
                         if j >= length_of_first_collection_description:
-                            result_table_row[key] = elem2[key]
+                            print(elem2[len(elem2) - 1][key])
+                            result_table_row[key] = elem2[len(elem2) - 1][key]
                         else:
                             result_table_row[key] = elem[key]
                         j+=1
