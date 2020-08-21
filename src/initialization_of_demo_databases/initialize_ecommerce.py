@@ -143,3 +143,12 @@ class ECommerceMultiModelDatabase():
         description["customer_locationId"] = StringCol(64, dflt='NULL')
 
         join4 = MultiModelJoin(location, location_to_customer_morphism, customer_graph, second_description = description)
+
+        ## Example with composition: customer graph -> key values pair: order to customer -> orders xml => customer graph -> orders xml
+
+        ## customer -> key value pairs
+
+        order_to_customer_id_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["order_to_customer_id_morphism"]
+        order_id_to_customer_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["order_id_to_customer_morphism"]
+
+        composition_customer_to_order = order_id_to_customer_morphism.compose(order_to_customer_id_morphism)

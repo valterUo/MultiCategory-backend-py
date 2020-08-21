@@ -30,8 +30,11 @@ class ModelRelationship:
 
     def compose(self, another_model_relationship):
         if self.source_model == another_model_relationship.get_target_model():
-            if type(self.relationship) == dict() and type(another_model_relationship.get_relationship()) == dict():
+            #print(self.relationship, another_model_relationship.get_relationship())
+            if type(self.relationship) == list and type(another_model_relationship.get_relationship()) == list:
                 new_relationship = compose_list_of_dictionaries(self.relationship, another_model_relationship.get_relationship())
-            return ModelRelationship(self.name + " o " + another_model_relationship.get_name, another_model_relationship.get_source_model(), new_relationship, self.target_model)
+                return ModelRelationship(self.name + " o " + another_model_relationship.get_name(), another_model_relationship.get_source_model(), new_relationship, self.target_model)
+            else:
+                raise ModelRelationshipCompositionError("The relationships need to be dictionaries.", "The relationships need to be dictionaries.")
         else:
             raise ModelRelationshipCompositionError("Composition is not defined.", "Composition is not defined.")

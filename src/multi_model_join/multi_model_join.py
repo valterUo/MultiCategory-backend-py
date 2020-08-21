@@ -54,7 +54,7 @@ class MultiModelJoin:
             elif type(second_collection) == GraphCollection:
                 result = table_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description)
             elif type(second_collection) == TreeCollection:
-                #result = table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
+                #result = table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description)
                 result = None
         elif type(first_collection) == GraphCollection:
             if type(second_collection) == TableCollection:

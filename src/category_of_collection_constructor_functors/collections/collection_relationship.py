@@ -21,12 +21,15 @@ class CollectionRelationship:
     def get_relationship(self, value):
         return self.relationship(value)
 
+    def get_lambda_function(self):
+        return self.relationship
+
     ## Composition operation: compose_relationships(self, m) = self o m = self(m(-))
     ## If the domain and the target do no match, then the error is raised
 
     def compose(self, another_collection_relationship):
         if self.source_collection == another_collection_relationship.get_target_collection():
-            new_lambda_function = compose_lambda_functions(self.relationship, another_collection_relationship.get_relationship())
+            new_lambda_function = compose_lambda_functions(self.relationship, another_collection_relationship.get_lambda_function())
             return CollectionRelationship(self.name + " o " + another_collection_relationship.get_name(), another_collection_relationship.get_source_collection(), new_lambda_function, self.target_collection)
         else:
             raise CollectionRelationshipCompositionError("Composition is not defined.", "Composition is not defined.")

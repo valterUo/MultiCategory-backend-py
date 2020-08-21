@@ -37,6 +37,6 @@ class CollectionConstructorMorphism:
         if another_morphism.get_target_collection_constructor_functor() == self.domain_collection_constructor_functor:
             composition1 = self.model_relationship.compose(another_morphism.get_model_relationship())
             composition2 = self.collection_relationship.compose(another_morphism.get_collection_relationship())
-            return CollectionConstructorMorphism(another_morphism.get_domain_collection_constructor_functor(), composition1, composition2, self.target_collection_constructor_functor)
+            return CollectionConstructorMorphism(self.name + " o " + another_morphism.get_name(), another_morphism.get_domain_collection_constructor_functor(), composition1, composition2, self.target_collection_constructor_functor)
         else:
             raise CollectionConstructorMorphismCompositionError("Composition is not defined. Domain and target objects do not match.", "Composition is not defined.")

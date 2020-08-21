@@ -60,5 +60,27 @@ def initialize_ecommerce_morphisms(objects):
 
     location_to_customer_morphism = CollectionConstructorMorphism("location_to_customer_morphism", objects["location"], location_to_customer_model_relationship, location_to_customer_collection_relationship, objects["interest"])
     morphisms["location_to_customer_morphism"] = location_to_customer_morphism
+    
+    ## Example with composition: orders xml -> key values pair: order to customer -> customer graph => orders xml -> customer graph
+    
+    ## key value pairs -> customer
+
+    order_id_to_customer_model_relationship = ModelRelationship("order_id_to_customer_model_relationship", key_value_tree_model, [{ "order_id": "customer_id" }], customer_graph_model)
+    order_id_to_customer_collection_relationship = CollectionRelationship("order_id_to_customer_collection_relationship", key_value_pairs, 
+                lambda order_id_doc : [customer for customer in customer_graph.get_iterable_collection_of_objects() if len(customer) == 2 and True in [ True for pair in order_id_doc["orders_to_customers"] if str(pair["customer_id"]) == customer[1]["customer_id"]]], 
+                        customer_graph)
+
+    order_id_to_customer_morphism = CollectionConstructorMorphism("location_to_customer_morphism", objects["key_value_pairs"], order_id_to_customer_model_relationship, order_id_to_customer_collection_relationship, objects["customer"])
+    morphisms["order_id_to_customer_morphism"] = order_id_to_customer_morphism
+
+    ## orders -> key value pairs
+
+    order_to_customer_id_relationship = ModelRelationship("order_to_customer_id_relationship", orders_tree_model, [{ "Order_no": "order_id" }], key_value_tree_model)
+    order_to_customer_id_collection_relationship = CollectionRelationship("order_to_customer_id_collection_relationship", orders_tree_collection, 
+                lambda order : [ key_value_pairs.get_iterable_collection_of_objects()[order["Order_no"]] ], 
+                        key_value_pairs)
+
+    order_to_customer_id_morphism = CollectionConstructorMorphism("order_to_customer_id_morphism", objects["orders"], order_to_customer_id_relationship, order_to_customer_id_collection_relationship, objects["key_value_pairs"])
+    morphisms["order_to_customer_id_morphism"] = order_to_customer_id_morphism
 
     return morphisms

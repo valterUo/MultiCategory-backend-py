@@ -4,8 +4,9 @@ from multi_model_join.model_category_join import join as model_join
 from tables import *
 from supportive_functions.compositions import merge_two_dicts
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
+from supportive_functions.row_manipulations import find_values_from_tree
 
-def table_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False, right = False):
+def table_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False, right = False):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()
@@ -40,15 +41,23 @@ def table_join_graph(first_collection_constructor, collection_constructor_morphi
                 print("Rows processed: " + str(i))
 
             result_list = collection_relationship.get_relationship(elem)
-            ## We implicitly assume that the elements in the result are in right format i.e. they follow the given second
-            ## description in the parameters.
             #print(result_list)
             if len(result_list) > 0:
+                ## Here we assume that every element in the result has a tree structure
+                ## The tree structure is flattened so that each path from the root to a leaf is made a row
+                ## From the row we pick the wanted elements defined in the second description parameter
                 for elem2 in result_list:
                     j = 0
                     for key in result_description:
                         if j >= length_of_first_collection_description:
-                            result_table_row[key] = elem2[len(elem2) - 1][key]
+                            picked_values_from_tree = find_values_from_tree(elem2, key)
+                            if len(picked_values_from_tree) == 0:
+                                print("No value for " + str(key) + " in the subtree.")
+                            elif len(picked_values_from_tree) > 1:
+                                print("Warning! With key " + str(key) + " exist multiple values. The algorithm picks the first.")
+                                result_table_row[key] = picked_values_from_tree[0]
+                            else:
+                                result_table_row[key] = picked_values_from_tree[0]
                         else:
                             result_table_row[key] = elem[key]
                         j+=1
