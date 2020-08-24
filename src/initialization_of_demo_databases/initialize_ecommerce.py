@@ -111,30 +111,31 @@ class ECommerceMultiModelDatabase():
 
         ecommerce_instance_category = MultiModelDBInstance("ecommerce instance", objects, morphisms)
 
-        self.ecommerce_multi_model_db_instance = MultiModelDB("ecommerce multi-model database", ecommerce_instance_category)
+        self.ecommerce_multi_model_db = MultiModelDB("ecommerce multi-model database", ecommerce_instance_category)
         
 
-    def get_instance(self):
-        return self.ecommerce_multi_model_db_instance
+    def get_multi_model_db(self):
+        return self.ecommerce_multi_model_db
+
 
     def run_multi_model_join_examples(self):
-        site = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["site"]
-        location = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["location"]
-        site_to_location_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["site_to_location_morphism"]
+        site = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_objects()["site"]
+        location = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_objects()["location"]
+        site_to_location_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["site_to_location_morphism"]
         
         join1 = MultiModelJoin(site, site_to_location_morphism, location)
 
-        customer_graph = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["customer"]
-        customer_to_location_morphism = site_to_location_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["customer_to_location_morphism"]
+        customer_graph = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_objects()["customer"]
+        customer_to_location_morphism = site_to_location_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["customer_to_location_morphism"]
 
         join2 = MultiModelJoin(customer_graph, customer_to_location_morphism, location, True)
 
-        customer_interest_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["customer_interest_morphism"]
-        interest_graph = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_objects()["interest"]
+        customer_interest_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["customer_interest_morphism"]
+        interest_graph = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_objects()["interest"]
 
         join3 = MultiModelJoin(customer_graph, customer_interest_morphism, interest_graph, True, True)
 
-        location_to_customer_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["location_to_customer_morphism"]
+        location_to_customer_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["location_to_customer_morphism"]
 
         description = dict()
         description["customer_id"] = StringCol(64, dflt='NULL')
@@ -144,11 +145,12 @@ class ECommerceMultiModelDatabase():
 
         join4 = MultiModelJoin(location, location_to_customer_morphism, customer_graph, second_description = description)
 
-        ## Example with composition: customer graph -> key values pair: order to customer -> orders xml => customer graph -> orders xml
+        ## Example with composition: orders xml -> key values pair: order to customer -> customer graph => orders xml -> customer graph
 
         ## customer -> key value pairs
 
-        order_to_customer_id_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["order_to_customer_id_morphism"]
-        order_id_to_customer_morphism = self.ecommerce_multi_model_db_instance.get_multi_model_db_instance().get_morphisms()["order_id_to_customer_morphism"]
+        order_to_customer_id_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["order_to_customer_id_morphism"]
+        order_id_to_customer_morphism = self.ecommerce_multi_model_db.get_multi_model_db_instance().get_morphisms()["order_id_to_customer_morphism"]
 
         composition_customer_to_order = order_id_to_customer_morphism.compose(order_to_customer_id_morphism)
+        print(composition_customer_to_order.get_collection_relationship().get_lambda_function())

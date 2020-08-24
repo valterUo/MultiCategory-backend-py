@@ -13,6 +13,9 @@ class TableModelCategory:
 
     def get_name(self):
         return self.name
+
+    def get_model(self):
+        return "relational"
     
     def get_attributes(self):
         return self.attributes

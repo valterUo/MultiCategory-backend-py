@@ -13,3 +13,6 @@ class CollectionConstructor:
 
     def get_collection(self):
         return self.collection
+
+    def get_model(self):
+        return self.model_category.get_model()

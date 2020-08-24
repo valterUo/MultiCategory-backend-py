@@ -25,6 +25,9 @@ class GraphModelCategory:
 
     def get_name(self):
         return self.name
+
+    def get_model(self):
+        return "graph"
     
     def get_edge_object(self):
         return self.edge_object

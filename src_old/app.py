@@ -1,11 +1,13 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
-from flask import request
-from flask import Flask
-from initialize_demo_datasets.initialize_ecommerce import initialize_ecommerce
-from initialize_demo_datasets.initialize_patent_data import initialize_patent_data
-from initialize_demo_datasets.initialize_unibench_sf10 import initialize_unibench_sf10
-initialize_ecommerce.init()
-selected_data_set = initialize_ecommerce.e_commerce_instance
+from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
+from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
+
+patent_db = PatentMultiModelDatabase()
+print(patent_db.get_instance())
+ecommerce_db = ECommerceMultiModelDatabase()
+print(ecommerce_db.get_instance())
+
+ecommerce_db.run_multi_model_join_examples()
+
+#patent_db.run_model_category_join_examples()
+#patent_db.run_multi_model_join_examples()
+

@@ -34,6 +34,9 @@ class TreeModelCategory:
 
     def get_name(self):
         return self.name
+
+    def get_model(self):
+        return "tree"
     
     def get_nodes(self):
         return self.nodes
