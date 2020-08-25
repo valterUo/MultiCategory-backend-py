@@ -14,4 +14,4 @@ The following join operations are implemented currently:
 - [] Graph + XML
 - [x] Graph + Graph: Very general graph join based on almalgam and pattern matching
 
-More details about the implementation: https://www.overleaf.com/read/khttynhvqshh
+More details about the implementation and the documentation: https://multicategory.github.io/ 
