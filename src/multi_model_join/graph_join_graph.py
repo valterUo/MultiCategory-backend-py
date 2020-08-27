@@ -27,7 +27,7 @@ def graph_join_graph(first_collection_constructor, collection_constructor_morphi
         ## Now elem is either (vertex_id, dict) or (source_id, target_id, dict)
         ## The result is assumed to be a simple dictionary
 
-        ## We inlcude all the elements from both graphs. In this case the relation does not matter.
+        ## We inlcude all the elements from both graphs. In this case the relation does not matter, naturally same elements are identified.
         if right == True and left == True:
             G = graph_union(first_collection.get_graph(), second_collection.get_graph())
         ## We do not necessarily include all the elements in the second collection or in the first collection. This is default.

@@ -2,6 +2,7 @@ import shelve
 import os
 import json
 import pickle
+from shelve import DbfilenameShelf
 from json import JSONDecodeError
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
 import xml.etree.cElementTree as ET
@@ -9,12 +10,15 @@ from category_of_collection_constructor_functors.collections.collection_errors i
 
 class TreeCollection:
 
-    def __init__(self, name, source_file, target_folder, data_format = "JSON"):
+    def __init__(self, name, source_file = None, target_folder = None, data_format = "JSON", target_file_path = None):
         self.name = name
         self.source_file = source_file
         self.target_folder = target_folder
         self.format = data_format
-        self.target_file_path = self.target_folder + "//" + self.name
+        if target_file_path == None:
+            self.target_file_path = self.target_folder + "//" + self.name
+        else:
+            self.target_file_path = target_file_path
         if not os.path.isfile(self.target_file_path + ".dat"):
             if self.format == "JSON":
                 self.parse_json()
@@ -25,6 +29,9 @@ class TreeCollection:
 
     def get_name(self):
         return self.name
+
+    def get_model(self):
+        return "tree"
 
     def get_source_file(self):
         return self.source_file
@@ -38,8 +45,19 @@ class TreeCollection:
     def get_target_file_path(self):
         return self.target_file_path
 
-    def get_iterable_collection_of_objects(self):
-        return self.get_tree()
+    ## This is problematic function for trees: we would like to iterate over all the nodes and the root
+    ## but this is not wanted always and there is no unique identifier for all the elements and objects. 
+    ## Thus it would be the best to find some "selection" method to pick efficiently right nodes
+    ## among all the nodes. This can be tought also such way that we first perform a selective query and we iterate the result.
+    def get_iterable_collection_of_objects(self, list_of_attributes = None):
+        if list_of_attributes == None:
+            return self.get_tree()
+        else:
+            result = []
+            for attribute in list_of_attributes:
+                result = result + self.find_elements_with_attribute(attribute)
+            return result
+
 
     def save_to_shelve(self, data_set):
         d = shelve.open(self.target_file_path)
@@ -52,12 +70,12 @@ class TreeCollection:
         d.close()
 
     def parse_json(self):
-        d = shelve.open(self.target_file_path)
         with open(self.source_file) as json_file:
             data_set = self.parse_json_file(json_file)
             self.save_to_shelve(data_set)
         
     def parse_json_file(self, json_file):
+        data_set = None
         try:
             data_set = json.load(json_file)
         except JSONDecodeError:
@@ -77,8 +95,22 @@ class TreeCollection:
         root = tree.getroot()
         xmldict = XmlListConfig(root)
         print({ root.tag: xmldict })
-        self.save_to_shelve(xmldict)
+        self.save_to_shelve({ root.tag: xmldict })
 
     def get_tree(self):
         data = shelve.open(self.target_file_path)
         return data
+
+    def find_elements_with_attribute(self, attribute, tree = None):
+        result = []
+        if tree == None:
+            tree = self.get_tree()
+        if type(tree) == dict or type(tree) == XmlDictConfig or type(tree) == DbfilenameShelf:
+            for key in tree:
+                if key == attribute:
+                    result.append(tree)
+                result = result + self.find_elements_with_attribute(attribute, tree[key])
+        elif type(tree) == list or type(tree) == XmlListConfig:
+            for elem in tree:
+                result = result + self.find_elements_with_attribute(attribute, elem)
+        return result

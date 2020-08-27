@@ -9,7 +9,7 @@ Objects belong to class CollectionConstructor which are identified by their name
 Morphisms belong to class CollectionConstructorMorphism which are indentified by their names.
 """
 
-class MultiModelDBInstance:
+class InstanceCategory:
 
     def __init__(self, name, objects, morphisms):
         self.name = name
@@ -32,6 +32,6 @@ class MultiModelDBInstance:
             node_list.append((obj.get_name(), {"label": obj.get_name() + " " + obj.get_model()}))
         G.add_nodes_from(node_list)
         for morphism in self.morphisms.values():
-            edge_list.append((morphism.get_domain_collection_constructor_functor().get_name(), morphism.get_target_collection_constructor_functor().get_name(), {"label": morphism.get_name()}))
+            edge_list.append((morphism.get_source_collection().get_name(), morphism.get_target_collection().get_name(), {"label": morphism.get_name()}))
         G.add_edges_from(edge_list)
         return G

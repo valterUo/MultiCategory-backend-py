@@ -55,6 +55,9 @@ class TableCollection:
     def get_name(self):
         return self.name
 
+    def get_model(self):
+        return "relational"
+
     def get_source_file_path(self):
         return self.source_file_path
 

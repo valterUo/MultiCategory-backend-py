@@ -1,4 +1,6 @@
 import networkx as nx
+import uuid
+from supportive_functions.xml_to_dict import XmlListConfig, XmlDictConfig
 
 def compose_list_of_dictionaries(list1, list2):
     new_list = list()
@@ -27,7 +29,9 @@ def compose_lambda_functions(lambda1, lambda2):
     def composition_function(x):
         result = []
         for y in lambda2(x):
+            print(y)
             for z in lambda1(y):
+                print(z)
                 result.append(z)
         return result
     return composition_function
@@ -85,3 +89,25 @@ def graph_union(G, H):
                     H_data = H_edges_with_data[H_key1][H_key2]
                     union_graph.add_edges_from([(H_key1, H_key2, H_data)])
     return union_graph
+
+def tree_to_nx_graph(tree, G, root_id):
+    if type(tree) == dict or type(tree) == XmlDictConfig:
+        for key in tree.keys():
+            child_id = uuid.uuid4()
+            G.add_nodes_from([(child_id, {"tag": key})])
+            G.add_edge(root_id, child_id)
+            tree_to_nx_graph(tree[key], G, child_id)
+    elif type(tree) == list or type(tree) == XmlListConfig:
+        for elem in tree:
+            tree_to_nx_graph(elem, G, root_id)
+    else:
+        child_id = uuid.uuid4()
+        G.add_node(child_id)
+        G.nodes[child_id]["value"] = tree
+        G.add_edge(root_id, child_id)
+
+
+## Because every tree is also a graph, we can create the union of tree and graph similarly as the union of
+## graph and graph
+def graph_union_with_tree(graph, tree):
+    union_graph = nx.DiGraph()

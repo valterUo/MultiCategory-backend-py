@@ -24,7 +24,7 @@ def initialize_ecommerce_morphisms(objects):
     ## Every site is functionally in relationship with some location: locationId in site table -> id in location table. This is foreign key primary key pair.
 
     site_location_model_relationship = ModelRelationship("site_location_model_relationship", site_table_model, [{ "site_locationId": "location_id" }], location_table_model)
-    site_location_collection_relationship = CollectionRelationship("site_location_model_relationship", site_table, 
+    site_location_collection_relationship = CollectionRelationship("site_location_collection_relationship", site_table, 
                 lambda site_row : [row_to_dictionary(location_row) for location_row in location_table.get_rows() if site_row['site_locationId'] == location_row["location_id"]], 
                         location_table)
 
@@ -34,7 +34,7 @@ def initialize_ecommerce_morphisms(objects):
     ## Every customer is assigned with a location
 
     customer_location_model_relationship = ModelRelationship("customer_location_model_relationship", customer_graph_model, [{ "customer_locationId": "location_id" }], location_table_model)
-    customer_location_collection_relationship = CollectionRelationship("customer_location_model_relationship", customer_graph, 
+    customer_location_collection_relationship = CollectionRelationship("customer_location_collection_relationship", customer_graph, 
                 lambda customer : [row_to_dictionary(location_row) for location_row in location_table.get_rows() if len(customer) == 2 and int(customer[1]['customer_locationId']) == location_row["location_id"]], 
                         location_table)
 
@@ -43,8 +43,8 @@ def initialize_ecommerce_morphisms(objects):
 
     ## Some customers in the interest graph are same as some customers in customers graph
 
-    customer_interest_model_relationship = ModelRelationship("customer_model_relationship", customer_graph_model, [{ "customer_id": "interest_id" }], interest_graph_model)
-    customer_interest_collection_relationship = CollectionRelationship("customer_interest_model_relationship", customer_graph, 
+    customer_interest_model_relationship = ModelRelationship("customer_interst_model_relationship", customer_graph_model, [{ "customer_id": "interest_id" }], interest_graph_model)
+    customer_interest_collection_relationship = CollectionRelationship("customer_interest_collection_relationship", customer_graph, 
                 lambda customer : [customer2 for customer2 in interest_graph.get_iterable_collection_of_objects()], 
                         interest_graph)
 
@@ -54,7 +54,7 @@ def initialize_ecommerce_morphisms(objects):
     ## Morphism from one to many
 
     location_to_customer_model_relationship = ModelRelationship("location_to_customer_relationship", location_table_model, [{ "location_id": "customer_id" }], customer_graph_model)
-    location_to_customer_collection_relationship = CollectionRelationship("customer_interest_model_relationship", location_table, 
+    location_to_customer_collection_relationship = CollectionRelationship("location_to_customer_collection_relationship", location_table, 
                 lambda location : [customer for customer in customer_graph.get_iterable_collection_of_objects() if len(customer) == 2 and customer[1]["customer_locationId"] == str(location["location_id"])], 
                         customer_graph)
 
@@ -67,7 +67,7 @@ def initialize_ecommerce_morphisms(objects):
 
     order_id_to_customer_model_relationship = ModelRelationship("order_id_to_customer_model_relationship", key_value_tree_model, [{ "order_id": "customer_id" }], customer_graph_model)
     order_id_to_customer_collection_relationship = CollectionRelationship("order_id_to_customer_collection_relationship", key_value_pairs, 
-                lambda order_id_doc : [customer for customer in customer_graph.get_iterable_collection_of_objects() if len(customer) == 2 and True in [ True for pair in order_id_doc["orders_to_customers"] if str(pair["customer_id"]) == customer[1]["customer_id"]]], 
+                lambda elem : [customer for customer in customer_graph.get_iterable_collection_of_objects() if len(customer) == 2 and str(elem["customer_id"]) == customer[1]["customer_id"]], 
                         customer_graph)
 
     order_id_to_customer_morphism = CollectionConstructorMorphism("location_to_customer_morphism", objects["key_value_pairs"], order_id_to_customer_model_relationship, order_id_to_customer_collection_relationship, objects["customer"])
@@ -77,10 +77,17 @@ def initialize_ecommerce_morphisms(objects):
 
     order_to_customer_id_relationship = ModelRelationship("order_to_customer_id_relationship", orders_tree_model, [{ "Order_no": "order_id" }], key_value_tree_model)
     order_to_customer_id_collection_relationship = CollectionRelationship("order_to_customer_id_collection_relationship", orders_tree_collection, 
-                lambda order : [ key_value_pairs.get_iterable_collection_of_objects()[order["Order_no"]] ], 
+                lambda order : [ elem for elem in key_value_pairs.get_iterable_collection_of_objects()["orders_to_customers"] if True in [True for order2 in order["Orders"] if order2["Order_no"] == elem["order_id"]]], 
                         key_value_pairs)
 
     order_to_customer_id_morphism = CollectionConstructorMorphism("order_to_customer_id_morphism", objects["orders"], order_to_customer_id_relationship, order_to_customer_id_collection_relationship, objects["key_value_pairs"])
     morphisms["order_to_customer_id_morphism"] = order_to_customer_id_morphism
+    
+    ## Example with composition: orders xml -> key values pair: order to customer -> customer graph => orders xml -> customer graph
+
+    composition_order_to_customer = order_id_to_customer_morphism.compose(order_to_customer_id_morphism)
+    print(composition_order_to_customer.get_domain_collection_constructor_functor().get_model())
+    print(composition_order_to_customer.get_target_collection_constructor_functor().get_model())
+    morphisms["composition_order_to_customer"] = composition_order_to_customer
 
     return morphisms

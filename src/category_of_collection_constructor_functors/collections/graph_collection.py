@@ -45,6 +45,9 @@ class GraphCollection:
     def get_name(self):
         return self.name
 
+    def get_model(self):
+        return "graph"
+
     def get_vertex_info(self):
         return self.vertex_info
 

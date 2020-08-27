@@ -5,7 +5,7 @@ from tables import *
 from supportive_functions.compositions import merge_two_dicts
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
 
-def table_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False, right = False):
+def table_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()

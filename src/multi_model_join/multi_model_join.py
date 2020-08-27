@@ -14,6 +14,8 @@ from multi_model_join.graph_join_table import graph_join_table
 from multi_model_join.table_join_table import table_join_table
 from multi_model_join.graph_join_graph import graph_join_graph
 from multi_model_join.table_join_graph import table_join_graph
+from multi_model_join.table_join_tree import table_join_tree
+from multi_model_join.graph_join_tree import graph_join_tree
 
 """ Morphisms between collection constructors are not automatically evaluated. They model relationships between different models.
 Because relationships generally are modelled as relations, this means that there is some amount of elements in the first collection
@@ -30,18 +32,18 @@ joins: outer join includes the first collection wholly even if there is no any e
 
 Multi-model join is considered as a first_collection -- collection_constructor_morphism --> second_collection that
 factorizes through the join result so that first_collection --> join_result <-- second_collection. (This needs more studying.)
-
 """
 
 class MultiModelJoin:
 
-    def __init__(self, first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left = False, right = False, second_description = None):
+    def __init__(self, first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left = False, right = False, second_description = None, tree_attributes = None):
         self.first_collection_constructor = first_collection_constructor
         self.collection_constructor_morphism = collection_constructor_morphism
         self.second_collection_constructor = second_collection_constructor
         self.left = left
         self.right = right
         self.second_description = second_description
+        self.tree_attributes = tree_attributes
         self.result = self.join()
 
     def join(self):
@@ -52,9 +54,9 @@ class MultiModelJoin:
             if type(second_collection) == TableCollection:
                 result = table_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
             elif type(second_collection) == GraphCollection:
-                result = table_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description)
+                result = table_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
             elif type(second_collection) == TreeCollection:
-                #result = table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description)
+                result = table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
                 result = None
         elif type(first_collection) == GraphCollection:
             if type(second_collection) == TableCollection:
@@ -62,17 +64,17 @@ class MultiModelJoin:
             elif type(second_collection) == GraphCollection:
                 result = graph_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.right)
             elif type(second_collection) == TreeCollection:
-                #esult = graph_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
+                result = graph_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
                 result = None
         elif type(first_collection) == TreeCollection:
             if type(second_collection) == TableCollection:
-                #result = tree_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
+                #result = tree_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
                 result = None
             elif type(second_collection) == GraphCollection:
-                #result = tree_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
+                #result = tree_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
                 result = None
             elif type(second_collection) == TreeCollection:
-                #result = tree_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor)
+                #result = tree_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
                 result = None
         return result
 

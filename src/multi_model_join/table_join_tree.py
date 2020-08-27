@@ -6,7 +6,8 @@ from supportive_functions.compositions import merge_two_dicts
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
 from supportive_functions.row_manipulations import find_values_from_tree
 
-def table_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False, right = False):
+
+def table_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, second_description, left = False):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()
@@ -53,6 +54,7 @@ def table_join_tree(first_collection_constructor, collection_constructor_morphis
                             picked_values_from_tree = find_values_from_tree(elem2, key)
                             if len(picked_values_from_tree) == 0:
                                 print("No value for " + str(key) + " in the subtree.")
+                                print("The table will have the default value for " + str(key) + " in this row.")
                             elif len(picked_values_from_tree) > 1:
                                 print("Warning! With key " + str(key) + " exist multiple values. The algorithm picks the first.")
                                 result_table_row[key] = picked_values_from_tree[0]

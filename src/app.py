@@ -4,11 +4,11 @@ import pathlib
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 import dash_table
 import plotly.graph_objs as go
 import dash_daq as daq
-
+from dash_frontend.server import app
 import pandas as pd
 
 from dash_frontend.tabs.settings_tab import define_settings_tab, build_settings_tab
@@ -16,20 +16,7 @@ from dash_frontend.tabs.instance_functor_tab import define_instance_functor_tab,
 from dash_frontend.tabs.query_tab import query_tab, build_query_tab
 from dash_frontend.tabs.multi_model_join_tab import multi_model_join_tab, build_multi_model_join_tab
 from dash_frontend.modal.modal import generate_modal
-
-## Pre-defined databases
-from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
-from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
-
-app = dash.Dash(
-    __name__,
-    meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
-)
-server = app.server
-app.config["suppress_callback_exceptions"] = True
-
-## Initially the E-commerce database is selected.
-selected_database = "ecommerce"
+from dash_frontend.state.initialize_demo_state import state
 
 def build_banner():
     return html.Div(
@@ -43,7 +30,7 @@ def build_banner():
                     html.H6("Applying category theory to multi-model database management systems, query processing and model transformations"),
                 ],
             ),
-            html.Div(id = "selected-dataset-banner-parent", children = html.P("Selected database: " + state_dict[selected_database]["label"])),
+            html.Div(id = "selected-dataset-banner-parent", children = html.P("Selected database: " + state.get_current_state()["label"])),
             html.Div(
                 id="banner-logo",
                 children=[
@@ -76,21 +63,6 @@ def build_tabs():
         ],
     )
 
-
-def init_databases():
-    state = {
-        "ecommerce": {'label': 'E-commerce dataset', 'value': 'ecommerce', 'available': True, 'db': ECommerceMultiModelDatabase().get_multi_model_db()},
-        "patent": {'label': 'Patent dataset', 'value': 'patent', 'available': True, 'db': PatentMultiModelDatabase().get_multi_model_db()},
-        "market_place": {'label': 'Online market place', 'value': 'market_place', 'available': False, 'db': None},
-        "unibench_small": {'label': 'Unibench small dataset', 'value': 'unibench_small', 'available': False,'db': None},
-        "university": {'label': 'University dataset', 'value': 'university', 'available': False, 'db': None},
-        "person": {'label': 'Person dataset', 'value': 'person', 'available': False, 'db': None},
-        "film": {'label': 'Film dataset', 'value': 'film', 'available': False, 'db': None}
-    }
-    return state
-
-state_dict = init_databases()
-
 app.layout = html.Div(
     id="big-app-container",
     children=[
@@ -114,12 +86,12 @@ app.layout = html.Div(
 )
 def render_tab_content(tab_switch):
     if tab_switch == "tab1":
-        return build_settings_tab(state_dict[selected_database])
+        return build_settings_tab(state)
     elif tab_switch == "tab3":
         return build_query_tab()
     elif tab_switch == "tab4":
-        return build_multi_model_join_tab()
-    return build_instance_functor_tab(state_dict[selected_database])
+        return build_multi_model_join_tab(state)
+    return build_instance_functor_tab(state)
 
 
 # ===== Callbacks to update values based on store data and dropdown selection =====
@@ -128,10 +100,9 @@ def render_tab_content(tab_switch):
     inputs=[Input("metric-select-dropdown", "value")],
 )
 def handle_dataset_selection(ds_select):
-    database = state_dict[ds_select]
+    database = state.get_possible_states()[ds_select]
     if database["available"]:
-        global selected_database
-        selected_database = ds_select
+        state.change_state(ds_select)
         return html.P("Selected database: " + database["label"])
     else:
         return html.P("The selected database " + database["label"] + " is not currently available.")
