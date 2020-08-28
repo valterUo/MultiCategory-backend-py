@@ -7,7 +7,7 @@ from supportive_functions.compositions import merge_two_dicts, graph_union, grap
 import pickle
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
 
-def graph_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor):
+def graph_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()

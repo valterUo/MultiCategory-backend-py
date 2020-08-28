@@ -58,6 +58,10 @@ class TreeCollection:
                 result = result + self.find_elements_with_attribute(attribute)
             return result
 
+    def get_iterables_with_connection_to_original_tree(self, list_of_attributes):
+
+
+
 
     def save_to_shelve(self, data_set):
         d = shelve.open(self.target_file_path)
@@ -113,4 +117,20 @@ class TreeCollection:
         elif type(tree) == list or type(tree) == XmlListConfig:
             for elem in tree:
                 result = result + self.find_elements_with_attribute(attribute, elem)
+        return result
+
+    def find_elements_with_attribute_and_path(self, attribute, path, tree = None):
+        result = []
+        if tree == None:
+            tree = self.get_tree()
+        if type(tree) == dict or type(tree) == XmlDictConfig or type(tree) == DbfilenameShelf:
+            for key in tree:
+                if key == attribute:
+                    result.append((tree, path + "/" + key))
+                result = result + self.find_elements_with_attribute(attribute, path + "/" + key, tree[key])
+        elif type(tree) == list or type(tree) == XmlListConfig:
+            i = 0
+            for elem in tree:
+                result = result + self.find_elements_with_attribute(attribute, path + "/" + str(i), elem)
+                i+=1
         return result
