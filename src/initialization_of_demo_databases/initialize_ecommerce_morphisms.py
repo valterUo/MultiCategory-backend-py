@@ -77,7 +77,7 @@ def initialize_ecommerce_morphisms(objects):
 
     order_to_customer_id_relationship = ModelRelationship("order_to_customer_id_relationship", orders_tree_model, [{ "Order_no": "order_id" }], key_value_tree_model)
     order_to_customer_id_collection_relationship = CollectionRelationship("order_to_customer_id_collection_relationship", orders_tree_collection, 
-                lambda order : [ elem for elem in key_value_pairs.get_iterable_collection_of_objects()["orders_to_customers"] if True in [True for order2 in order["Orders"] if order2["Order_no"] == elem["order_id"]]], 
+                lambda order : [ elem for elem in key_value_pairs.get_iterable_collection_of_objects()["orders_to_customers"] if order["Order_no"] == elem["order_id"]], 
                         key_value_pairs)
 
     order_to_customer_id_morphism = CollectionConstructorMorphism("order_to_customer_id_morphism", objects["orders"], order_to_customer_id_relationship, order_to_customer_id_collection_relationship, objects["key_value_pairs"])

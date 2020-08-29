@@ -58,11 +58,6 @@ class TreeCollection:
                 result = result + self.find_elements_with_attribute(attribute)
             return result
 
-    def get_iterables_with_connection_to_original_tree(self, list_of_attributes):
-
-
-
-
     def save_to_shelve(self, data_set):
         d = shelve.open(self.target_file_path)
         if type(data_set) == dict:
@@ -112,7 +107,10 @@ class TreeCollection:
         if type(tree) == dict or type(tree) == XmlDictConfig or type(tree) == DbfilenameShelf:
             for key in tree:
                 if key == attribute:
-                    result.append(tree)
+                    if type(tree[key]) == list or type(tree[key]) == XmlListConfig:
+                        result = result + tree[key]
+                    else:
+                        result.append(tree[key])
                 result = result + self.find_elements_with_attribute(attribute, tree[key])
         elif type(tree) == list or type(tree) == XmlListConfig:
             for elem in tree:
@@ -126,11 +124,15 @@ class TreeCollection:
         if type(tree) == dict or type(tree) == XmlDictConfig or type(tree) == DbfilenameShelf:
             for key in tree:
                 if key == attribute:
-                    result.append((tree, path + "/" + key))
-                result = result + self.find_elements_with_attribute(attribute, path + "/" + key, tree[key])
+                    if type(tree[key]) == list or type(tree[key]) == XmlListConfig:
+                        for elem in tree[key]:
+                            result.append((elem, path + "/" + key))
+                    else:
+                        result.append((tree, path + "/" + key))
+                result = result + self.find_elements_with_attribute_and_path(attribute, path + "/" + key, tree[key])
         elif type(tree) == list or type(tree) == XmlListConfig:
             i = 0
             for elem in tree:
-                result = result + self.find_elements_with_attribute(attribute, path + "/" + str(i), elem)
+                result = result + self.find_elements_with_attribute_and_path(attribute, path + "/" + str(i), elem)
                 i+=1
         return result

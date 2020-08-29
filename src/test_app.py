@@ -20,11 +20,11 @@ ecommerce_db = ECommerceMultiModelDatabase()
 # lambda_function = state.get_current_state()["db"].get_morphisms()["customer_to_location_morphism"].get_collection_relationship().get_lambda_function()
 # code_lines = inspect.getsource(lambda_function)
 # print(code_lines)
-#ecommerce_db.run_multi_model_join_examples()
+ecommerce_db.run_multi_model_join_examples()
 
 # ## elem["customer_id"] for elem in key_value_pairs.get_iterable_collection_of_objects()["orders_to_customers"] if order["Order_no"] == elem["order_id"]
-orders = ecommerce_db.get_multi_model_db().get_objects()["orders"].get_collection().find_elements_with_attribute("Product_no")
-print(orders)
+#orders = ecommerce_db.get_multi_model_db().get_objects()["orders"].get_collection().find_elements_with_attribute("Orders")
+#print(orders)
 #print(dict(orders))
 # for order in orders:
 #     #for order2 in orders[order]:

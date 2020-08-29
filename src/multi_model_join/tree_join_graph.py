@@ -49,7 +49,8 @@ def tree_join_graph(first_collection_constructor, collection_constructor_morphis
             if len(result_list) > 0:
                 new_elem = dict()
                 for elem2 in result_list:
-                    new_elem = merge_two_dicts(new_elem, merge_two_dicts(elem, elem2))
+                    print(elem2)
+                    new_elem = merge_two_dicts(new_elem, merge_two_dicts(elem, elem2[len(elem2) - 1]))
                 update(result, path, new_elem)
             elif len(result_list) == 0 and left == False:
                 remove(path, result)

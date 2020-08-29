@@ -144,4 +144,4 @@ class ECommerceMultiModelDatabase():
         composition_order_to_customer = self.ecommerce_multi_model_db.get_morphisms()["composition_order_to_customer"]
         orders = self.ecommerce_multi_model_db.get_objects()["orders"]
 
-        join5 = MultiModelJoin(orders, composition_order_to_customer, customer_graph)
+        join5 = MultiModelJoin(orders, composition_order_to_customer, customer_graph, tree_attributes="Orders")
