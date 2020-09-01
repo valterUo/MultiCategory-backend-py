@@ -75,6 +75,7 @@ def path_get(mydict, path):
         pass
     return elem
 
+
 def update(mydict, path, new_elem):
     key_path = path.strip("/").split("/")
     if len(key_path) > 1:
@@ -94,6 +95,7 @@ def update(mydict, path, new_elem):
                 except:
                     pass
         mydict[main_key] = new_dict
+
 
 def remove(mydict, path):
     key_path = path.strip("/").split("/")
