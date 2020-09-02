@@ -7,20 +7,36 @@ import matplotlib.pyplot as plt
 #from supportive_functions.compositions import compose_lambda_functions
 from external_database_connections.postgresql.postgres import Postgres
 from external_database_connections.neo4j.neo4j import Neo4j
+from model_transformations.cat_graph import CatGraph
 
 #patent_db = PatentMultiModelDatabase()
 #ecommerce_db = ECommerceMultiModelDatabase()
 
-db = Postgres()
+db = Postgres("dvdrental")
 #print(db.get_schema())
 #print(db.query("SELECT * FROM actor;")[0]["first_name"])
 
-graph_db = Neo4j()
+#graph_db = Neo4j()
 # graph_db.empty_database()
 # graph_db.transform_tables_into_graph_db(db)
-graph_db.create_edges(db)
+#graph_db.create_edges(db)
 # graph_db.create_and_return_node(property_name = "PropertyNew", attributes = {"greeting": "Hellloo!", "times": 1})
 # graph_db.empty_database()
+
+catgraph = CatGraph("test_graph", db)
+catgraph.transform_from()
+g = catgraph.get_cat_graph()
+
+i = 0
+
+for subj, pred, obj in g:
+    i+=1
+    if (subj, pred, obj) not in g:
+       raise Exception("It better be!")
+    elif i % 10000 == 0:
+        print(subj, pred, obj)
+
+print("graph has {} statements.".format(len(g)))
 
 #print(ecommerce_db.get_multi_model_db().get_morphisms_for_pair_of_objects("site", "location"))
 

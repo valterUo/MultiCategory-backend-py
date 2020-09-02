@@ -18,7 +18,8 @@ from external_database_connections.config.config import config
 
 class Postgres():
 
-    def __init__(self, section="postgresql"):
+    def __init__(self, name, section="postgresql"):
+        self.name = name
         self.conn = None
         self.primary_keys = None
         try:
@@ -29,6 +30,9 @@ class Postgres():
             self.table_names = self.primary_keys.keys()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
+
+    def get_name(self):
+        return self.name
 
     def query(self, query="SELECT version()"):
         cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -115,6 +119,14 @@ class Postgres():
                     AND ccu.table_schema = tc.table_schema
                 WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='""" + table_name + "';"
         return self.query(query)
+
+    def get_edge_schema_for_tables(self):
+        result = dict()
+        table_names = self.get_table_names()
+        for table_name in table_names:
+            info = self.query_edge_schema_for_table(table_name)
+            result[table_name] = info
+        return result
 
     def connect(self):
         """ Connect to the PostgreSQL database server """
