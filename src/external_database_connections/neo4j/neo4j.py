@@ -6,12 +6,19 @@ from external_database_connections.neo4j.help_functions import formulate_set_str
 
 class Neo4j:
 
-    def __init__(self, section="neo4j"):
+    def __init__(self, name, section="neo4j"):
+        self.name = name
         params = config(section=section)
         uri = params["uri"]
         auth = (params["user"], params["password"])
         self.driver = GraphDatabase.driver(uri=uri, auth=auth)
-        self.labels = self.execute("MATCH (n) RETURN distinct labels(n)")
+        self.labels = []
+        result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
+        for record in result:
+            self.labels.append(record["labels(n)"])
+
+    def get_name(self):
+        return self.name
 
     def close(self):
         self.driver.close()
@@ -22,14 +29,19 @@ class Neo4j:
                 self._create_and_return_node, property_name, attributes)
             #print(node)
 
-    def execute(self, query):
+    def execute_write(self, query):
         with self.driver.session() as session:
             node = session.write_transaction(self._execute_query, query)
             return node
 
+    def execute_read(self, query):
+        with self.driver.session() as session:
+            node = session.read_transaction(self._execute_query, query)
+            return node
+
     def empty_database(self):
         query = "MATCH (n) DETACH DELETE n"
-        result = self.execute(query)
+        result = self.execute_write(query)
         #print(result)
 
     def create_index(self, rel_db, table_name, recalculate=False):
@@ -39,12 +51,12 @@ class Neo4j:
             " FOR (n:" + table_name + ") ON (n." + primary_key + ")"
         drop_index = "DROP INDEX " + table_name + "_primary_key_index"
         try:
-            self.execute(primary_key_index_query)
+            self.execute_write(primary_key_index_query)
         except ClientError:
             if recalculate:
                 print("Index exists. Index is recalculated.")
-                self.execute(drop_index)
-                self.execute(primary_key_index_query)
+                self.execute_write(drop_index)
+                self.execute_write(primary_key_index_query)
             else:
                 print("Index exists. Index is not recalculated.")
 
@@ -52,7 +64,9 @@ class Neo4j:
         rel_schema = rel_db.get_schema()
         for table_name in rel_schema:
             self.transform_table_into_collection_of_nodes(rel_db, table_name)
-        self.labels = self.execute("MATCH (n) RETURN distinct labels(n)")
+        result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
+        for record in result:
+            self.labels.append(record["labels(n)"])
         print(self.labels)
 
     def transform_table_into_collection_of_nodes(self, rel_db, table_name):
@@ -88,7 +102,7 @@ class Neo4j:
             WHERE a.""" + foreign_key + """ = b.""" + primary_key + """
             CREATE (a)-[r:""" + foreign_key + """_""" + primary_key + """]->(b);
         """
-        self.execute(query)
+        self.execute_write(query)
 
     @staticmethod
     def _create_and_return_node(tx, property_name, value_dict):
@@ -107,5 +121,8 @@ class Neo4j:
 
     @staticmethod
     def _execute_query(tx, query):
+        result2 = []
         result = tx.run(query)
-        return result
+        for record in result:
+            result2.append(record)
+        return result2

@@ -3,17 +3,17 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 
-def query_tab():
+def model_tranformation_tab():
     return dcc.Tab(
-        id="Query-tab",
-        label="Queries",
-        value="tab3",
+        id="Model-transformation-tab",
+        label="ModelTransformations",
+        value="tab5",
         className="custom-tab",
         selected_className="custom-tab--selected",
     )
 
 
-def build_query_tab(state):
+def build_model_tranformation_tab(state):
     return [
         html.Div(
             id="set-specs-intro-container",
