@@ -66,14 +66,12 @@ class MultiModelJoin:
                 result = graph_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.right)
             elif type(second_collection) == TreeCollection:
                 result = graph_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
-                result = None
         elif type(first_collection) == TreeCollection:
             if type(second_collection) == TableCollection:
                 #result = tree_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
                 result = None
             elif type(second_collection) == GraphCollection:
                 result = tree_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
-                result = None
             elif type(second_collection) == TreeCollection:
                 #result = tree_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
                 result = None

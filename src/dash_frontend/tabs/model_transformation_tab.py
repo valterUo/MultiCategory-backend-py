@@ -6,7 +6,7 @@ import dash_html_components as html
 def model_tranformation_tab():
     return dcc.Tab(
         id="Model-transformation-tab",
-        label="ModelTransformations",
+        label="Model Transformations",
         value="tab5",
         className="custom-tab",
         selected_className="custom-tab--selected",

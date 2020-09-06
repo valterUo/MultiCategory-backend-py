@@ -100,8 +100,8 @@ def render_tab_content(tab_switch):
 
 # ===== Callbacks to update values based on store data and dropdown selection =====
 @app.callback(
-    output= Output("selected-dataset-banner-parent", "children"),
-    inputs=[Input("metric-select-dropdown", "value")],
+    Output("selected-dataset-banner-parent", "children"),
+    [Input("metric-select-dropdown", "value")],
 )
 def handle_dataset_selection(ds_select):
     database = state.get_possible_states()[ds_select]
@@ -128,4 +128,4 @@ def update_click_output(button_click, close_click):
 
 # Running the server
 if __name__ == "__main__":
-    app.run_server(port=8050, debug=True, dev_tools_ui=False, dev_tools_props_check=True)
+    app.run_server(port=8050, debug=True, dev_tools_ui=True, dev_tools_props_check=True)

@@ -142,7 +142,7 @@ body {
   cursor: pointer;
 }
 
-#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab {
+#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Model-transformation-tab.custom-tab {
   background-color: #161a28;
   letter-spacing: 1px;
   color: inherit;
@@ -156,7 +156,7 @@ body {
   height: 18px;
 }
 
-#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected {
+#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected, #Model-transformation-tab.custom-tab--selected {
   border-bottom: #91dfd2 solid 4px !important;
 }
 

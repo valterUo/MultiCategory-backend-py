@@ -2,7 +2,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from multi_model_join.multi_model_join import MultiModelJoin
-from dash_frontend.tabs.instance_functor_tab import general_nx_grah_to_cytoscape
+from dash_frontend.visualizations.nx_graph_visualization import general_nx_grah_to_cytoscape
+
 
 def execute_multi_model_join(state, join_parameters):
     print(state, join_parameters)
@@ -12,7 +13,11 @@ def execute_multi_model_join(state, join_parameters):
     print(target.get_name())
     morphism = state.get_current_state()["db"].get_morphisms()[join_parameters["morphism"]]
     print(morphism.get_name())
-    join_result = MultiModelJoin(domain, morphism, target, True)
+    left = join_parameters["left"]
+    right = join_parameters["right"]
+    second_description = join_parameters["second_description"]
+    tree_attributes = join_parameters["tree_attributes"]
+    join_result = MultiModelJoin(domain, morphism, target, left=left, right=right, second_description=second_description, tree_attributes=tree_attributes)
     result = join_result.get_result()
     print(result.get_model())
     if result.get_model() == "relational":

@@ -1,6 +1,12 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
+import os
+from dash_frontend.server import app
+from dash.exceptions import PreventUpdate
+dirname = os.path.dirname(__file__)
+full_config_file_path = os.path.join(dirname, "..\\..\\external_database_connections\\config\\databases.ini")
 
 datasets = [
     {'label': 'E-commerce dataset', 'value': 'ecommerce'},
@@ -28,7 +34,7 @@ def build_settings_tab(state):
     return [
         html.Div(
             id="set-specs-intro-container",
-            children=[html.P(
+            children=[html.H5(
                 "Select the demo dataset. The default dataset is the e-commerce dataset."
             ),
                 dcc.Dropdown(
@@ -36,6 +42,42 @@ def build_settings_tab(state):
                 options=datasets,
                 value=current_state["value"]
             ),
+            html.Br(),
+            build_external_database_textarea_connection()
             ]
         ),
     ]
+
+def build_external_database_textarea_connection():
+    content = ""
+    with open(full_config_file_path, 'r') as file:
+        content = file.read()
+    return html.Div([ html.H5("External database connection information"),
+        dcc.Textarea(
+            id='textarea-state-config',
+            value = content,
+            style={'width': '100%', 'height': 300, "fontFamily": "monospace"},
+        ),
+        html.Button('Update config file', id='config-textarea-state-button', n_clicks=0)
+    ])
+
+@app.callback(
+    Output('textarea-state-config', 'value'),
+    [Input('config-textarea-state-button', 'n_clicks')],
+    [State('textarea-state-config', 'value')]
+)
+def update_output(n_clicks, value):
+    ctx = dash.callback_context
+    prop_id = ""
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    if prop_id == "config-textarea-state-button":
+        if len(value) > 10:
+            with open(full_config_file_path, 'w') as file:
+                file.write(value)
+            return value
+        else:
+            return value
+    else:
+        raise PreventUpdate

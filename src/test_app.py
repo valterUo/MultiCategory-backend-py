@@ -30,14 +30,14 @@ graph_db = Neo4j("dvdrental")
 
 # print("graph has {} statements.".format(len(g)))
 
-catgraph = CatGraph("test_graph2", graph_db, dvdrental_property_graph_to_rdf_uri, False)
+catgraph = CatGraph("test_graph2", graph_db, dvdrental_property_graph_to_rdf_uri)
 catgraph.transform_from()
 g = catgraph.get_cat_graph()
 
 i = 0
 for subj, pred, obj in g:
     i+=1
-    if i % 10000 == 0:
+    if i % 1000 == 0:
         print(subj, pred, obj)
 
 print("graph has {} statements.".format(len(g)))

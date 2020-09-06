@@ -9,7 +9,10 @@ from dash.exceptions import PreventUpdate
 import inspect
 import dash_dangerously_set_inner_html
 from dash_frontend.multi_model_join_frontend.multi_model_join import execute_multi_model_join
-state_dict = {}
+from dash_frontend.multi_model_join_frontend.second_description_input_builder import second_description_input_builder
+from dash_frontend.multi_model_join_frontend.tree_attributes_input_builder import tree_attributes_input_builder
+from dash_frontend.server import app
+state_dict = {"left": False, "right": False, "second_description": None, "tree_attributes": None, "domain": None, "target": None}
 
 
 def multi_model_join_tab():
@@ -26,7 +29,7 @@ def build_multi_model_join_tab(state):
     current_state = state.get_current_state()
     objects = current_state["db"].get_str_list_of_objects()
     print(objects)
-    return [html.Div(id="multi-model-join-parent-container", children=[
+    return [html.Div(id="multi-model-join-parent-container", style = {"margin": "20px"}, children=[
         html.Div(
             id="multi-model-join-parameters-container",
             children=[
@@ -75,17 +78,23 @@ def build_multi_model_join_tab(state):
                              children=[
                     html.Br(), 
                     html.Div(id = "right-left-full-toggle-switches", children = [
-                        daq.ToggleSwitch(
-                            id='left-toggle-switch',
-                            value=False
+                        daq.BooleanSwitch(
+                            id='left-boolean-switch',
+                            on=False,
+                            persisted_props = ['on']
                         ),
-                        daq.ToggleSwitch(
-                            id='right-toggle-switch',
-                            value=False
+                        html.Div(id='left-boolean-switch-output'),
+                        daq.BooleanSwitch(
+                            id='right-boolean-switch',
+                            on=False,
+                            persisted_props = ['on']
                         ),
+                        html.Div(id='right-boolean-switch-output')
                     ]),
-                    html.Div(id='toggle-switch-output'),
-                    html.P("The following multi-model join will be executed: "),
+                    html.Br(),
+                    html.Div(id = "second_description_input"),
+                    html.Div(id = "tree_attributes_input"),
+                    html.H5("The following multi-model join will be executed: "),
                     html.Div(id="overall-join"),
                     html.Br(),
                     html.Button(id='execute-button', n_clicks=0,
@@ -148,7 +157,27 @@ def execute_multi_model_join_first_phase(value):
                 html.P("The result will be in " + result_model + " model."),
                 html.P("The morphism is defined with the following lambda function: "),
                 html.P(str(code_lines))], {'display': 'block'}
+    return [], {'display': 'none'}
 
+@app.callback(
+    dash.dependencies.Output('left-boolean-switch-output', 'children'),
+    [dash.dependencies.Input('left-boolean-switch', 'on')])
+def update_output(on):
+    state_dict["left"] = on
+    if on:
+        return 'The left join is ON'
+    else:
+        return 'The left join is OFF'
+
+@app.callback(
+    dash.dependencies.Output('right-boolean-switch-output', 'children'),
+    [dash.dependencies.Input('right-boolean-switch', 'on')])
+def update_output(on):
+    state_dict["right"] = on
+    if on:
+        return 'The right join is ON'
+    else:
+        return 'The right join is OFF'
 
 @app.callback(
     [Output("multi-model-result-container", "children"),
@@ -168,6 +197,34 @@ def execute_multi_model_join_second_phase(n_clicks):
         #return html.Div(dash_dangerously_set_inner_html.DangerouslySetInnerHTML('''<div id = "multi-model-join-loader" class="loader"></div>''')), {"display": "none"}
     else:
         raise PreventUpdate
+
+
+@app.callback(
+    Output("second_description_input", "children"),
+    [Input("multi-model-join-morphisms", "value")]
+)
+def second_description_input_toggle(value):
+    global state_dict
+    if state_dict["domain"] != None and state_dict["target"] != None:
+        domain = state.get_current_state()["db"].get_objects()[state_dict["domain"]].get_model()
+        target = state.get_current_state()["db"].get_objects()[state_dict["target"]].get_model()
+        if domain == "relational" and (target == "graph" or target == "tree"):
+            return second_description_input_builder(state_dict)
+    return []
+
+
+@app.callback(
+    Output("tree_attributes_input", "children"),
+    [Input("multi-model-join-morphisms", "value")]
+)
+def tree_attributes_input_toggle(value):
+    global state_dict
+    if state_dict["domain"] != None and state_dict["target"] != None:
+        domain = state.get_current_state()["db"].get_objects()[state_dict["domain"]].get_model()
+        if domain == "tree":
+            return tree_attributes_input_builder(state_dict)
+    return []
+
 
 # @app.callback(
 #     [Output("multi-model-result-container", "children"), Output("multi-model-join-loader", "style")],
