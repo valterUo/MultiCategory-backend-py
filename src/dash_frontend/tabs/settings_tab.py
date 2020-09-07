@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 import os
 from dash_frontend.server import app
 from dash.exceptions import PreventUpdate
+import time
 dirname = os.path.dirname(__file__)
 full_config_file_path = os.path.join(dirname, "..\\..\\external_database_connections\\config\\databases.ini")
 
@@ -58,11 +59,13 @@ def build_external_database_textarea_connection():
             value = content,
             style={'width': '100%', 'height': 300, "fontFamily": "monospace"},
         ),
-        html.Button('Update config file', id='config-textarea-state-button', n_clicks=0)
+        html.Button('Update config file', id='config-textarea-state-button', n_clicks=0),
+        html.Br(),
+        html.Div(id="config-file-update-notification")
     ])
 
 @app.callback(
-    Output('textarea-state-config', 'value'),
+    [Output('textarea-state-config', 'value'), Output("config-file-update-notification", "children")],
     [Input('config-textarea-state-button', 'n_clicks')],
     [State('textarea-state-config', 'value')]
 )
@@ -76,8 +79,8 @@ def update_output(n_clicks, value):
         if len(value) > 10:
             with open(full_config_file_path, 'w') as file:
                 file.write(value)
-            return value
+            return value, html.P("The config file updated succesfully!", style={'color': 'green'})
         else:
-            return value
+            return value, html.P("The config file is not updated!", style={'color': 'red'})
     else:
         raise PreventUpdate

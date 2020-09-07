@@ -58,7 +58,7 @@ def initialize_ecommerce_morphisms(objects):
                 lambda location : [customer for customer in customer_graph.get_iterable_collection_of_objects() if len(customer) == 2 and customer[1]["customer_locationId"] == str(location["location_id"])], 
                         customer_graph)
 
-    location_to_customer_morphism = CollectionConstructorMorphism("location_to_customer_morphism", objects["location"], location_to_customer_model_relationship, location_to_customer_collection_relationship, objects["interest"])
+    location_to_customer_morphism = CollectionConstructorMorphism("location_to_customer_morphism", objects["location"], location_to_customer_model_relationship, location_to_customer_collection_relationship, objects["customer"])
     morphisms["location_to_customer_morphism"] = location_to_customer_morphism
     
     ## Example with composition: orders xml -> key values pair: order to customer -> customer graph => orders xml -> customer graph

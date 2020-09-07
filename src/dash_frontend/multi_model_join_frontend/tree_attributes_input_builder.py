@@ -6,4 +6,4 @@ from dash_frontend.server import app
 from dash.dependencies import Input, Output
 
 def tree_attributes_input_builder(state_dict):
-    html.Div()
+    return html.Div(html.P("Input for tree attributes"))

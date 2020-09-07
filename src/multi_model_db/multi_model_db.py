@@ -73,13 +73,12 @@ class MultiModelDB:
 
     def get_morphisms_for_pair_of_objects(self, obj1, obj2):
         result = []
-        py_obj1 = self.objects[obj1]
-        py_obj2 = self.objects[obj2]
         for mor_key in self.morphisms:
             mor = self.morphisms[mor_key]
-            if mor.get_domain_collection_constructor_functor() == py_obj1 and mor.get_target_collection_constructor_functor() == py_obj2:
+            morphism_domain_name = mor.get_domain_collection_constructor_functor().get_name()
+            morphism_target_name = mor.get_target_collection_constructor_functor().get_name()
+            if morphism_domain_name == obj1 and morphism_target_name == obj2:
                 result.append({'label': mor.get_name(), 'value': mor_key})
-        print(result)
         return result
             
 

@@ -4,7 +4,7 @@ import dash_daq as daq
 import dash_html_components as html
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
-from dash_frontend.state.initialize_demo_state import state
+from dash_frontend.state.initialize_demo_state import state, parameter_state
 from dash.exceptions import PreventUpdate
 import inspect
 import dash_dangerously_set_inner_html
@@ -12,7 +12,6 @@ from dash_frontend.multi_model_join_frontend.multi_model_join import execute_mul
 from dash_frontend.multi_model_join_frontend.second_description_input_builder import second_description_input_builder
 from dash_frontend.multi_model_join_frontend.tree_attributes_input_builder import tree_attributes_input_builder
 from dash_frontend.server import app
-state_dict = {"left": False, "right": False, "second_description": None, "tree_attributes": None, "domain": None, "target": None}
 
 
 def multi_model_join_tab():
@@ -76,8 +75,12 @@ def build_multi_model_join_tab(state):
                     ),
                 ]), html.Div(id="overall-join-hiding", style={'display': 'none'},
                              children=[
-                    html.Br(), 
+                    html.Br(),
                     html.Div(id = "right-left-full-toggle-switches", children = [
+                        html.P("""You can choose left, right or full join. 
+                        Left join is defined for all the data model combinations and the right join is defined between graphs. 
+                        If the join is not avaible for the combination, the selection (ON/OFF) does not affect to the result. 
+                        The idea behind left and right joins is not exactly the same as in the relational data model."""),
                         daq.BooleanSwitch(
                             id='left-boolean-switch',
                             on=False,
@@ -93,6 +96,7 @@ def build_multi_model_join_tab(state):
                     ]),
                     html.Br(),
                     html.Div(id = "second_description_input"),
+                    html.Br(),
                     html.Div(id = "tree_attributes_input"),
                     html.H5("The following multi-model join will be executed: "),
                     html.Div(id="overall-join"),
@@ -117,8 +121,9 @@ def build_multi_model_join_tab(state):
      State('multi-model-join-target', 'value')]
 )
 def render_object_selection(n_clicks, domain, target):
-    global state_dict
-    state_dict = {'domain': domain, 'target': target}
+    state_dict = parameter_state.get_current_state()
+    state_dict["domain"] = domain
+    state_dict["target"] = target
     ctx = dash.callback_context
     prop_id = ""
     if ctx.triggered:
@@ -129,7 +134,6 @@ def render_object_selection(n_clicks, domain, target):
             current_state = state.get_current_state()
             database = current_state["db"]
             result = database.get_morphisms_for_pair_of_objects(domain, target)
-            print(type(result))
             return [o for o in result], {"display": "block"}
         else:
            raise PreventUpdate
@@ -144,7 +148,7 @@ def render_object_selection(n_clicks, domain, target):
 )
 def execute_multi_model_join_first_phase(value):
     if value != None:
-        global state_dict
+        state_dict = parameter_state.get_current_state()
         state_dict["morphism"] = value
         result_model = state.get_current_state()["db"].get_objects()[
             state_dict["domain"]].get_model()
@@ -163,6 +167,7 @@ def execute_multi_model_join_first_phase(value):
     dash.dependencies.Output('left-boolean-switch-output', 'children'),
     [dash.dependencies.Input('left-boolean-switch', 'on')])
 def update_output(on):
+    state_dict = parameter_state.get_current_state()
     state_dict["left"] = on
     if on:
         return 'The left join is ON'
@@ -173,6 +178,7 @@ def update_output(on):
     dash.dependencies.Output('right-boolean-switch-output', 'children'),
     [dash.dependencies.Input('right-boolean-switch', 'on')])
 def update_output(on):
+    state_dict = parameter_state.get_current_state()
     state_dict["right"] = on
     if on:
         return 'The right join is ON'
@@ -191,6 +197,7 @@ def execute_multi_model_join_second_phase(n_clicks):
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
     if prop_id == "execute-button":
+        state_dict = parameter_state.get_current_state()
         result_element = execute_multi_model_join(state, state_dict)
         print(result_element)
         return html.Div(result_element), {"display": "none"}
@@ -204,12 +211,12 @@ def execute_multi_model_join_second_phase(n_clicks):
     [Input("multi-model-join-morphisms", "value")]
 )
 def second_description_input_toggle(value):
-    global state_dict
+    state_dict = parameter_state.get_current_state()
     if state_dict["domain"] != None and state_dict["target"] != None:
         domain = state.get_current_state()["db"].get_objects()[state_dict["domain"]].get_model()
         target = state.get_current_state()["db"].get_objects()[state_dict["target"]].get_model()
         if domain == "relational" and (target == "graph" or target == "tree"):
-            return second_description_input_builder(state_dict)
+            return second_description_input_builder()
     return []
 
 
@@ -218,11 +225,11 @@ def second_description_input_toggle(value):
     [Input("multi-model-join-morphisms", "value")]
 )
 def tree_attributes_input_toggle(value):
-    global state_dict
+    state_dict = parameter_state.get_current_state()
     if state_dict["domain"] != None and state_dict["target"] != None:
         domain = state.get_current_state()["db"].get_objects()[state_dict["domain"]].get_model()
         if domain == "tree":
-            return tree_attributes_input_builder(state_dict)
+            return tree_attributes_input_builder()
     return []
 
 
