@@ -27,7 +27,7 @@ def multi_model_join_tab():
 def build_multi_model_join_tab(state):
     current_state = state.get_current_state()
     objects = current_state["db"].get_str_list_of_objects()
-    print(objects)
+    #print(objects)
     return [html.Div(id="multi-model-join-parent-container", style = {"margin": "20px"}, children=[
         html.Div(
             id="multi-model-join-parameters-container",
@@ -37,7 +37,7 @@ def build_multi_model_join_tab(state):
                     children=[html.P(
                         "Select the domain dataset for multi-model join."
                     ),
-                        dcc.Dropdown(
+                    dcc.Dropdown(
                         id="multi-model-join-domain",
                         style={'width': '50%'},
                         options=objects,
@@ -103,7 +103,6 @@ def build_multi_model_join_tab(state):
                     html.Br(),
                     html.Button(id='execute-button', n_clicks=0,
                                 children='Perform multi-model join'),
-                    html.Br(),
                 ]
                 ),
             ]
@@ -195,11 +194,10 @@ def execute_multi_model_join_second_phase(n_clicks):
     prop_id = ""
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
     if prop_id == "execute-button":
         state_dict = parameter_state.get_current_state()
         result_element = execute_multi_model_join(state, state_dict)
-        print(result_element)
+        #print(result_element)
         return html.Div(result_element), {"display": "none"}
         #return html.Div(dash_dangerously_set_inner_html.DangerouslySetInnerHTML('''<div id = "multi-model-join-loader" class="loader"></div>''')), {"display": "none"}
     else:

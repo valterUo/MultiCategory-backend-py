@@ -68,6 +68,9 @@ class TableCollection:
         return self.h5file_path
 
     def get_iterable_collection_of_objects(self):
+        if self.table == None:
+            self.h5file = open_file(self.h5file_path, mode="r+", title= self.name + " file")
+            self.table = self.h5file.get_node("/" + self.name, self.name)
         return self.table
 
     def get_rows(self):
@@ -126,17 +129,17 @@ class TableCollection:
                     continue
 
 
-    def import_json_to_table(self, delimiter):
-        try:
-            data_set = json.load(json_file)
-        except JSONDecodeError:
-            print("JSON Decoder Error. Trying read line by line.")
-            try:
-                data_set = []
-                json_file.seek(0,0)  
-                for json_line in json_file.readlines():
-                    parsed_line = json.loads(json_line)
-                    data_set.append(parsed_line)
-            except Exception as e:
-                print("JSON file is invalid: ", e)
-        return data_set
+    # def import_json_to_table(self, delimiter):
+    #     try:
+    #         data_set = json.load(json_file)
+    #     except JSONDecodeError:
+    #         print("JSON Decoder Error. Trying read line by line.")
+    #         try:
+    #             data_set = []
+    #             json_file.seek(0,0)  
+    #             for json_line in json_file.readlines():
+    #                 parsed_line = json.loads(json_line)
+    #                 data_set.append(parsed_line)
+    #         except Exception as e:
+    #             print("JSON file is invalid: ", e)
+    #     return data_set

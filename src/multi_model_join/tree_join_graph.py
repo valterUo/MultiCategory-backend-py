@@ -34,9 +34,13 @@ def tree_join_graph(first_collection_constructor, collection_constructor_morphis
 
         ## After this we modify the copy so that the orginal data are not affected
         i = 0
-        objects = result_collection.find_elements_with_attribute_and_path(attributes, "")
-        if len(objects) == 0:
-            raise Exception("No nodes for the given attributes.", attributes)
+        objects = []
+        for attribute in attributes:
+            result_objects = result_collection.find_elements_with_attribute_and_path(attribute, "")
+            if len(result_objects) == 0:
+                raise Exception("No nodes for the given attributes.", attributes)
+            else:
+                objects = objects + result_objects
         for pair in objects:
             if i % 1000 == 0 and i != 0:
                 print("Nodes processed: " + str(i))
@@ -44,21 +48,22 @@ def tree_join_graph(first_collection_constructor, collection_constructor_morphis
             ## The path gives a unique and relatively fast way to access the element again and substitute the new value into the tree.
             ## Unlike graphs and tables, trees do not have unique id system in this demo.
             elem, path = pair[0], pair[1]
+            print(elem, path)
             result_list = collection_relationship.get_relationship(elem)
             print(result_list)
             if len(result_list) > 0:
                 new_elem = dict()
                 for elem2 in result_list:
-                    print(elem2)
+                    #print(elem2)
                     new_elem = merge_two_dicts(new_elem, merge_two_dicts(elem, elem2[len(elem2) - 1]))
+                    print(path, new_elem)
                 update(result, path, new_elem)
             elif len(result_list) == 0 and left == False:
                 remove(path, result)
             i+=1
 
         result_model = model_join(first_model, collection_constructor_morphism.get_model_relationship(), second_model)
-        result = CollectionConstructor(result_file_name, result_model, result_collection)
-        return result
+        return CollectionConstructor(result_file_name, result_model, result_collection)
 
 
 def path_get(mydict, path):

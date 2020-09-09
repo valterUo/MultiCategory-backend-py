@@ -1,8 +1,8 @@
 class State:
 
     def __init__(self, initial_state, possible_states):
-        self.state = possible_states[initial_state]
         self.possible_states = possible_states
+        self.state = self.possible_states[initial_state]
 
     def get_current_state(self):
         return self.state

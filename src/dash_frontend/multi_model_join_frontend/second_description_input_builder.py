@@ -14,7 +14,7 @@ def second_description_input_builder():
         html.Div(id="second_description_inputs", children=[html.Div(style={'width': '100%', 'display': 'inline-block', 'position': 'relative'}, children=[
             dcc.Input(
                 id="input_description",
-                placeholder="add attribute",
+                placeholder="Add attribute",
                 type="text",
                 style={'width': '49%', 'display': 'inline-block'}
             ),

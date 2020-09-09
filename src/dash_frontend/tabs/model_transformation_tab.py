@@ -18,7 +18,7 @@ def build_model_tranformation_tab(state):
         html.Div(
             id="set-specs-intro-container",
             children=html.P(
-                "This area is for creating selective queries and creating new objects and morphisms to the selected multi-model database."
+                "This area is for creating model transformations between the external databases as Postgres and Neo4j."
             ),
         ),
     ]

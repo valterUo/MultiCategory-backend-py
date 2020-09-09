@@ -1,22 +1,29 @@
 import dash_cytoscape as cyto
 import networkx as nx
 import dash_core_components as dcc
+from dash_frontend.state.initialize_demo_state import multi_model_join_results
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import json
+from dash_frontend.server import app
 
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
 Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 2'}}
 """
 
-def general_nx_grah_to_cytoscape(G):
+def general_nx_grah_to_cytoscape():
+    result = multi_model_join_results.get_current_state()
+    G = result.get_collection().get_graph()
     nodes, edges = [], []
     for node in G.nodes.data():
         print(node[1])
-        nodes.append({'data': {'id': node[0], 'label': str(node[1])}})
+        nodes.append({'data': {'id': node[0], 'label': str(next(iter(node[1].values())))}})
     for edge in G.edges.data():
         print(edge)
         edges.append(
-            {'data': {'source': edge[0], 'target': edge[1], 'label': "label"}})
-    cyto_fig = cyto.Cytoscape(
+            {'data': {'source': edge[0], 'target': edge[1], 'label': ""}})
+    cyto_fig = html.Div( children = [cyto.Cytoscape(
         id='cytoscape-result',
         layout={'name': 'circle'},
         style={'width': '90%', 'margin': '0 auto',
@@ -33,15 +40,53 @@ def general_nx_grah_to_cytoscape(G):
             {
                 'selector': 'edge',
                 'style': {
-                    'content': 'data(label)',
+                    #'content': 'data(label)',
                     'color': 'black',
                     'curve-style': 'bezier',
                     'target-arrow-shape': 'triangle'
                 }
             }
         ]
-    )
+    ), html.Pre(id='cytoscape-tapNodeData-output', style={
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll', 'width': '90%' }),
+        html.Pre(id='cytoscape-tapEdgeData-output', style={
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll', 'width': '90%' })])
     return cyto_fig
+
+@app.callback(Output('cytoscape-tapNodeData-output', 'children'),
+              [Input('cytoscape-result', 'tapNodeData')])
+def displayTapNodeData(data):
+    if data != None:
+        result = multi_model_join_results.get_current_state()
+        G = result.get_collection().get_graph()
+        for node in G.nodes.data():
+            if node[0] == data["id"]:
+                return decode_to_json(node[1])
+    else:
+        return "Select node"
+
+def decode_to_json(old_dict):
+    new_dict = dict()
+    for key in old_dict:
+        try:
+            new_dict[key] = old_dict[key].decode("utf-8")
+        except:
+            new_dict[key] = old_dict[key]
+    return json.dumps(new_dict, indent=2)
+
+@app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
+                  [Input('cytoscape-result', 'tapEdgeData')])
+def displayTapEdgeData(data):
+    if data != None:
+        result = multi_model_join_results.get_current_state()
+        G = result.get_collection().get_graph()
+        for edge in G.edges.data():
+            if data["source"] == edge[0] and data["target"] == edge[1]:
+                return "You clicked the edge between " + data['source'].upper() + " and " + data['target'].upper() + " containing information: " + decode_to_json(edge[2])
+    else:
+        return "Select edge"
 
 
 def nx_grah_to_cytoscape(G):
@@ -77,73 +122,3 @@ def nx_grah_to_cytoscape(G):
         ]
     )
     return cyto_fig
-
-## This function does not work currently but it draws nice graphs. I do not understand how Scatter class works.
-
-
-def nx_graph_to_plotly(G):
-    edge_x, edge_y = [], []
-    for edge in G.edges():
-        x0, y0 = G.nodes[edge[0]]['pos']
-        x1, y1 = G.nodes[edge[1]]['pos']
-        edge_x.append(x0)
-        edge_x.append(x1)
-        edge_y.append(y0)
-        edge_y.append(y1)
-
-    print(edge_x)
-
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=2.0, color='#888'),
-        hoverinfo='none',
-        mode='lines')
-
-    node_x, node_y = [], []
-    for node in G.nodes():
-        x, y = G.nodes[node]['pos']
-        node_x.append(x)
-        node_y.append(y)
-
-    node_trace = go.Scatter(
-        x=node_x, y=node_y,
-        mode='markers',
-        hoverinfo='text',
-        marker=dict(size=20)
-        #     showscale=True,
-        #     # colorscale options
-        #     #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-        #     #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-        #     #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-        #     colorscale='Electric',
-        #     reversescale=True,
-        #     color=[],
-        #     size=20,
-        #     colorbar=dict(
-        #         thickness=15,
-        #         title='Node Connections',
-        #         xanchor='left',
-        #         titleside='right'
-        #     ),
-        #     line_width=2)
-    )
-
-    node_adjacencies = []
-    node_text = []
-    for node, adjacencies in enumerate(G.adjacency()):
-        node_adjacencies.append(len(adjacencies[1]))
-        node_text.append('# of connections: '+str(len(adjacencies[1])))
-
-    node_trace.marker.color = node_adjacencies
-    node_trace.text = node_text
-    fig = go.Figure(data=[edge_trace, node_trace],
-                    layout=go.Layout(
-        title='<br>' + "title",  # G.graph["title"],
-        titlefont_size=16,
-        showlegend=False,
-        hovermode='closest',
-        margin=dict(b=5, l=5, r=5, t=5),
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-    )
-    return dcc.Graph(figure=fig)

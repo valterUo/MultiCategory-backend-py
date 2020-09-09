@@ -125,8 +125,10 @@ class TreeCollection:
             for key in tree:
                 if key == attribute:
                     if type(tree[key]) == list or type(tree[key]) == XmlListConfig:
+                        i = 0
                         for elem in tree[key]:
-                            result.append((elem, path + "/" + key))
+                            result.append((elem, path + "/" + key + "/" + str(i)))
+                            i+=1
                     else:
                         result.append((tree, path + "/" + key))
                 result = result + self.find_elements_with_attribute_and_path(attribute, path + "/" + key, tree[key])

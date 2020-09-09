@@ -90,7 +90,7 @@ def render_tab_content(tab_switch):
     if tab_switch == "tab1":
         return build_settings_tab(state)
     elif tab_switch == "tab3":
-        return build_query_tab(state)
+        return build_query_tab()
     elif tab_switch == "tab4":
         return build_multi_model_join_tab(state)
     elif tab_switch == "tab5":

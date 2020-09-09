@@ -17,11 +17,13 @@ possible_states = {
 ## Initially the E-commerce database is selected.
 state = State("ecommerce", possible_states)
 
+## Parameters for multi-model join
 parameter_state_dict = {"parameters": {"left": False, "right": False, "second_description": None,
                                        "tree_attributes": None, "domain": None, "target": None, "morphism": None}}
 
 parameter_state = State("parameters", parameter_state_dict)
 
+## State to store automatic examples for second table description
 description = dict()
 description["customer_id"] = StringCol(64, dflt='NULL')
 description["name"] = StringCol(64, dflt='NULL')
@@ -33,3 +35,6 @@ automatic_example_settings_dict = {
 }
 
 automatic_example_settings = State("ecommerce", automatic_example_settings_dict)
+
+## State to store multi-model results
+multi_model_join_results = State("initial", {"initial": {}})

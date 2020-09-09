@@ -29,9 +29,9 @@ def compose_lambda_functions(lambda1, lambda2):
     def composition_function(x):
         result = []
         for y in lambda2(x):
-            print(y)
+            #print(y)
             for z in lambda1(y):
-                print(z)
+                #print(z)
                 result.append(z)
         return result
     return composition_function
