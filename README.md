@@ -11,9 +11,9 @@ The following join operations are currently implemented:
 - [x] Relational + Graph: inner and left joins
 - [] Tree + Relational
 - [] Tree + Tree
-- [] Tree + Graph
+- [x] Tree + Graph
 - [x] Graph + Relational: inner and left joins
-- [] Graph + Tree
+- [x] Graph + Tree
 - [x] Graph + Graph: inner, left and right joins
 
 More details about the implementation and the documentation: https://multicategory.github.io/ 
