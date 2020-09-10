@@ -1,4 +1,8 @@
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
+from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
+from initialization_of_demo_databases.initialize_unibench_sf10 import UnibenchMultiModelDatabase
 
 # patent_db = PatentMultiModelDatabase()
-ecommerce_db = ECommerceMultiModelDatabase()
+# ecommerce_db = ECommerceMultiModelDatabase()
+
+unibench = UnibenchMultiModelDatabase()

@@ -39,6 +39,8 @@ class GraphCollection:
             if not file_exists:
                 graph = self.parse_directed_graph()
                 print("Created edges: " + str(graph.number_of_edges()))
+                print("Created nodes: " + str(graph.number_of_nodes()))
+                print("Writing the graph...")
                 nx.write_gpickle(graph, self.target_file_path,
                                 protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -68,19 +70,29 @@ class GraphCollection:
         return list(graph.nodes.data()) + list(graph.edges.data())
 
     def parse_directed_graph(self):
-        DG = nx.DiGraph()
+        G = nx.DiGraph()
         if self.vertex_info == []:
             self.read_edges_to_list()
-            DG.add_edges_from(self.edge_list)
-            return DG
+            G.add_edges_from(self.edge_list)
+            return G
         else:
             self.read_edges_to_list()
             self.read_vertex_csv_to_dict()
-            DG.add_edges_from(self.edge_list)
+            G.add_edges_from(self.edge_list)
             for key in self.vertex_dict:
-                for subkey in self.vertex_dict[key]:
-                    DG.nodes[key][subkey] = self.vertex_dict[key][subkey]
-            return DG
+                try:
+                    for attribute in self.vertex_dict[key]:
+                        try:
+                            G.nodes[key][attribute] = self.vertex_dict[key][attribute]
+                        except KeyError:
+                            print("KeyError with key " + key + " at value " + str(self.vertex_dict[key]))
+                            print("""This warning indicates that the vertex file contained more nodes than the edge file had connections. 
+                            The vertex will be added as an isolated vertex with no edge connections.""")
+                            G.add_nodes_from([(key, self.vertex_dict[key])])
+                            break
+                except KeyError:
+                            print("KeyError with key " + key)
+            return G
 
     def read_vertex_csv_to_dict(self):
         for vertex in self.vertex_info:
@@ -100,7 +112,7 @@ class GraphCollection:
                     except csv.Error:
                         print("Error while processing the row: ", row)
                     except UnicodeDecodeError:
-                        #print("Unicode error. The row is be skipped: ", row)
+                        print("Unicode error. The row is be skipped: ", row)
                         continue
                     except IndexError:
                         print("Index error on the row: ", row)
