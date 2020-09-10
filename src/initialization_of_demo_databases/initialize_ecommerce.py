@@ -10,7 +10,7 @@ from category_of_collection_constructor_functors.collection_constructor import C
 from multi_model_db.multi_model_db import MultiModelDB
 from multi_model_join.multi_model_join import MultiModelJoin
 from initialization_of_demo_databases.initialize_ecommerce_morphisms import initialize_ecommerce_morphisms
-from copy import deepcopy
+from constructing_multi_model_db.collection_constructor.create_collection_constructor import create_collection_constructors
 dirname = os.path.dirname(__file__)
 e_commerce_instance = None
 
@@ -18,8 +18,7 @@ class ECommerceMultiModelDatabase():
 
     def __init__(self):
 
-        objects = dict()
-        morphisms = dict()
+        ecommerce_config = []
 
         customers_vertex_path = os.path.join(
             dirname, "..\\..\\original_data\\eCommerce\\customerVertex.csv")
@@ -40,71 +39,46 @@ class ECommerceMultiModelDatabase():
         target_folder = os.path.join(
             dirname, "..\\..\\db_files\\ecommerce")
 
-        ## Customer graph
+        ## ===== Customer graph =====
         name = "customer"
-        edge_info = [{"file_path": customers_edge_path, "delimiter": ";", "schema": ["source","target"], "source_attribute_index": 0, "target_attribute_index": 1}]
-        vertex_info = [ { "file_path": customers_vertex_path, "schema": ["customer_id", "name", "creditLimit", "customer_locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
-        
-        customer_graph = GraphCollection(name, vertex_info, edge_info, target_folder)
-        customer_graph_model = GraphModelCategory(name, vertex_object = ["customer_id", "name", "creditLimit", "customer_locationId"], edge_object = ["knows"])
-        customer_graph_collection = CollectionConstructor(name, customer_graph_model, customer_graph)
-        objects[name] = customer_graph_collection
+        customer_edge_info = [{"file_path": customers_edge_path, "delimiter": ";", "schema": ["source","target"], "source_attribute_index": 0, "target_attribute_index": 1}]
+        customer_vertex_info = [ { "file_path": customers_vertex_path, "schema": ["customer_id", "name", "creditLimit", "customer_locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
+        customer_vertex_model = ["customer_id", "name", "creditLimit", "customer_locationId"]
+        ecommerce_config.append({"model": "graph", "name": "customer", "edgeInfo": customer_edge_info, "vertexInfo": customer_vertex_info, "vertexModel": customer_vertex_model, "edgeModel": ["knows"], "targetFolder": target_folder})
 
-        ## Interest graph
+        ## ===== Interest graph =====
         name = "interest"
-        edge_info = [{"file_path": interest_edge_path, "delimiter": ";", "schema": ["customerId","targetId", "weight"], "source_attribute_index": 0, "target_attribute_index": 1}]
-        vertex_info = [ { "file_path": interest_vertex_path, "schema": ["interest_id", "topic", "interest_locationId"], "key_attribute_index": 0, "delimiter": ";" },
+        interest_edge_info = [{"file_path": interest_edge_path, "delimiter": ";", "schema": ["customerId","targetId", "weight"], "source_attribute_index": 0, "target_attribute_index": 1}]
+        interest_vertex_info = [ { "file_path": interest_vertex_path, "schema": ["interest_id", "topic", "interest_locationId"], "key_attribute_index": 0, "delimiter": ";" },
         { "file_path": customers_vertex_path, "schema": ["customer_id", "name", "creditLimit", "customer_locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
+        interest_vertex_model = ["customer_id", "name", "creditLimit", "customer_locationId", "interest_id", "topic", "interest_locationId"]
+        ecommerce_config.append({"model": "graph", "name": "interest", "edgeInfo": interest_edge_info, "vertexInfo": interest_vertex_info, "vertexModel": interest_vertex_model, "edgeModel": ["interested"], "targetFolder": target_folder})
         
-        interest_graph = GraphCollection(name, vertex_info, edge_info, target_folder)
-        interest_graph_model = GraphModelCategory(name, vertex_object = ["customer_id", "name", "creditLimit", "customer_locationId", "interest_id", "topic", "interest_locationId"], edge_object=["interested"])
-        interest_graph_collection = CollectionConstructor(name, interest_graph_model, interest_graph)
-        objects[name] = interest_graph_collection
-
-        ## Location table
+        ## ===== Location table =====
         location_attributes_datatypes = dict()
         location_attributes_datatypes["location_id"] = Int32Col()
         location_attributes_datatypes["address"] = StringCol(64, dflt='NULL')
         location_attributes_datatypes["zipCode"] = StringCol(32, dflt='NULL')
         location_attributes_datatypes["city"] = StringCol(32, dflt='NULL')
         location_attributes_datatypes["country"] = StringCol(32, dflt='NULL')
+        ecommerce_config.append({"model": "relational", "name": "location", "attributes_datatypes": location_attributes_datatypes, "sourceFile": locations_table_path, "delimiter": ";", "primaryKey": "location_id", "targetFolder": target_folder})
 
-        name = "location"
-        primary_key = "location_id"
-        location_table_model = TableModelCategory(name, list(location_attributes_datatypes.keys()), primary_key)
-        location_table = TableCollection(name, location_attributes_datatypes, locations_table_path, target_folder, ";")
-        location_collection = CollectionConstructor(name, location_table_model, location_table)
-        objects[name] = location_collection
+        ## ===== Orders XML =====
+        ecommerce_config.append({"model": "tree", "name": "orders", "format": "XML", "sourceFile": orders_xml_path, "targetFolder": target_folder})
 
-        ## Orders XML
-        name = "orders"
-        orders_tree_model = TreeModelCategory(name)
-        orders_tree_collection = TreeCollection(name, orders_xml_path, target_folder, "XML")
-        orders_collection = CollectionConstructor(name, orders_tree_model, orders_tree_collection)
-        objects[name] = orders_collection
-
-        ## Sites table
+        ## ===== Sites table =====
         site_attributes_datatypes = dict()
         site_attributes_datatypes["site_id"] = Int32Col()
         site_attributes_datatypes["site_locationId"] = Int32Col()
         site_attributes_datatypes["name"] = StringCol(32, dflt='NULL')
         site_attributes_datatypes["year"] = Int32Col(dflt= 0)
         site_attributes_datatypes["description"] = StringCol(64, dflt='NULL')
+        ecommerce_config.append({"model": "relational", "name": "site", "attributes_datatypes": site_attributes_datatypes, "sourceFile": sites_table_path, "delimiter": ";", "primaryKey": "site_id", "targetFolder": target_folder})
 
-        name = "site"
-        primary_key = "site_id"
-        site_table_model = TableModelCategory(name, list(site_attributes_datatypes.keys()), primary_key)
-        site_table = TableCollection(name, site_attributes_datatypes, sites_table_path, target_folder, ";")
-        site_collection = CollectionConstructor(name, site_table_model, site_table)
-        objects[name] = site_collection
+        ## ===== Key-value pairs =====
+        ecommerce_config.append({"model": "tree", "name": "key_value_pairs", "format": "JSON", "sourceFile": key_value_pairs_path, "targetFolder": target_folder})
 
-        ## Key-value pairs
-        name = "key_value_pairs"
-        key_value_tree_model = TreeModelCategory(name)
-        key_value_pairs = TreeCollection(name, key_value_pairs_path, target_folder)
-        key_value_pairs_collection = CollectionConstructor(name, key_value_tree_model, key_value_pairs)
-        objects[name] = key_value_pairs_collection
-
+        objects = create_collection_constructors(ecommerce_config)
         morphisms = initialize_ecommerce_morphisms(objects)
 
         self.ecommerce_multi_model_db = MultiModelDB("ecommerce multi-model database", objects, morphisms)
@@ -122,7 +96,7 @@ class ECommerceMultiModelDatabase():
         join1 = MultiModelJoin(site, site_to_location_morphism, location)
 
         customer_graph = self.ecommerce_multi_model_db.get_objects()["customer"]
-        customer_to_location_morphism = site_to_location_morphism = self.ecommerce_multi_model_db.get_morphisms()["customer_to_location_morphism"]
+        customer_to_location_morphism = self.ecommerce_multi_model_db.get_morphisms()["customer_to_location_morphism"]
 
         join2 = MultiModelJoin(customer_graph, customer_to_location_morphism, location, True)
 

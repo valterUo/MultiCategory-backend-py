@@ -6,24 +6,33 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import json
 from dash_frontend.server import app
+from supportive_functions.json_manipulations import decode_to_json
 
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
 Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 2'}}
 """
 
-def general_nx_grah_to_cytoscape():
-    result = multi_model_join_results.get_current_state()
-    G = result.get_collection().get_graph()
+
+def parse_cytoscape_nodes_edges(G):
     nodes, edges = [], []
     for node in G.nodes.data():
         print(node[1])
-        nodes.append({'data': {'id': node[0], 'label': str(next(iter(node[1].values())))}})
+        nodes.append(
+            {'data': {'id': node[0], 'label': str(next(iter(node[1].values())))}})
     for edge in G.edges.data():
         print(edge)
         edges.append(
             {'data': {'source': edge[0], 'target': edge[1], 'label': ""}})
-    cyto_fig = html.Div( children = [cyto.Cytoscape(
+    return nodes, edges
+
+
+def general_nx_grah_to_cytoscape():
+    result = multi_model_join_results.get_current_state()
+    G = result.get_collection().get_graph()
+    nodes, edges = parse_cytoscape_nodes_edges(G)
+
+    cyto_fig = html.Div(children=[cyto.Cytoscape(
         id='cytoscape-result',
         layout={'name': 'circle'},
         style={'width': '90%', 'margin': '0 auto',
@@ -49,11 +58,12 @@ def general_nx_grah_to_cytoscape():
         ]
     ), html.Pre(id='cytoscape-tapNodeData-output', style={
         'border': 'thin lightgrey solid',
-        'overflowX': 'scroll', 'width': '90%' }),
+        'overflowX': 'scroll', 'width': '90%'}),
         html.Pre(id='cytoscape-tapEdgeData-output', style={
-        'border': 'thin lightgrey solid',
-        'overflowX': 'scroll', 'width': '90%' })])
+            'border': 'thin lightgrey solid',
+            'overflowX': 'scroll', 'width': '90%'})])
     return cyto_fig
+
 
 @app.callback(Output('cytoscape-tapNodeData-output', 'children'),
               [Input('cytoscape-result', 'tapNodeData')])
@@ -67,17 +77,9 @@ def displayTapNodeData(data):
     else:
         return "Select node"
 
-def decode_to_json(old_dict):
-    new_dict = dict()
-    for key in old_dict:
-        try:
-            new_dict[key] = old_dict[key].decode("utf-8")
-        except:
-            new_dict[key] = old_dict[key]
-    return json.dumps(new_dict, indent=2)
 
 @app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
-                  [Input('cytoscape-result', 'tapEdgeData')])
+              [Input('cytoscape-result', 'tapEdgeData')])
 def displayTapEdgeData(data):
     if data != None:
         result = multi_model_join_results.get_current_state()

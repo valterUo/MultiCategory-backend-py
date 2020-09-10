@@ -7,7 +7,10 @@ from dash.dependencies import Input, Output
 import json
 from dash_frontend.server import app
 import uuid
+import dash
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
+from supportive_functions.json_manipulations import decode_shelve_to_json
+from dash.exceptions import PreventUpdate
 
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
@@ -16,14 +19,14 @@ Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 
 
 def tree_to_cytoscape():
     nodes, edges, root_ids = dict_to_tree()
-    cyto_fig = html.Div( children = [cyto.Cytoscape(
+    cyto_fig = html.Div(children=[cyto.Cytoscape(
         id='cytoscape-tree-result',
         layout={
-                'name': 'breadthfirst',
-                'roots': root_ids
-            },
-        style={'width': '90%', 'margin': '0 auto',
-               'height': '800px', 'backgroundColor': '#f8f7ed'},
+            'name': 'breadthfirst',
+            'roots': root_ids
+        },
+        style={'width': '100%', 'margin': '0 auto',
+               'height': '900px', 'backgroundColor': '#f8f7ed'},
         elements=nodes + edges,
         stylesheet=[
             {
@@ -36,38 +39,33 @@ def tree_to_cytoscape():
             {
                 'selector': 'edge',
                 'style': {
-                    #'content': 'data(label)',
                     'color': 'black',
                     'curve-style': 'bezier',
                     'target-arrow-shape': 'triangle'
                 }
             }
         ]
-    ), html.Pre(id='cytoscape-tapNodeData-output-tree', style={
-        'border': 'thin lightgrey solid',
-        'overflowX': 'scroll', 'width': '90%' })])
+    ), html.Br(), html.Pre(id='output-tree-as-json', style={'display': 'none'}), html.Br(),
+        html.Button(id="show-json", children="SHOW TREE AS JSON")])
     return cyto_fig
 
-# @app.callback(Output('cytoscape-tapNodeData-output-tree', 'children'),
-#               [Input('cytoscape-tree-result', 'tapNodeData')])
-# def displayTapNodeData(data):
-#     if data != None:
-#         result = multi_model_join_results.get_current_state()
-#         G = result.get_collection().get_tree()
-#         for node in G.nodes.data():
-#             if node[0] == data["id"]:
-#                 return decode_to_json(node[1])
-#     else:
-#         return "Select node"
 
-def decode_to_json(old_dict):
-    new_dict = dict()
-    for key in old_dict:
-        try:
-            new_dict[key] = old_dict[key].decode("utf-8")
-        except:
-            new_dict[key] = old_dict[key]
-    return json.dumps(new_dict, indent=2)
+@app.callback(
+    [Output("output-tree-as-json", "children"),
+     Output("output-tree-as-json", 'style'), Output("show-json", "style")],
+    [Input("show-json", "n_clicks")],
+)
+def show_whole_tree(button_click):
+    ctx = dash.callback_context
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if prop_id == "show-json":
+            result = multi_model_join_results.get_current_state()
+            T = result.get_collection().get_tree()
+            return json.dumps(decode_shelve_to_json(None, T), indent=2), {'display': 'block', 'border': 'thin lightgrey solid', 'overflowX': 'scroll', 'width': '100%'}, {'display': 'none'}
+    else:
+        raise PreventUpdate
+
 
 def walk_tree(previous_id, root, tree, nodes, edges):
     if type(root) == dict or type(root) == XmlDictConfig:
