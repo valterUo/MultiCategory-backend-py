@@ -8,7 +8,7 @@ from supportive_functions.row_manipulations import find_values_from_tree
 import shelve
 from multi_model_join.tree_manipulation_functions import update, remove
 
-def tree_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left, attributes):
+def tree_join_table(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left, attributes):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()
@@ -37,9 +37,11 @@ def tree_join_graph(first_collection_constructor, collection_constructor_morphis
         i = 0
         objects = []
         for attribute in attributes:
+            ## Because it is unefficient to loop over all the nodes in the tree, the user must specify the attributes that
+            ## we loop. Each attribute has a specified path related to them that allows us faster access to the object.
             result_objects = result_collection.find_elements_with_attribute_and_path(attribute, "")
             if len(result_objects) == 0:
-                raise Exception("No nodes for the given attributes.", attributes)
+                raise Exception("No nodes for the given attribute.", attributes)
             else:
                 objects = objects + result_objects
         for pair in objects:
@@ -49,13 +51,13 @@ def tree_join_graph(first_collection_constructor, collection_constructor_morphis
             ## The path gives a unique and relatively fast way to access the element again and substitute the new value into the tree.
             ## Unlike graphs and tables, trees do not have unique id system in this demo.
             elem, path = pair[0], pair[1]
-            print(elem, path)
+            #print(elem, path)
             result_list = collection_relationship.get_relationship(elem)
-            print(result_list)
+            #print(result_list)
             if len(result_list) > 0:
                 new_elem = dict()
                 for elem2 in result_list:
-                    #print(elem2)
+                    print(elem2)
                     new_elem = merge_two_dicts(new_elem, merge_two_dicts(elem, elem2[len(elem2) - 1]))
                     print(path, new_elem)
                 update(result, path, new_elem)

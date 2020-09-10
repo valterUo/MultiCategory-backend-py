@@ -8,7 +8,7 @@ from supportive_functions.row_manipulations import find_values_from_tree
 import shelve
 from multi_model_join.tree_manipulation_functions import update, remove
 
-def tree_join_graph(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left, attributes):
+def tree_join_tree(first_collection_constructor, collection_constructor_morphism, second_collection_constructor, left, attributes):
         collection_relationship = collection_constructor_morphism.get_collection_relationship()
 
         first_collection = first_collection_constructor.get_collection()
