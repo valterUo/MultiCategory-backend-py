@@ -20,6 +20,9 @@ class PatentMultiModelDatabase():
         objects = dict()
         morphisms = dict()
 
+        # target_folder = os.path.join(
+        #     dirname, "..\\..\\db_files\\patent")
+
         assignee_data_path = os.path.join(
             dirname, "..\\..\\original_data\\patent\\assignee.table")
         category_data_path = os.path.join(
@@ -32,8 +35,7 @@ class PatentMultiModelDatabase():
             dirname, "..\\..\\original_data\\patent\\inventor.table")
         patent_data_path = os.path.join(
             dirname, "..\\..\\original_data\\patent\\patent.table")
-        target_folder = os.path.join(
-            dirname, "..\\..\\db_files\\patent")
+        target_folder = "E:\\MultiCategory\\db_files\\patent"
 
         ## Constructing objects
         ## Patent table

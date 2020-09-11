@@ -4,5 +4,4 @@ from initialization_of_demo_databases.initialize_unibench_sf10 import UnibenchMu
 
 # patent_db = PatentMultiModelDatabase()
 # ecommerce_db = ECommerceMultiModelDatabase()
-
-unibench = UnibenchMultiModelDatabase()
+# unibench = UnibenchMultiModelDatabase("SF30")

@@ -42,7 +42,7 @@ class TableCollection:
                 print("The database file in path " + self.h5file_path + " does not exists. The file will be created.")
                 self.create_h5_file(file_extension, delimiter)
             else:
-                print("The database file for " + self.name + " exsits.")
+                print("The database file for " + self.name + " exsists.")
             self.h5file = open_file(self.h5file_path, mode="r+", title= self.name + " file")
             self.table = self.h5file.get_node("/" + self.name, self.name)
             if self.primary_key != None:
@@ -112,8 +112,11 @@ class TableCollection:
                 try:
                     row = next(table_reader)
                     for j in range(len(key_list)):
-                        #print(key_list[j], row[j])
-                        tablerow[key_list[j]] = row[j]
+                        try:
+                            tablerow[key_list[j]] = row[j]
+                        except TypeError:
+                            #print(key_list[j], row[j], "with type " + str(type(row[j])))
+                            tablerow[key_list[j]] = row[j].encode("utf-8")
                     tablerow.append()
                 except StopIteration:
                     print("Flushing...")

@@ -1,5 +1,6 @@
 from abstract_category.abstract_object import AbstractObject
 from abstract_category.abstract_morphism import AbstractMorphism
+import networkx as nx
 
 class GraphModelCategory:
 
@@ -9,19 +10,22 @@ class GraphModelCategory:
 
     def __init__(self, name, vertex_object = None, edge_object = None, source_morphism = None, target_morphism = None):
         self.name = name
-        self.edge_object = edge_object
         self.vertex_object = vertex_object
+        self.edge_object = edge_object
         self.source_morphism = source_morphism
         self.target_morphism = target_morphism
 
         if vertex_object == None:
-            self.vertex_object = AbstractObject("vertex_object")
+            self.vertex_object = AbstractObject("vertexObject", "graph")
         if edge_object == None:
-            self.edge_object = AbstractObject("edge_object")
+            self.edge_object = AbstractObject("edgeObject", "graph")
         if source_morphism == None:
-            self.source_morphism = AbstractMorphism("source_morphism", self.edge_object, self.vertex_object)
+            self.source_morphism = AbstractMorphism("sourceMorphism", self.edge_object, self.vertex_object, "graph")
         if target_morphism == None:
-            self.target_morphism = AbstractMorphism("target_morphism", self.edge_object, self.vertex_object)
+            self.target_morphism = AbstractMorphism("targetMorphism", self.edge_object, self.vertex_object, "graph")
+        
+        self.objects = [self.vertex_object, self.edge_object]
+        self.morphisms = [self.source_morphism, self.target_morphism]
 
     def get_name(self):
         return self.name
@@ -36,7 +40,17 @@ class GraphModelCategory:
         return self.vertex_object
 
     def get_objects(self):
-        return [self.vertex_object, self.edge_object]
+        return self.objects
+
+    def get_nx_graph(self):
+        G, edges, nodes = nx.DiGraph(), [], []
+        for mor in self.morphisms:
+            edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
+        G.add_edges_from(edges)
+        for obj in self.objects:
+            nodes.append((obj.get_id(), {'label': obj.get_name()}))
+        G.add_nodes_from(nodes)
+        return G
 
     def __str__(self):
         if type(self.edge_object) == list and type(self.vertex_object) == list:

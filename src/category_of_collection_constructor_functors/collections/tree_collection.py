@@ -65,7 +65,7 @@ class TreeCollection:
                 d[key] = data_set[key]
         elif type(data_set) == list:
             for i in range(len(data_set)):
-                d[i] = data_set[i]
+                d[str(i)] = data_set[i]
         d.close()
 
     def parse_json(self):
