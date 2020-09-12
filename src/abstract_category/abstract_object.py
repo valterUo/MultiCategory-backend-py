@@ -14,6 +14,9 @@ class AbstractObject:
     def get_name(self):
         return self.name
 
+    def get_id(self):
+        return self.id
+        
     def get_model(self):
         return self.model
 

@@ -27,7 +27,7 @@ class TreeModelCategory:
             self.nodes_with_disjoint_root = copy.deepcopy(nodes).append(self.root)
         
         if nodes == None:
-            self.nodes = AbstractObject("nodes")
+            self.nodes = AbstractObject("nodes", "tree")
             self.nodes_with_disjoint_root = [self.nodes, self.root]
         if parent_of == None:
             self.parent_of = AbstractMorphism("parent_of", self.nodes, self.nodes_with_disjoint_root)

@@ -1,7 +1,7 @@
 import dash_cytoscape as cyto
 import networkx as nx
 import dash_core_components as dcc
-from dash_frontend.state.initialize_demo_state import multi_model_join_results
+#from dash_frontend.state.initialize_demo_state import multi_model_join_results
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import json
@@ -27,7 +27,7 @@ def parse_cytoscape_nodes_edges(G):
     return nodes, edges
 
 
-def general_nx_grah_to_cytoscape():
+def general_nx_grah_to_cytoscape(G):
     result = multi_model_join_results.get_current_state()
     G = result.get_collection().get_graph()
     nodes, edges = parse_cytoscape_nodes_edges(G)

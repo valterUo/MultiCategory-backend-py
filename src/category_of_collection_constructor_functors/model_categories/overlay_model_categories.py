@@ -16,7 +16,7 @@ def overlay_model_categories(first, object_id1, second, object_id2):
                         new_values = obj1.get_values()
                     elif obj2.get_values() != None:
                         new_values = obj2.get_values()
-                    overlaid_object = AbstractObject(obj1.get_name() + " + " + obj2.get_name(), obj1.get_model() + " with " + obj2.get_model(), new_values)
+                    overlaid_object = AbstractObject(obj1.get_name() + " + " + obj2.get_name(), obj2.get_model() + " in " + obj1.get_model(), new_values)
                     new_id = overlaid_object.get_id()
                     new_objects.append(overlaid_object)
                     break
@@ -31,15 +31,15 @@ def overlay_model_categories(first, object_id1, second, object_id2):
             new_objects.append(obj2)
         
     for mor1 in first.get_morphisms():
-        if mor1.get_source().get_id() == obj1.get_id():
-            new_morphisms.append(AbstractMorphism(mor1.get_name(), overlaid_object, mor1.get_target(), mor1.get_model()))
-        elif mor1.get_target().get_id() == obj1.get_id():
-            new_morphisms.append(AbstractMorphism(mor1.get_name(), mor1.get_target(),overlaid_object, mor1.get_model()))
+        if mor1.get_source().get_id() == new_id:
+            new_morphisms.append(AbstractMorphism(mor1.get_name(), overlaid_object, mor1.get_target()))
+        elif mor1.get_target().get_id() == new_id:
+            new_morphisms.append(AbstractMorphism(mor1.get_name(), mor1.get_source(), overlaid_object))
 
     for mor2 in second.get_morphisms():
-        if mor2.get_source().get_id() == obj2.get_id():
-            new_morphisms.append(AbstractMorphism(mor2.get_name(), overlaid_object, mor2.get_target(), mor2.get_model()))
-        elif mor2.get_target().get_id() == obj2.get_id():
-            new_morphisms.append(AbstractMorphism(mor2.get_name(), mor2.get_target(),overlaid_object, mor2.get_model()))
+        if mor2.get_source().get_id() == new_id:
+            new_morphisms.append(AbstractMorphism(mor2.get_name(), overlaid_object, mor2.get_target()))
+        elif mor2.get_target().get_id() == new_id:
+            new_morphisms.append(AbstractMorphism(mor2.get_name(), mor2.get_source(), overlaid_object))
     
     return GenericModelCategory(first.get_name() + ' + ' + second.get_name(), new_objects, new_morphisms, models)

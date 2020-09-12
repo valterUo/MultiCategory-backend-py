@@ -8,22 +8,12 @@ class GraphModelCategory:
     GraphModelCategory is a category with two objects and two non-identity morphism between them. The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, vertex_object = None, edge_object = None, source_morphism = None, target_morphism = None):
+    def __init__(self, name, vertex_object_attributes = None, edge_object_attributes = None):
         self.name = name
-        self.vertex_object = vertex_object
-        self.edge_object = edge_object
-        self.source_morphism = source_morphism
-        self.target_morphism = target_morphism
-
-        if vertex_object == None:
-            self.vertex_object = AbstractObject("vertexObject", "graph")
-        if edge_object == None:
-            self.edge_object = AbstractObject("edgeObject", "graph")
-        if source_morphism == None:
-            self.source_morphism = AbstractMorphism("sourceMorphism", self.edge_object, self.vertex_object, "graph")
-        if target_morphism == None:
-            self.target_morphism = AbstractMorphism("targetMorphism", self.edge_object, self.vertex_object, "graph")
-        
+        self.vertex_object = AbstractObject("vertexObject", "graph", vertex_object_attributes)
+        self.edge_object = AbstractObject("edgeObject", "graph", edge_object_attributes)
+        self.source_morphism = AbstractMorphism("sourceMorphism", self.edge_object, self.vertex_object)
+        self.target_morphism = AbstractMorphism("targetMorphism", self.edge_object, self.vertex_object)
         self.objects = [self.vertex_object, self.edge_object]
         self.morphisms = [self.source_morphism, self.target_morphism]
 
@@ -41,6 +31,9 @@ class GraphModelCategory:
 
     def get_objects(self):
         return self.objects
+
+    def get_morphisms(self):
+        return self.morphisms
 
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []

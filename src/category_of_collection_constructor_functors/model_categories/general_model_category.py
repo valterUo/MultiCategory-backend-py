@@ -24,7 +24,7 @@ class GenericModelCategory:
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []
         for mor in self.morphisms:
-            edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
+            edges.append((mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()}))
         G.add_edges_from(edges)
         for obj in self.objects:
             nodes.append((obj.get_id(), {'label': obj.get_name()}))
@@ -32,4 +32,4 @@ class GenericModelCategory:
         return G
 
     def __str__(self):
-        return ", ".join(self.attributes)
+        return "Objects: " + str(self.objects) + " Morphisms: " + str(self.morphisms)
