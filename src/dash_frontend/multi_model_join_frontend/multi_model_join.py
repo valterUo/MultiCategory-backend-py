@@ -2,7 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from multi_model_join.multi_model_join import MultiModelJoin
-from dash_frontend.multi_model_join_frontend.visualize_multi_model_join_result import visualize_multi_model_join_result
+from dash_frontend.multi_model_join_frontend.visualize_multi_model_join_result import visualize_multi_model_join_result, visualize_join_triangle_with_model_categories
 from dash_frontend.state.initialize_demo_state import multi_model_join_results
 
 
@@ -19,10 +19,10 @@ def execute_multi_model_join(state, join_parameters):
     result = join_result.get_result()
 
     database.add_object(result)
-    database.add_morphism(join_result.get_left_leg())
-    database.add_morphism(join_result.get_right_leg())
+    #database.add_morphism(join_result.get_left_leg())
+    #database.add_morphism(join_result.get_right_leg())
 
-    multi_model_join_results.update_possible_states(result.get_name(), result)
-    multi_model_join_results.change_state(result.get_name())
+    multi_model_join_results.update_possible_states(join_result.get_name(), join_result)
+    multi_model_join_results.change_state(join_result.get_name())
     
-    return visualize_multi_model_join_result()
+    return html.Div( children = [ visualize_multi_model_join_result(), html.Br(), visualize_join_triangle_with_model_categories()] )

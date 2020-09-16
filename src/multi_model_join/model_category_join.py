@@ -4,6 +4,7 @@ from category_of_collection_constructor_functors.model_categories.category_of_tr
 from abstract_category.abstract_object import AbstractObject
 from abstract_category.abstract_morphism import AbstractMorphism
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
+import networkx as nx
 
 class ModelCategoryJoin:
 
@@ -24,6 +25,19 @@ class ModelCategoryJoin:
     def get_right_leg_model_relationship(self):
         return self.right_leg_model_relationship
 
+    def get_commutative_triangle(self):
+        G = nx.DiGraph()
+        G.add_nodes_from([(self.result.get_name(), {'label': self.result.get_name()}), (self.first_model_category.get_name(), {'label': self.first_model_category.get_name()}), (self.second_model_category.get_name(), {'label': self.second_model_category.get_name()})])
+        G.add_edges_from([(
+            self.result.get_name(), self.first_model_category.get_name(), {'label': self.left_leg_model_relationship.get_name()}
+        ), (
+            self.result.get_name(), self.second_model_category.get_name(), {'label': self.right_leg_model_relationship.get_name()}
+        ), (
+            self.first_model_category.get_name(), self.second_model_category.get_name(), {'label': self.model_relationship.get_name()}
+        )])
+        return G
+
+
     def join(self):
         join_name = self.first_model_category.get_name() + " + " + self.second_model_category.get_name()
         join_objects = dict()
@@ -37,18 +51,18 @@ class ModelCategoryJoin:
 
         join_morphisms = self.create_morphisms(join_objects)
 
-        print(list(join_objects.values())[0].get_values())
-        print(join_morphisms)
-
         if type(self.first_model_category) == TableModelCategory:
-            result = TableModelCategory(join_name, objects = list(join_objects.values()), primary_key = self.first_model_category.get_primary_key())
+            result = TableModelCategory(join_name, objects = list(join_objects.values()), primary_keys = self.first_model_category.get_primary_keys())
         elif type(self.first_model_category) == GraphModelCategory:
             result = GraphModelCategory(join_name, objects = list(join_objects.values()), morphisms = join_morphisms)
         elif type(self.first_model_category) == TreeModelCategory:
             result = TreeModelCategory(join_name, objects = list(join_objects.values()), morphisms = join_morphisms)
+
+        left_project = self.project_left_leg(self.model_relationship.get_relationship())
+        right_project = self.project_right_leg(self.model_relationship.get_relationship())
         
-        left_leg_model_relationship = ModelRelationship("Left projection from " + result.get_name() + " to " + self.first_model_category.get_name(), result, self.project_left_leg(self.model_relationship.get_relationship()), self.first_model_category)
-        right_leg_model_relationship = ModelRelationship("Right projection from " + result.get_name() + " to " + self.second_model_category.get_name(), result, self.project_right_leg(self.model_relationship.get_relationship()), self.second_model_category)
+        left_leg_model_relationship = ModelRelationship("Left projection from " + result.get_name() + " to " + self.first_model_category.get_name(), result, left_project, self.first_model_category)
+        right_leg_model_relationship = ModelRelationship("Right projection from " + result.get_name() + " to " + self.second_model_category.get_name(), result, right_project, self.second_model_category)
 
         return result, left_leg_model_relationship, right_leg_model_relationship
 
@@ -110,6 +124,7 @@ class ModelCategoryJoin:
                 for value in keys_and_values:
                     proj[value] = key
             projection.append(proj)
+        print(projection)
         return projection
 
     def project_right_leg(self, rels):
@@ -123,4 +138,5 @@ class ModelCategoryJoin:
                 for value in keys_and_values:
                     proj[value] = key
             projection.append(proj)
+        print(projection)
         return projection

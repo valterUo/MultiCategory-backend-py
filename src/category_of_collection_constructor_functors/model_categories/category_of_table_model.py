@@ -41,7 +41,7 @@ class TableModelCategory:
     def get_morphisms(self):
         return self.morphisms
 
-    def get_primary_key(self):
+    def get_primary_keys(self):
         return self.primary_keys
 
     def get_nx_graph(self):

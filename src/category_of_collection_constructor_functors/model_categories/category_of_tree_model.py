@@ -19,7 +19,7 @@ class TreeModelCategory:
     Note that the edges in the tree do not contain any information. The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, node_object_attributes = None, objects = None, morphisms = None):
+    def __init__(self, name, node_object_attributes = [], objects = None, morphisms = None):
         self.name = name
         if objects == None or morphisms == None:
             self.root = RootObject(name)

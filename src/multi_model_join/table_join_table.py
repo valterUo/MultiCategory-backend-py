@@ -57,4 +57,4 @@ def table_join_table(first_collection_constructor, collection_constructor_morphi
         result_h5file.close()
         result_model = ModelCategoryJoin(first_model, collection_constructor_morphism.get_model_relationship(), second_model)
         result = CollectionConstructor(result_file_name, result_model.get_result(), result_collection)
-        return result
+        return result, result_model

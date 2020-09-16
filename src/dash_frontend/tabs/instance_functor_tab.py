@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_cytoscape as cyto
 import networkx as nx
 import plotly.graph_objects as go
-from dash_frontend.visualizations.nx_graph_visualization import nx_grah_to_cytoscape
+from dash_frontend.visualizations.multi_model_join_nx_graph_visualization import nx_grah_to_cytoscape
 
 def define_instance_functor_tab():
     return dcc.Tab(

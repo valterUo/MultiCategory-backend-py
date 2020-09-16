@@ -16,7 +16,7 @@ from dash.dependencies import Input, Output
 amount_of_rows = 50
 
 def main_pytable_visualization():
-    table = multi_model_join_results.get_current_state()
+    table = multi_model_join_results.get_current_state().get_result()
     return html.Div(id = "pytables-visualization", children = [
         dcc.Graph(id = "pytable-figure", style = {'height': '1000px'}, config= {}, figure = pytables_visualization(table, amount_of_rows)),
         html.P("Number of rows shown max: " + str(amount_of_rows)),

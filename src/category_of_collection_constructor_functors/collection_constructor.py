@@ -17,5 +17,8 @@ class CollectionConstructor:
     def get_model(self):
         return self.model_category.get_model()
 
+    def get_model_category_as_nx_graph(self):
+        return self.model_category.get_nx_graph()
+
     def get_iterable_collection_of_objects(self):
         return self.collection.get_iterable_collection_of_objects()

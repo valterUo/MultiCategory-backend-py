@@ -91,7 +91,7 @@ def walk_tree(previous_id, root, tree, nodes, edges):
 
 
 def dict_to_tree():
-    result = multi_model_join_results.get_current_state()
+    result = multi_model_join_results.get_current_state().get_result()
     T = result.get_collection().get_tree()
     nodes, edges, root_ids = [], [], []
     # We assume that T is not a list of objects but dictionary of objects

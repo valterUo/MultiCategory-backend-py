@@ -1,7 +1,7 @@
 import dash_cytoscape as cyto
 import networkx as nx
 import dash_core_components as dcc
-#from dash_frontend.state.initialize_demo_state import multi_model_join_results
+from dash_frontend.state.initialize_demo_state import multi_model_join_results
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import json
@@ -27,8 +27,8 @@ def parse_cytoscape_nodes_edges(G):
     return nodes, edges
 
 
-def general_nx_grah_to_cytoscape(G):
-    result = multi_model_join_results.get_current_state()
+def general_nx_grah_to_cytoscape():
+    result = multi_model_join_results.get_current_state().get_result()
     G = result.get_collection().get_graph()
     nodes, edges = parse_cytoscape_nodes_edges(G)
 
@@ -69,7 +69,7 @@ def general_nx_grah_to_cytoscape(G):
               [Input('cytoscape-result', 'tapNodeData')])
 def displayTapNodeData(data):
     if data != None:
-        result = multi_model_join_results.get_current_state()
+        result = multi_model_join_results.get_current_state().get_result()
         G = result.get_collection().get_graph()
         for node in G.nodes.data():
             if node[0] == data["id"]:
@@ -82,7 +82,7 @@ def displayTapNodeData(data):
               [Input('cytoscape-result', 'tapEdgeData')])
 def displayTapEdgeData(data):
     if data != None:
-        result = multi_model_join_results.get_current_state()
+        result = multi_model_join_results.get_current_state().get_result()
         G = result.get_collection().get_graph()
         for edge in G.edges.data():
             if data["source"] == edge[0] and data["target"] == edge[1]:

@@ -72,4 +72,4 @@ def graph_join_tree(first_collection_constructor, collection_constructor_morphis
         result_collection.set_target_file_path(result_file_path)
         result_model = ModelCategoryJoin(first_model, collection_constructor_morphism.get_model_relationship(), second_model, left)
         result = CollectionConstructor(result_file_name, result_model.get_result(), result_collection)
-        return result
+        return result, result_model

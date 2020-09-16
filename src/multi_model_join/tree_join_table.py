@@ -66,4 +66,4 @@ def tree_join_table(first_collection_constructor, collection_constructor_morphis
             i+=1
 
         result_model = ModelCategoryJoin(first_model, collection_constructor_morphism.get_model_relationship(), second_model, left)
-        return CollectionConstructor(result_file_name, result_model.get_result(), result_collection)
+        return CollectionConstructor(result_file_name, result_model.get_result(), result_collection), result_model
