@@ -1,15 +1,7 @@
 from category_of_collection_constructor_functors.collections.graph_collection import GraphCollection
 from category_of_collection_constructor_functors.collections.table_collection import TableCollection
 from category_of_collection_constructor_functors.collections.tree_collection import TreeCollection
-from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
-from multi_model_join.model_category_join import join as model_join
-import numpy
-import os
-from tables import *
-import networkx as nx
-from supportive_functions.row_manipulations import row_to_dictionary
-from supportive_functions.compositions import merge_two_dicts
-import pickle
+from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
 from multi_model_join.graph_join_table import graph_join_table
 from multi_model_join.table_join_table import table_join_table
 from multi_model_join.graph_join_graph import graph_join_graph
@@ -48,6 +40,10 @@ class MultiModelJoin:
         self.second_description = second_description
         self.tree_attributes = tree_attributes
         self.result = self.join()
+        #left_leg_model_relationship, left_leg_collection_relationship = project_collection_constructor(self.first_collection_constructor, self.result)
+        #self.left_leg = CollectionConstructorMorphism(self.first_collection_constructor, left_leg_model_relationship, left_leg_collection_relationship, self.result)
+        #right_leg_model_relationship, right_leg_collection_relationship = project_collection_constructor(self.second_collection_constructor, self.result)
+        #self.right_leg = CollectionConstructorMorphism(self.second_collection_constructor, right_leg_model_relationship, right_leg_collection_relationship, self.result)
 
     def join(self):
         first_collection = self.first_collection_constructor.get_collection()
@@ -78,3 +74,9 @@ class MultiModelJoin:
 
     def get_result(self):
         return self.result
+
+    def get_left_leg(self):
+        return self.left_leg
+
+    def get_right_leg(self):
+        return self.right_leg

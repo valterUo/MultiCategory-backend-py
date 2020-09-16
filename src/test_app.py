@@ -1,31 +1,15 @@
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
 from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
-from initialization_of_demo_databases.initialize_unibench_sf10 import UnibenchMultiModelDatabase
-from category_of_collection_constructor_functors.model_categories.category_of_graph_model import GraphModelCategory
-from category_of_collection_constructor_functors.model_categories.category_of_table_model import TableModelCategory
-from category_of_collection_constructor_functors.model_categories.overlay_model_categories import overlay_model_categories
-from dash_frontend.visualizations.nx_graph_visualization import parse_cytoscape_nodes_edges
+from multi_model_join.model_category_join import ModelCategoryJoin
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import networkx as nx
+ecommerce = ECommerceMultiModelDatabase()
 
-# patent_db = PatentMultiModelDatabase()
-# ecommerce_db = ECommerceMultiModelDatabase()
-# unibench = UnibenchMultiModelDatabase("SF30")
+db1 = ecommerce.get_multi_model_db().get_objects()["customer"].get_model_category()
+db2 = ecommerce.get_multi_model_db().get_objects()["location"].get_model_category()
+mor1 = ecommerce.get_multi_model_db().get_morphisms()["customer_to_location_morphism"].get_model_relationship()
 
-# graph = GraphModelCategory("test", ["graphID", "name"], ["knows"])
-# table = TableModelCategory("table_test", ["tableID", "location"])
+join = ModelCategoryJoin(db1, mor1, db2, True)
 
-# graph_id = graph.get_vertex_object().get_id()
-# table_id = table.get_objects()[0].get_id()
-# table_id2 = table.get_objects()[1].get_id()
-
-# result = overlay_model_categories(graph, graph_id, table, table_id)
-# result = overlay_model_categories(result, result.get_objects()[0].get_id(), table, table_id2)
-
-# print(result.get_nx_graph().number_of_nodes())
-
-# G = result.get_nx_graph()
-
-# print(parse_cytoscape_nodes_edges(G))
+print(join.get_result().get_objects())
+print(join.get_left_leg_model_relationship())
+print(join.get_right_leg_model_relationship())

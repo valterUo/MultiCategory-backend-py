@@ -1,6 +1,6 @@
 from category_of_collection_constructor_functors.collections.table_collection import TableCollection
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
-from multi_model_join.model_category_join import join as model_join
+from multi_model_join.model_category_join import ModelCategoryJoin
 from tables import *
 from supportive_functions.compositions import merge_two_dicts
 from multi_model_join.file_path_functions import parse_file_name, parse_file_path
@@ -72,6 +72,6 @@ def table_join_tree(first_collection_constructor, collection_constructor_morphis
             i+=1
 
         result_h5file.close()
-        result_model = model_join(first_model, collection_constructor_morphism.get_model_relationship(), second_model)
-        result = CollectionConstructor(result_file_name, result_model, result_collection)
+        result_model = ModelCategoryJoin(first_model, collection_constructor_morphism.get_model_relationship(), second_model)
+        result = CollectionConstructor(result_file_name, result_model.get_result(), result_collection)
         return result

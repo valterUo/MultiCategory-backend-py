@@ -5,8 +5,11 @@ This class creates an abstract object of an abstract category or a model categor
 
 class AbstractObject:
 
-    def __init__(self, name, model, values = None):
-        self.id = uuid.uuid4()
+    def __init__(self, name, model, values = None, paramid = None):
+        if paramid == None:
+            self.id = uuid.uuid4()
+        else:
+            self.id = paramid
         self.name = name
         self.model = model
         self.values = values
@@ -22,6 +25,9 @@ class AbstractObject:
 
     def get_values(self):
         return self.values
+
+    def append_values(self, new_values):
+        self.values = self.values + new_values
 
     def __str__(self):
         return self.name

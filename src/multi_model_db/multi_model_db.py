@@ -53,6 +53,12 @@ class MultiModelDB:
     def get_morphisms(self):
         return self.morphisms
 
+    def add_object(self, new_object):
+        self.objects[new_object.get_name()] = new_object
+
+    def add_morphism(self, new_morphism):
+        self.morphisms[new_morphism.get_name()] = new_morphism
+
     def get_instance_category(self):
         return self.instance_category
 

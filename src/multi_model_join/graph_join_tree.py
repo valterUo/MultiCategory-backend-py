@@ -1,6 +1,6 @@
 from category_of_collection_constructor_functors.collections.graph_collection import GraphCollection
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
-from multi_model_join.model_category_join import join as model_join
+from multi_model_join.model_category_join import ModelCategoryJoin
 import networkx as nx
 from supportive_functions.row_manipulations import row_to_dictionary
 from supportive_functions.compositions import merge_two_dicts, graph_union, graph_union_with_tree
@@ -70,6 +70,6 @@ def graph_join_tree(first_collection_constructor, collection_constructor_morphis
         nx.write_gpickle(G, result_file_path, protocol=pickle.HIGHEST_PROTOCOL)
         result_collection = GraphCollection(result_file_name)
         result_collection.set_target_file_path(result_file_path)
-        result_model = model_join(first_model, collection_constructor_morphism.get_model_relationship(), second_model)
-        result = CollectionConstructor(result_file_name, result_model, result_collection)
+        result_model = ModelCategoryJoin(first_model, collection_constructor_morphism.get_model_relationship(), second_model, left)
+        result = CollectionConstructor(result_file_name, result_model.get_result(), result_collection)
         return result

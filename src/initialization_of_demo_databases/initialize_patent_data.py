@@ -8,7 +8,6 @@ from multi_model_db.multi_model_db import MultiModelDB
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
-from multi_model_join.model_category_join import join as model_join
 from multi_model_join.multi_model_join import MultiModelJoin
 from supportive_functions.row_manipulations import row_to_dictionary
 import os
@@ -132,7 +131,7 @@ class PatentMultiModelDatabase():
 
         edge_info = [{"file_path": citation_data_path, "delimiter": ",", "schema": ["CITING","CITED"], "source_attribute_index": 0, "target_attribute_index": 1}]
         vertex_info = []
-        citation_graph_model = GraphModelCategory("citation", vertex_object = ["PATENTID"], edge_object = ["CITED"])
+        citation_graph_model = GraphModelCategory("citation", ["PATENTID"], ["CITED"])
         citation_graph = GraphCollection("citation", vertex_info, edge_info, target_folder)
         citation_graph_collection = CollectionConstructor("citation", citation_graph_model, citation_graph)
 

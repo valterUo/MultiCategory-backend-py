@@ -1,5 +1,6 @@
 from abstract_category.abstract_object import AbstractObject
 from abstract_category.abstract_morphism import AbstractMorphism
+import networkx as nx
 import copy
 
 class RootObject:
@@ -18,19 +19,19 @@ class TreeModelCategory:
     Note that the edges in the tree do not contain any information. The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, nodes = None, parent_of = None):
+    def __init__(self, name, node_object_attributes = None, objects = None, morphisms = None):
         self.name = name
-        self.nodes = nodes
-        self.root = RootObject(name)
-        self.parent_of = parent_of
-        if nodes != None:
-            self.nodes_with_disjoint_root = copy.deepcopy(nodes).append(self.root)
-        
-        if nodes == None:
-            self.nodes = AbstractObject("nodes", "tree")
-            self.nodes_with_disjoint_root = [self.nodes, self.root]
-        if parent_of == None:
-            self.parent_of = AbstractMorphism("parent_of", self.nodes, self.nodes_with_disjoint_root)
+        if objects == None or morphisms == None:
+            self.root = RootObject(name)
+            self.nodes = AbstractObject("nodes", "tree", node_object_attributes)
+            self.nodes_with_disjoint_root = AbstractObject("nodes + root", "tree", [node_object_attributes, self.root])
+            self.morphism = AbstractMorphism("parent_of", self.nodes, self.nodes_with_disjoint_root)
+            self.morphisms = [self.morphism]
+            self.objects = [self.nodes, self.nodes_with_disjoint_root]
+        elif objects != None and morphisms != None:
+            self.objects = objects
+        else:
+            raise AttributeError("Wrong combination of attributes in the tree model category initialization.")
 
     def get_name(self):
         return self.name
@@ -42,7 +43,20 @@ class TreeModelCategory:
         return self.nodes
 
     def get_objects(self):
-        return [self.nodes]
+        return self.objects
+
+    def get_morphisms(self):
+        return self.morphisms
+
+    def get_nx_graph(self):
+        G, edges, nodes = nx.DiGraph(), [], []
+        for mor in self.morphisms:
+            edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
+        G.add_edges_from(edges)
+        for obj in self.objects:
+            nodes.append((obj.get_id(), {'label': obj.get_name()}))
+        G.add_nodes_from(nodes)
+        return G
 
     def __str__(self):
-        return "nodes -- parent_of --> nodes + {*}"
+        return "nodes -- parent_of --> nodes + root"
