@@ -131,18 +131,40 @@ class TableCollection:
                     print("Index error on the row: ", row)
                     continue
 
+    def append_to_collection(self, new_data_point):
+        h5file_exists = os.path.isfile(self.h5file_path)
+        h5file = None
+        table = None
+        if not h5file_exists:
+            print(self.h5file_path)
+            h5file = open_file(self.h5file_path, mode="w", title= self.name + " file")
+            group = h5file.create_group("/", self.name, self.name + " information")
+            table = h5file.create_table(group, self.name, self.attributes_datatypes_dict, self.name + " table")
+        else:
+            h5file = open_file(self.h5file_path, mode="r+", title= self.name + " file")
+            table = h5file.get_node("/" + self.name, self.name)
+        tablerow = table.row
+        if type(new_data_point) == dict:
+            for attribute in new_data_point:
+                try:
+                    tablerow[attribute] = new_data_point[attribute]
+                except TypeError:
+                    tablerow[key_list[j]] = new_data_point[attribute].encode("utf-8")
+            tablerow.append()
+        elif type(new_data_point) == list:
+            for elem in new_data_point:
+                for attribute in elem:
+                    try:
+                        tablerow[attribute] = elem[attribute]
+                    except TypeError:
+                        tablerow[key_list[j]] = elem[attribute].encode("utf-8")
+                tablerow.append()
+        table.flush()
+        h5file.close()
 
-    # def import_json_to_table(self, delimiter):
-    #     try:
-    #         data_set = json.load(json_file)
-    #     except JSONDecodeError:
-    #         print("JSON Decoder Error. Trying read line by line.")
-    #         try:
-    #             data_set = []
-    #             json_file.seek(0,0)  
-    #             for json_line in json_file.readlines():
-    #                 parsed_line = json.loads(json_line)
-    #                 data_set.append(parsed_line)
-    #         except Exception as e:
-    #             print("JSON file is invalid: ", e)
-    #     return data_set
+    def get_length(self):
+        if self.h5file_path == None:
+            return 0
+        table = self.get_iterable_collection_of_objects()
+        #print("Table lenght: " + str(table.nrows))
+        return table.nrows

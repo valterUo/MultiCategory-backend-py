@@ -10,6 +10,14 @@ def row_to_dictionary(row):
         dict_row[key] = row[key]
     return dict_row
 
+def row_to_dictionary_with_selection(row, selection):
+    dict_row = dict()
+    attributes = row.table.colnames
+    for key in attributes:
+        if key in selection:
+            dict_row[key] = row[key]
+    return dict_row
+
 ## This function finds all the values from tree structure that have the key assigned with them
 def find_values_from_tree(tree_dict, key):
     result = []

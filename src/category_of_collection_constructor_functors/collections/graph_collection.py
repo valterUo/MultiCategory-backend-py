@@ -25,8 +25,10 @@ class GraphCollection:
         self.vertex_info = vertex_info
         self.edge_info = edge_info
         self.target_folder_path = target_folder_path
+        self.target_file_path = None
         self.vertex_dict = dict()
         self.edge_list = list()
+
         if vertex_info != None and edge_info != None and target_folder_path != None:
             base = os.path.basename(edge_info[0]["file_path"])
             filename = os.path.splitext(base)[0]
@@ -161,3 +163,36 @@ class GraphCollection:
 
     def get_graph(self):
         return nx.read_gpickle(self.target_file_path)
+
+    def append_to_collection(self, new_data_point):
+        if self.target_file_path == None:
+            self.target_file_path = self.target_folder_path + "//" + self.name + ".pyc"
+        file_exists = os.path.isfile(self.target_file_path)
+
+        if not file_exists:
+            nx.write_gpickle(nx.DiGraph(), self.target_file_path, protocol=pickle.HIGHEST_PROTOCOL)
+
+        G = nx.read_gpickle(self.target_file_path)
+
+        if type(new_data_point) == tuple:
+            if len(new_data_point) == 2:
+                G.add_nodes_from([new_data_point])
+            elif len(new_data_point) == 3:
+                G.add_edges_from([new_data_point])
+        elif type(new_data_point) == list:
+            nodes, edges = [], []
+            for data_point in new_data_point:
+                if len(data_point) == 2:
+                    nodes.append(data_point)
+                elif len(data_point) == 3:
+                    edges.append(data_point)
+            G.add_nodes_from(nodes)
+            G.add_edges_from(edges)
+        nx.write_gpickle(G, self.target_file_path, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_length(self):
+        if self.target_file_path != None:
+            G = nx.read_gpickle(self.target_file_path)
+            return G.number_of_nodes() + G.number_of_edges()
+        else:
+            return 0

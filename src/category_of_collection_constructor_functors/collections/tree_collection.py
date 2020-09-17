@@ -138,3 +138,29 @@ class TreeCollection:
                 result = result + self.find_elements_with_attribute_and_path(attribute, path + "/" + str(i), elem)
                 i+=1
         return result
+
+    def append_to_collection(self, new_data_point):
+        if self.target_file_path == None:
+            self.target_file_path = self.target_folder_path + "//" + self.name + ".pyc"
+        
+        d = shelve.open(self.target_file_path)
+
+        if type(new_data_point) == list or type(new_data_point) == XmlListConfig:
+            if len(new_data_point) > 0:
+                if len(new_data_point) > 1:
+                    for i in range(len(new_data_point)):
+                        d[str(i)] = new_data_point[i]
+                elif type(new_data_point[0]) == dict or type(new_data_point) == XmlDictConfig:
+                    for key in new_data_point[0]:
+                        d[key] = new_data_point[key]
+        elif type(new_data_point) == dict or type(new_data_point) == XmlDictConfig:
+            for key in new_data_point:
+                d[key] = new_data_point[key]
+
+    def get_length(self):
+        if self.target_file_path != None:
+            d = shelve.open(self.target_file_path)
+            return len(d.keys())
+        else:
+            return 0
+        

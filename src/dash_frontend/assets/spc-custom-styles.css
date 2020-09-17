@@ -46,6 +46,13 @@ body {
   width: 100%;
 }
 
+.vertical { 
+  border-left: 6px solid black; 
+  height: 200px; 
+  position:absolute; 
+  left: 50%; 
+}
+
 
 .banner h5 {
   font-family: 'Open Sans Semi Bold', sans-serif;

@@ -22,3 +22,9 @@ class CollectionConstructor:
 
     def get_iterable_collection_of_objects(self):
         return self.collection.get_iterable_collection_of_objects()
+
+    def append_to_collection(self, new_data_point):
+        self.collection.append_to_collection(new_data_point)
+
+    def get_length(self):
+        return self.collection.get_length()
