@@ -4,6 +4,7 @@ import dash_html_components as html
 import dash_cytoscape as cyto
 import networkx as nx
 import plotly.graph_objects as go
+from dash_frontend.state.initialize_demo_state import state
 from dash_frontend.visualizations.multi_model_join_nx_graph_visualization import nx_grah_to_cytoscape
 
 def define_instance_functor_tab():
@@ -16,10 +17,10 @@ def define_instance_functor_tab():
     )
 
 
-def build_instance_functor_tab(state, mode="cytoscape"):
-    database = state.get_current_state()
-    G = database["db"].get_instance_category_nx_graph()
-    F = database["db"].get_schema_category_nx_graph()
+def build_instance_functor_tab():
+    database = state.get_current_state()["db"]
+    G = database.get_instance_category_nx_graph()
+    F = database.get_schema_category_nx_graph()
     instance_fig = nx_grah_to_cytoscape(G)
     schema_fig = nx_grah_to_cytoscape(F)
     return [

@@ -24,7 +24,7 @@ def multi_model_join_tab():
     )
 
 
-def build_multi_model_join_tab(state):
+def build_multi_model_join_tab():
     current_state = state.get_current_state()
     objects = current_state["db"].get_str_list_of_objects()
     #print(objects)

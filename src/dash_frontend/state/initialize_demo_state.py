@@ -38,3 +38,4 @@ automatic_example_settings = State("ecommerce", automatic_example_settings_dict)
 
 ## State to store multi-model results
 multi_model_join_results = State("initial", {"initial": {}})
+multi_model_query_results = State("initial", {"initial": {}})

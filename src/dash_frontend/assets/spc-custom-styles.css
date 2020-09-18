@@ -53,6 +53,33 @@ body {
   left: 50%; 
 }
 
+.arrow {
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
 
 .banner h5 {
   font-family: 'Open Sans Semi Bold', sans-serif;
@@ -149,7 +176,7 @@ body {
   cursor: pointer;
 }
 
-#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Model-transformation-tab.custom-tab {
+#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Model-transformation-tab.custom-tab, #Result-tab.custom-tab {
   background-color: #161a28;
   letter-spacing: 1px;
   color: inherit;
@@ -163,7 +190,7 @@ body {
   height: 18px;
 }
 
-#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected, #Model-transformation-tab.custom-tab--selected {
+#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected, #Model-transformation-tab.custom-tab--selected, #Result-tab.custom-tab--selected {
   border-bottom: #91dfd2 solid 4px !important;
 }
 

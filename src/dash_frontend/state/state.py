@@ -12,11 +12,9 @@ class State:
 
     def change_state(self, new_state):
         self.state = self.possible_states[new_state]
-        return True
 
     def update_possible_states(self, key, new_state):
         self.possible_states[key] = new_state
-        return True
 
     def get_state_with_key(self, key):
         return self.possible_states[key]

@@ -33,6 +33,15 @@ def generate_fold_query_modal():
                  that define filtering condition. This means that the user defines a predicate P(x) for each object in the domain dataset that is queried. For example, this could be P(x) := (x == 'Mary') resulting
                  either True or False depending if x equals 'Mary'.
 
+                 The target model can be 'ordinary' data models such as relational and graph. On the other hand, the target model
+                 can also be String, Int or Boolean. In this case the query works as aggregation and the user needs to be sure that the result from the lambda function can be aggregated correctly. 
+                 In this case user needs to define how the results are aggregated: this can be summing, multiplying, taking conjunctions or disjunctions.
+
+                 This results that there are no aggregate functions implemented since all the simple aggregate functions can be written shortly using lambda notation. This might be useful to change in the future.
+
+                Precisely, the both query evaluation mechanisms are similar but with different cons and nil values. In some cases cons function is known from the context but when we append, 
+                for example, integers, we can append them multiple ways so there is no default cons function for this.
+
                  After this, the user composes the whole query by building these blocks. Any result of a block can be included into the final result. 
                  """
                             )

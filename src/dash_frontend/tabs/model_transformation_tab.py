@@ -13,7 +13,7 @@ def model_tranformation_tab():
     )
 
 
-def build_model_tranformation_tab(state):
+def build_model_tranformation_tab():
     return [
         html.Div(
             id="set-specs-intro-container",

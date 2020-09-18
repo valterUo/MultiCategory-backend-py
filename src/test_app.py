@@ -25,3 +25,5 @@ fold_result = Fold("test_query_customer", db1, "lambda x : x",
 
 print(fold_result.get_result().get_length())
 
+## Pattern: (n)-[r]->(m)
+
