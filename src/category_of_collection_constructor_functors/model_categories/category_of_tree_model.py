@@ -21,10 +21,11 @@ class TreeModelCategory:
 
     def __init__(self, name, node_object_attributes = [], objects = None, morphisms = None):
         self.name = name
+        self.node_object_attributes = node_object_attributes
         if objects == None or morphisms == None:
             self.root = RootObject(name)
-            self.nodes = AbstractObject("nodes", "tree", node_object_attributes)
-            self.nodes_with_disjoint_root = AbstractObject("nodes + root", "tree", [node_object_attributes, self.root])
+            self.nodes = AbstractObject("nodes", "tree", self.node_object_attributes)
+            self.nodes_with_disjoint_root = AbstractObject("nodes + root", "tree", [self.node_object_attributes, self.root])
             self.morphism = AbstractMorphism("parent_of", self.nodes, self.nodes_with_disjoint_root)
             self.morphisms = [self.morphism]
             self.objects = [self.nodes, self.nodes_with_disjoint_root]
@@ -47,6 +48,9 @@ class TreeModelCategory:
 
     def get_morphisms(self):
         return self.morphisms
+
+    def get_attributes(self):
+        return self.node_object_attributes
 
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []

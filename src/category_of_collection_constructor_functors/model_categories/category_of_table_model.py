@@ -10,10 +10,11 @@ class TableModelCategory:
     The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, attributes = None, primary_keys = None, objects = None, morphisms = None):
+    def __init__(self, name, attributes = [], primary_keys = None, objects = None, morphisms = None):
         self.name = name
         self.primary_keys = primary_keys
         self.objects = []
+        self.attributes = attributes
         if morphisms == None:
             self.morphisms = []
         else:
@@ -43,6 +44,9 @@ class TableModelCategory:
 
     def get_primary_keys(self):
         return self.primary_keys
+
+    def get_attributes(self):
+        return self.attributes
 
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []

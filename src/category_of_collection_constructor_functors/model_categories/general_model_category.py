@@ -21,6 +21,9 @@ class GenericModelCategory:
     def get_morphisms(self):
         return self.morphisms
 
+    def get_attributes(self):
+        return []
+
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []
         for mor in self.morphisms:

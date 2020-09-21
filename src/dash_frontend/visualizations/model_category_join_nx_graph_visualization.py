@@ -1,19 +1,13 @@
-import networkx as nx
 import dash_cytoscape as cyto
-import dash_core_components as dcc
 from dash_frontend.state.initialize_demo_state import multi_model_join_results
 import dash_html_components as html
-from dash.dependencies import Input, Output
-from dash_frontend.server import app
 
 def parse_cytoscape_nodes_edges(G):
     nodes, edges = [], []
     for node in G.nodes.data():
-        print(node[1])
         nodes.append(
             {'data': {'id': node[0], 'label': node[1]["label"]}})
     for edge in G.edges.data():
-        print(edge)
         edges.append(
             {'data': {'source': edge[0], 'target': edge[1], 'label': edge[2]["label"]}})
     return nodes, edges

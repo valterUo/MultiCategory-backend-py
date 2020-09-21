@@ -49,29 +49,27 @@ class MultiModelJoin:
     def join(self):
         first_collection = self.first_collection_constructor.get_collection()
         second_collection = self.second_collection_constructor.get_collection()
-
         if type(first_collection) == TableCollection:
             if type(second_collection) == TableCollection:
-                result, result_model = table_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
+                return table_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
             elif type(second_collection) == GraphCollection:
-                result, result_model = table_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
+                return table_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
             elif type(second_collection) == TreeCollection:
-                result, result_model = table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
+                return table_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.second_description, self.left)
         elif type(first_collection) == GraphCollection:
             if type(second_collection) == TableCollection:
-                result, result_model = graph_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
+                return graph_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
             elif type(second_collection) == GraphCollection:
-                result, result_model = graph_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.right)
+                return graph_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.right)
             elif type(second_collection) == TreeCollection:
-                result, result_model = graph_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
+                return graph_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left)
         elif type(first_collection) == TreeCollection:
             if type(second_collection) == TableCollection:
-                result, result_model = tree_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
+                return tree_join_table(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
             elif type(second_collection) == GraphCollection:
-                result, result_model = tree_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
+                return tree_join_graph(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
             elif type(second_collection) == TreeCollection:
-                result, result_model = tree_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
-        return result, result_model
+                return tree_join_tree(self.first_collection_constructor, self.collection_constructor_morphism, self.second_collection_constructor, self.left, self.tree_attributes)
 
     def get_result(self):
         return self.result

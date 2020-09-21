@@ -1,15 +1,8 @@
-import os
-import pathlib
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import dash_table
-import plotly.graph_objs as go
-import dash_daq as daq
 from dash_frontend.server import app
-import pandas as pd
 
 from dash_frontend.tabs.settings_tab import define_settings_tab, build_settings_tab
 from dash_frontend.tabs.instance_functor_tab import define_instance_functor_tab, build_instance_functor_tab
@@ -108,12 +101,13 @@ def render_tab_content(tab_switch):
     [Input("metric-select-dropdown", "value")],
 )
 def handle_dataset_selection(ds_select):
-    database = state.get_possible_states()[ds_select]
-    if database["available"]:
-        state.change_state(ds_select)
-        return html.P("Selected database: " + database["label"])
-    else:
-        return html.P("The selected database " + database["label"] + " is not currently available.")
+    if ds_select != None:
+        database = state.get_possible_states()[ds_select]
+        if database["available"]:
+            state.change_state(ds_select)
+            return html.P("Selected database: " + database["label"])
+        else:
+            return html.P("The selected database " + database["label"] + " is not currently available.")
 
     
 # ======= Callbacks for modal popup =======

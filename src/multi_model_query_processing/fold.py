@@ -15,6 +15,7 @@ import os
 from tables import StringCol, tableextension
 from supportive_functions.row_manipulations import row_to_dictionary_with_selection
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
+from dash_frontend.state.initialize_demo_state import state
 
 """
 Input: source_dataset, filtering_condition, target_model
@@ -25,9 +26,9 @@ target_model: string
 
 class Fold:
 
-    def __init__(self, name, source_dataset, filtering_condition, return_info, target_model):
+    def __init__(self, name, source_dataset_name, filtering_condition, return_info, target_model):
         self.name = name
-        self.source_dataset = source_dataset
+        self.source_dataset = state.get_current_state()["db"].get_objects()[source_dataset_name]
         self.filtering_condition = filtering_condition
         self.return_info = return_info
         self.target_model = target_model
@@ -37,7 +38,7 @@ class Fold:
         compiled_filtering_condition = compile(self.filtering_condition, 'filter.py', 'eval')
         self.filter_function = eval(compiled_filtering_condition)
 
-        source_file_path = source_dataset.get_collection().get_target_file_path()
+        source_file_path = self.source_dataset.get_collection().get_target_file_path()
         base = os.path.dirname(os.path.abspath(source_file_path))
         #print(base)
 
@@ -45,7 +46,7 @@ class Fold:
         collection, model_category = None, None
         if self.target_model == "relational":
             result_file_path = base + "//" + self.name + ".h5"
-            attributes_datatypes_dict = extract_attributes_datatypes_dict(source_dataset, return_info)
+            attributes_datatypes_dict = extract_attributes_datatypes_dict(self.source_dataset, return_info)
             collection = TableCollection(self.name, h5file_path=result_file_path, attributes_datatypes_dict=attributes_datatypes_dict)
             model_category = TableModelCategory(self.name, self.return_info)
         elif self.target_model == "graph":
@@ -57,7 +58,7 @@ class Fold:
         
         self.result = CollectionConstructor(self.name, model_category, collection)
         whole_result = []
-        for elem in source_dataset.get_iterable_collection_of_objects():
+        for elem in self.source_dataset.get_iterable_collection_of_objects():
             if self.filter_function(elem):
                 #print("Type of the result: " + str(type(elem)))
                 #print(type(elem) == tuple)
@@ -69,12 +70,19 @@ class Fold:
                     whole_result.append(select_from_tuple(elem, return_info))
 
         self.result.append_to_collection(whole_result)
+        state.get_current_state()["db"].add_object(self.result)
     
     def get_result(self):
         return self.result
+
+    def get_result_name(self):
+        return self.result.get_name()
     
     def get_name(self):
         return self.name
+
+    def get_model(self):
+        return self.result.get_model()
 
 
 def extract_attributes_datatypes_dict(source_dataset, return_info):

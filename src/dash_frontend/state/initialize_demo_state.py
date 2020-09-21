@@ -1,5 +1,8 @@
 from dash_frontend.state.state import State
 from tables import *
+import json
+import os
+dirname = os.path.dirname(__file__)
 ## Pre-defined databases
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
 from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
@@ -13,6 +16,12 @@ possible_states = {
     "person": {'label': 'Person dataset', 'value': 'person', 'available': False, 'db': None},
     "film": {'label': 'Film dataset', 'value': 'film', 'available': False, 'db': None}
 }
+
+examples_path = os.path.join(dirname, "filtering_examples.json")
+with open(examples_path) as f:
+    examples = json.load(f)
+    for key in possible_states:
+        possible_states[key]["filtering_examples"] = examples[key]
 
 ## Initially the E-commerce database is selected.
 state = State("ecommerce", possible_states)

@@ -5,7 +5,6 @@ from multi_model_join.multi_model_join import MultiModelJoin
 from initialization_of_demo_databases.initialize_ecommerce_morphisms import initialize_ecommerce_morphisms
 from constructing_multi_model_db.collection_constructor.create_collection_constructor import create_collection_constructors
 dirname = os.path.dirname(__file__)
-e_commerce_instance = None
 
 class ECommerceMultiModelDatabase():
 
@@ -33,14 +32,12 @@ class ECommerceMultiModelDatabase():
             dirname, "..\\..\\db_files\\ecommerce")
 
         ## ===== Customer graph =====
-        name = "customer"
         customer_edge_info = [{"file_path": customers_edge_path, "delimiter": ";", "schema": ["source","target"], "source_attribute_index": 0, "target_attribute_index": 1}]
         customer_vertex_info = [ { "file_path": customers_vertex_path, "schema": ["customer_id", "name", "creditLimit", "customer_locationId"], "key_attribute_index": 0, "delimiter": ";" } ]
         customer_vertex_model = ["customer_id", "name", "creditLimit", "customer_locationId"]
         ecommerce_config.append({"model": "graph", "name": "customer", "edgeInfo": customer_edge_info, "vertexInfo": customer_vertex_info, "vertexModel": customer_vertex_model, "edgeModel": ["knows"], "targetFolder": target_folder})
 
         ## ===== Interest graph =====
-        name = "interest"
         interest_edge_info = [{"file_path": interest_edge_path, "delimiter": ";", "schema": ["customerId","targetId", "weight"], "source_attribute_index": 0, "target_attribute_index": 1}]
         interest_vertex_info = [ { "file_path": interest_vertex_path, "schema": ["interest_id", "topic", "interest_locationId"], "key_attribute_index": 0, "delimiter": ";" },
         { "file_path": customers_vertex_path, "schema": ["customer_id", "name", "creditLimit", "customer_locationId"], "key_attribute_index": 0, "delimiter": ";" } ]

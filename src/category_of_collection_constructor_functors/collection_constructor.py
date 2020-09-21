@@ -28,3 +28,6 @@ class CollectionConstructor:
 
     def get_length(self):
         return self.collection.get_length()
+
+    def get_attributes_from_model_category(self):
+        return self.model_category.get_attributes()

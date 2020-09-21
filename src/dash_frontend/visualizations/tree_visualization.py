@@ -1,7 +1,4 @@
 import dash_cytoscape as cyto
-import networkx as nx
-import dash_core_components as dcc
-from dash_frontend.state.initialize_demo_state import multi_model_join_results, state
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import json
@@ -11,14 +8,16 @@ import dash
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
 from supportive_functions.json_manipulations import decode_shelve_to_json
 from dash.exceptions import PreventUpdate
+tree = None
 
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
 Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 2'}}
 """
 
-def tree_to_cytoscape():
-    nodes, edges, root_ids = dict_to_tree()
+
+def tree_to_cytoscape(visualized_object):
+    nodes, edges, root_ids = dict_to_tree(visualized_object)
     cyto_fig = html.Div(children=[cyto.Cytoscape(
         id='cytoscape-tree-result',
         layout={
@@ -60,9 +59,7 @@ def show_whole_tree(button_click):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "show-json":
-            result = multi_model_join_results.get_current_state()
-            T = result.get_collection().get_tree()
-            return json.dumps(decode_shelve_to_json(None, T), indent=2), {'display': 'block', 'border': 'thin lightgrey solid', 'overflowX': 'scroll', 'width': '100%'}, {'display': 'none'}
+            return json.dumps(decode_shelve_to_json(None, tree), indent=2), {'display': 'block', 'border': 'thin lightgrey solid', 'overflowX': 'scroll', 'width': '100%'}, {'display': 'none'}
     else:
         raise PreventUpdate
 
@@ -90,9 +87,10 @@ def walk_tree(previous_id, root, tree, nodes, edges):
             pass
 
 
-def dict_to_tree():
-    result = multi_model_join_results.get_current_state().get_result()
-    T = result.get_collection().get_tree()
+def dict_to_tree(visualized_object):
+    T = visualized_object.get_collection().get_tree()
+    global tree
+    tree = T
     nodes, edges, root_ids = [], [], []
     # We assume that T is not a list of objects but dictionary of objects
     for key in T:

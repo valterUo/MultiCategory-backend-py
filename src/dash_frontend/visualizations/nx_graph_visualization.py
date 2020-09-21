@@ -1,13 +1,9 @@
 import dash_cytoscape as cyto
-import networkx as nx
-import dash_core_components as dcc
-from dash_frontend.state.initialize_demo_state import multi_model_join_results
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import json
 from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
-
+graph = None
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
 Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 2'}}
@@ -17,21 +13,18 @@ Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 
 def parse_cytoscape_nodes_edges(G):
     nodes, edges = [], []
     for node in G.nodes.data():
-        print(node[1])
         nodes.append(
             {'data': {'id': node[0], 'label': str(next(iter(node[1].values())))}})
     for edge in G.edges.data():
-        print(edge)
         edges.append(
             {'data': {'source': edge[0], 'target': edge[1], 'label': ""}})
     return nodes, edges
 
 
-def general_nx_grah_to_cytoscape():
-    result = multi_model_join_results.get_current_state().get_result()
-    G = result.get_collection().get_graph()
-    nodes, edges = parse_cytoscape_nodes_edges(G)
-
+def general_nx_grah_to_cytoscape(visualized_object):
+    global graph
+    graph = visualized_object.get_collection().get_graph()
+    nodes, edges = parse_cytoscape_nodes_edges(graph)
     cyto_fig = html.Div(children=[cyto.Cytoscape(
         id='cytoscape-result',
         layout={'name': 'circle'},
@@ -69,9 +62,7 @@ def general_nx_grah_to_cytoscape():
               [Input('cytoscape-result', 'tapNodeData')])
 def displayTapNodeData(data):
     if data != None:
-        result = multi_model_join_results.get_current_state().get_result()
-        G = result.get_collection().get_graph()
-        for node in G.nodes.data():
+        for node in graph.nodes.data():
             if node[0] == data["id"]:
                 return decode_to_json(node[1])
     else:
@@ -82,9 +73,7 @@ def displayTapNodeData(data):
               [Input('cytoscape-result', 'tapEdgeData')])
 def displayTapEdgeData(data):
     if data != None:
-        result = multi_model_join_results.get_current_state().get_result()
-        G = result.get_collection().get_graph()
-        for edge in G.edges.data():
+        for edge in graph.edges.data():
             if data["source"] == edge[0] and data["target"] == edge[1]:
                 return "You clicked the edge between " + data['source'].upper() + " and " + data['target'].upper() + " containing information: " + decode_to_json(edge[2])
     else:
