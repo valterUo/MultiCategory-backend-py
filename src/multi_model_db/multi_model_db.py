@@ -54,9 +54,13 @@ class MultiModelDB:
         return self.morphisms
 
     def add_object(self, new_object):
+        self.schema_category.add_object(new_object.get_model_category())
+        self.instance_category.add_object(new_object.get_collection())
         self.objects[new_object.get_name()] = new_object
 
     def add_morphism(self, new_morphism):
+        self.schema_category.add_morphism(new_morphism.get_model_relationship())
+        self.instance_category.add_morphism(new_morphism.get_collection_relationship())
         self.morphisms[new_morphism.get_name()] = new_morphism
 
     def get_instance_category(self):

@@ -1,5 +1,4 @@
 from multi_model_query_processing.fold import Fold
-import uuid
 
 def execute_query(name, query_params):
     block = query_params[0]

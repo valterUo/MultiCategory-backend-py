@@ -1,7 +1,6 @@
 import shelve
 import os
 import json
-import pickle
 from shelve import DbfilenameShelf
 from json import JSONDecodeError
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
@@ -19,7 +18,7 @@ class TreeCollection:
             self.target_file_path = self.target_folder + "//" + self.name
         else:
             self.target_file_path = target_file_path
-        if not os.path.isfile(self.target_file_path + ".dat"):
+        if not os.path.isfile(self.target_file_path + ".dat") and self.source_file != None:
             if self.format == "JSON":
                 self.parse_json()
             elif self.format == "XML":
@@ -140,6 +139,7 @@ class TreeCollection:
         return result
 
     def append_to_collection(self, new_data_point):
+        print("In tree collection: ", new_data_point)
         if self.target_file_path == None:
             self.target_file_path = self.target_folder_path + "//" + self.name + ".pyc"
         
@@ -151,11 +151,14 @@ class TreeCollection:
                     for i in range(len(new_data_point)):
                         d[str(i)] = new_data_point[i]
                 elif type(new_data_point[0]) == dict or type(new_data_point) == XmlDictConfig:
-                    for key in new_data_point[0]:
-                        d[key] = new_data_point[key]
+                    data_point = new_data_point[0]
+                    for key in data_point:
+                        d[key] = data_point[key]
         elif type(new_data_point) == dict or type(new_data_point) == XmlDictConfig:
             for key in new_data_point:
                 d[key] = new_data_point[key]
+        print("closing the shelve")
+        d.close()
 
     def get_length(self):
         if self.target_file_path != None:

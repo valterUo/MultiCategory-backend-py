@@ -38,7 +38,7 @@ class GraphModelCategory:
         return self.morphisms
 
     def get_attributes(self):
-        return self.vertex_object_attributes + self.edge_object_attributes
+        return {"vertices": self.vertex_object_attributes, "edges": self.edge_object_attributes}
 
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []

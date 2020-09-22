@@ -25,7 +25,8 @@ def general_nx_grah_to_cytoscape(visualized_object):
     global graph
     graph = visualized_object.get_collection().get_graph()
     nodes, edges = parse_cytoscape_nodes_edges(graph)
-    cyto_fig = html.Div(children=[cyto.Cytoscape(
+    cyto_fig = html.Div(children=[
+        cyto.Cytoscape(
         id='cytoscape-result',
         layout={'name': 'circle'},
         style={'width': '90%', 'margin': '0 auto',
@@ -50,10 +51,10 @@ def general_nx_grah_to_cytoscape(visualized_object):
             }
         ]
     ), html.Pre(id='cytoscape-tapNodeData-output', style={
-        'border': 'thin lightgrey solid',
+        'border': 'thin lightgrey solid', 'margin': '0 auto',
         'overflowX': 'scroll', 'width': '90%'}),
         html.Pre(id='cytoscape-tapEdgeData-output', style={
-            'border': 'thin lightgrey solid',
+            'border': 'thin lightgrey solid', 'margin': '0 auto',
             'overflowX': 'scroll', 'width': '90%'})])
     return cyto_fig
 

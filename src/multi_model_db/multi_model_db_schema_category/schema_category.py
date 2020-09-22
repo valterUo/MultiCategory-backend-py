@@ -22,6 +22,12 @@ class SchemaCategory:
     def get_morphisms(self):
         return self.morphisms
 
+    def add_object(self, new_object):
+        self.objects[new_object.get_name()] = new_object
+
+    def add_morphism(self, new_morphism):
+        self.morphisms[new_morphism.get_name()] = new_morphism
+
     def get_nx_graph(self):
         G = nx.DiGraph(title = self.name)
         node_list, edge_list = [], [] 

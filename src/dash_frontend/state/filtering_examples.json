@@ -1,7 +1,10 @@
 {
     "ecommerce": [
         {"label": "lambda x : x", "value": "lambda x : x"},
-        {"label": "lambda x : x['location_id'] == 10", "value": "lambda x : x['location_id'] == 10"}
+        {"label": "lambda x : x['location_id'] == 10", "value": "lambda x : x['location_id'] == 10"},
+        {"label": "lambda x : True", "value": "lambda x : True"},
+        {"label": "lambda x : x['address'] == b'Pietari Kalmin katu 5'", "value": "lambda x : x['address'] == b'Pietari Kalmin katu 5'"},
+        {"label": "lambda x : x['address'] == b'Pietari Kalmin katu 5' or x['country'] == b'USA'", "value": "lambda x : x['address'] == b'Pietari Kalmin katu 5' or x['country'] == b'USA"}
     ],
     "patent": [
         {"label": "example 1", "value": "example1"}

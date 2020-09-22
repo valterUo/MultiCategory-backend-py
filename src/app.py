@@ -72,7 +72,7 @@ app.layout = html.Div(
                 html.Div(id="app-content"),
             ],
         ),
-        generate_modal(),
+        generate_modal()
     ],
 )
 
