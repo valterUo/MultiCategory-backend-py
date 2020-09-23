@@ -1,4 +1,3 @@
-import shelve
 import networkx as nx
 import csv
 import os
@@ -31,8 +30,8 @@ class GraphCollection:
 
         if vertex_info != None and edge_info != None and target_folder_path != None:
             base = os.path.basename(edge_info[0]["file_path"])
-            filename = os.path.splitext(base)[0]
-            file_extension = os.path.splitext(edge_info[0]["file_path"])[1]
+            # filename = os.path.splitext(base)[0]
+            # file_extension = os.path.splitext(edge_info[0]["file_path"])[1]
 
             self.target_file_path = self.target_folder_path + "//" + self.name + ".pyc"
 
