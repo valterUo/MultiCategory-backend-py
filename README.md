@@ -9,8 +9,8 @@ The following join operations are currently implemented:
 - [x] Relational + Relational: inner and left joins
 - [x] Relational + Tree: inner and left joins
 - [x] Relational + Graph: inner and left joins
-- [] Tree + Relational
-- [] Tree + Tree
+- [x] Tree + Relational
+- [x] Tree + Tree
 - [x] Tree + Graph
 - [x] Graph + Relational: inner and left joins
 - [x] Graph + Tree
