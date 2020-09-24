@@ -6,7 +6,7 @@ from dash_frontend.server import app
 
 from dash_frontend.tabs.settings_tab import define_settings_tab, build_settings_tab
 from dash_frontend.tabs.instance_functor_tab import define_instance_functor_tab, build_instance_functor_tab
-from dash_frontend.tabs.query_tab import query_tab, build_query_tab
+from dash_frontend.tabs.query_tabs.query_tab import query_tabs, build_query_tabs
 from dash_frontend.tabs.multi_model_join_tab import multi_model_join_tab, build_multi_model_join_tab
 from dash_frontend.tabs.model_transformation_tab import model_tranformation_tab, build_model_tranformation_tab
 from dash_frontend.tabs.result_tab import result_tab, build_result_tab
@@ -51,7 +51,7 @@ def build_tabs():
                 children=[
                     define_settings_tab(),
                     define_instance_functor_tab(),
-                    query_tab(),
+                    query_tabs(),
                     multi_model_join_tab(),
                     model_tranformation_tab(),
                     result_tab(),
@@ -85,7 +85,7 @@ def render_tab_content(tab_switch):
     if tab_switch == "tab1":
         return build_settings_tab(state)
     elif tab_switch == "tab3":
-        return build_query_tab()
+        return build_query_tabs()
     elif tab_switch == "tab4":
         return build_multi_model_join_tab()
     elif tab_switch == "tab5":

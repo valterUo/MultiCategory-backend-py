@@ -11,17 +11,17 @@ from dash_frontend.fold_query_processing_frontend.render_return_attribute_input 
 fold_query_state = []
 
 
-def query_tab():
+def selective_query_subtab():
     return dcc.Tab(
-        id="Query-tab",
-        label="Queries",
-        value="tab3",
+        id="Selective-query-tab",
+        label="Selective queries",
+        value="subtab1",
         className="custom-tab",
         selected_className="custom-tab--selected",
     )
 
 
-def build_query_tab():
+def build_selective_query_subtab():
     objects = state.get_current_state()["db"].get_objects()
     initial_options = []
     for obj in objects:
@@ -91,7 +91,7 @@ def build_query_tab():
                                                 options=examples,
                                             )])]),
                                 html.Div(id="return-attribute-input-container", style={
-                                         "border": "1px solid white", "padding": "10px", "margin": "10px"}, children = render_return_attribute_input("relational", fold_query_state)),
+                                         "border": "1px solid white", "padding": "10px", "margin": "10px"}, children=render_return_attribute_input("relational", fold_query_state)),
                                 html.Div(style={"border": "1px solid white", "padding": "10px", "margin": "10px"}, children=html.Label([
                                     "Select target data model",
                                     dcc.Dropdown(
@@ -129,22 +129,6 @@ def build_query_tab():
                         ]),
                     ]),
                 html.Div(id="result-notification")
-                # html.Hr(),
-                # html.Div(
-                #     id="create-new-morphism-functor-tool",
-                #     children=[
-                #         html.H6(
-                #             "Create a new morphism between existing collections.")
-                #     ]
-                # ),
-                # html.Hr(),
-                # html.Div(
-                #     id="create-new-collection-constructor-functor-tool",
-                #     children=[
-                #         html.H6(
-                #             "Create a new (empty) collection constructor functor.")
-                #     ]
-                # ),
             ])]
     )]
 
@@ -210,15 +194,15 @@ def handle_relational_tree_query_blocks(domain, lambda_input, return_attributes,
     fold_query_state.append(block)
     current_children.append(
         html.Div(style={"width": "100%"}, children=[
-            html.Div(style={"margin": "10px", "border": "1px solid white"}, children=[ 
-                html.Div(style = {"margin": "10px"}, children = [
-                html.H6("Query block"),
-                html.P("Query from: " + domain),
-                html.P("With function: " + lambda_input),
-                html.P("With return attirbutes: " +
-                        ", ".join(attributes)),
-                html.P("Result will be in model: " + target_model),
-            ])]), html.Div(style={"margin": "10px auto", "width": "1%"},  children=[ html.Span(className="arrow down")])
+            html.Div(style={"margin": "10px", "border": "1px solid white"}, children=[
+                html.Div(style={"margin": "10px"}, children=[
+                    html.H6("Query block"),
+                    html.P("Query from: " + domain),
+                    html.P("With function: " + lambda_input),
+                    html.P("With return attirbutes: " +
+                           ", ".join(attributes)),
+                    html.P("Result will be in model: " + target_model),
+                ])]), html.Div(style={"margin": "10px auto", "width": "1%"},  children=[html.Span(className="arrow down")])
         ])
     )
     return current_children, True
@@ -242,23 +226,24 @@ def handle_graph_query_block(domain, lambda_input, return_attributes_vertices, a
     else:
         domain = "previous block"
     block["lambda_input"] = lambda_input
-    block["return_attributes"] = {"vertex_object_attributes": attributes_vertices, "edge_object_attributes": attributes_edges}
+    block["return_attributes"] = {
+        "vertex_object_attributes": attributes_vertices, "edge_object_attributes": attributes_edges}
     block["target_model"] = target_model
     fold_query_state.append(block)
     current_children.append(
         html.Div(style={"width": "100%"}, children=[
-            html.Div(style={"margin": "10px", "border": "1px solid white"}, children=[ 
-                html.Div(style = {"margin": "10px"}, children = [
-                html.H6("Query block"),
-                html.P("Query from: " + domain),
-                html.P("With function: " + lambda_input),
-                html.P("With return attirbutes on vertices with: " +
-                        ", ".join(attributes_vertices)),
-                html.P("With return attirbutes on edges with: " +
-                        ", ".join(attributes_edges)),
-                html.P("Result will be in model: " + target_model),
-            ])]), html.Div(style={"margin": "10px auto", "width": "1%"}, children=[html.Span(className="arrow down")])
-        ])   
+            html.Div(style={"margin": "10px", "border": "1px solid white"}, children=[
+                html.Div(style={"margin": "10px"}, children=[
+                    html.H6("Query block"),
+                    html.P("Query from: " + domain),
+                    html.P("With function: " + lambda_input),
+                    html.P("With return attirbutes on vertices with: " +
+                           ", ".join(attributes_vertices)),
+                    html.P("With return attirbutes on edges with: " +
+                           ", ".join(attributes_edges)),
+                    html.P("Result will be in model: " + target_model),
+                ])]), html.Div(style={"margin": "10px auto", "width": "1%"}, children=[html.Span(className="arrow down")])
+        ])
     )
     return current_children, True
 
@@ -298,17 +283,18 @@ def select_filtering_example(selected_example):
 )
 def update_return_attributes(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[selected_domain]
+        data_object = state.get_current_state()["db"].get_objects()[
+            selected_domain]
         domain_model = data_object.get_model()
         if domain_model != None and domain_model != "graph":
             attributes = data_object.get_attributes_from_model_category()
             options = [{'label': str(value), 'value': str(value)}
-                    for value in attributes]
+                       for value in attributes]
             return options
         else:
             raise PreventUpdate
     else:
-            raise PreventUpdate
+        raise PreventUpdate
 
 
 @app.callback(
@@ -318,19 +304,20 @@ def update_return_attributes(selected_domain):
 )
 def update_return_attributes_graph(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[selected_domain]
+        data_object = state.get_current_state()["db"].get_objects()[
+            selected_domain]
         domain_model = data_object.get_model()
         if domain_model == "graph":
             attributes = data_object.get_attributes_from_model_category()
             vertices = [{'label': str(value), 'value': str(value)}
                         for value in attributes["vertices"]]
             edges = [{'label': str(value), 'value': str(value)}
-                    for value in attributes["edges"]]
+                     for value in attributes["edges"]]
             return vertices, edges
         else:
             raise PreventUpdate
     else:
-            raise PreventUpdate
+        raise PreventUpdate
 
 
 @app.callback(
@@ -339,8 +326,9 @@ def update_return_attributes_graph(selected_domain):
 )
 def update_return_attributes(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[selected_domain]
+        data_object = state.get_current_state()["db"].get_objects()[
+            selected_domain]
         domain_model = data_object.get_model()
         return render_return_attribute_input(domain_model, fold_query_state)
     else:
-            raise PreventUpdate
+        raise PreventUpdate
