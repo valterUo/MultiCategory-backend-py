@@ -2,6 +2,9 @@ import os
 from tables import *
 import csv
 from category_of_collection_constructor_functors.collections.collection_errors import UnknownRelationalFileExtension, DatabaseFileDoesNotExists
+from category_of_collection_constructor_functors.collections.graph_collection import GraphCollection
+from category_of_collection_constructor_functors.collections.tree_collection import TreeCollection
+from category_of_collection_constructor_functors.collections.converged_collection_connection import ConvergedCollectionConnection
 
 
 class TableCollection:
@@ -31,6 +34,7 @@ class TableCollection:
         self.h5file = None
         self.table = None
         self.primary_key = primary_key
+        self.converged_collections = []
         if attributes_datatypes_dict != None and source_file_path != None and h5file_path != None:
             base = os.path.basename(source_file_path)
             filename = os.path.splitext(base)[0]
@@ -176,3 +180,16 @@ class TableCollection:
             return 0
         table = self.get_iterable_collection_of_objects()
         return table.nrows
+
+    def add_converged_collection(self, name, model_category_connections_for_collection, target_folder_path):
+        for connection in model_category_connections_for_collection:
+            model = connection.get_target_model_category().get_model()
+            target_collection = None
+            if model == "relational":
+                target_collection = TableCollection(name, h5file_path= target_folder_path + "\\" + name + ".h5")
+            elif model == "graph":
+                target_collection = GraphCollection(name, target_folder_path=target_folder_path)
+            elif model == "tree":
+                target_collection = TreeCollection(name, target_file_path=target_folder_path)
+            target_collection.add_converged_collections(name + "_sub", connection.get_target_model_category().get_converged_model_categories(), target_folder_path)
+            self.converged_collections.append(ConvergedCollectionConnection(self, connection.get_domain_id(), target_collection, connection.get_target_id()))

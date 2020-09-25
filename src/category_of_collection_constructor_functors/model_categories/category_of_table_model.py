@@ -10,11 +10,12 @@ class TableModelCategory:
     The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, attributes = [], primary_keys = None, objects = None, morphisms = None):
+    def __init__(self, name, attributes = [], primary_keys = None, objects = None, morphisms = None, converged_model_categories = []):
         self.name = name
         self.primary_keys = primary_keys
         self.objects = []
         self.attributes = attributes
+        self.converged_model_categories = converged_model_categories
         if morphisms == None:
             self.morphisms = []
         else:
@@ -47,16 +48,23 @@ class TableModelCategory:
 
     def get_attributes(self):
         return self.attributes
+    
+    def get_converged_model_categories(self):
+        return self.converged_model_categories
+
+    def add_converged_model_categories(self, new):
+        self.converged_model_categories.append(new)
 
     def get_nx_graph(self):
-        G, edges, nodes = nx.DiGraph(), [], []
-        for mor in self.morphisms:
-            edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
-        G.add_edges_from(edges)
-        for obj in self.objects:
-            nodes.append((obj.get_id(), {'label': obj.get_name()}))
-        G.add_nodes_from(nodes)
-        return G
+        if self.converged_model_categories == []:
+            G, edges, nodes = nx.DiGraph(), [], []
+            for mor in self.morphisms:
+                edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
+            G.add_edges_from(edges)
+            for obj in self.objects:
+                nodes.append((obj.get_id(), {'label': obj.get_name()}))
+            G.add_nodes_from(nodes)
+            return G
 
     def __str__(self):
         return ", ".join(self.attributes)

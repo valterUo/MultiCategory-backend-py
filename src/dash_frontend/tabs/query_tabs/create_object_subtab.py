@@ -22,9 +22,10 @@ def build_create_object_subtab():
             id="set-specs-intro-container",
             children=[
                 html.H4(
-                    "This area is for creating new objects into the selected multi-model databases schema and instance categories. You can create objects consisting of combinations of implemented data models."
+                    "This area is for creating new objects into the selected multi-model databases schema and instance categories."
                 ),
-                html.P("""Objects in the multi-model database are considered to be functors. Thus they consist of a domain category (called model category) and a target category (called collection). 
+                html.P("""You can create objects consisting of combinations of implemented data models.
+                Objects in the multi-model database are considered to be functors. Thus they consist of a domain category (called model category) and a target category (called collection). 
                 The target category is theoretically Set but in the implementation level it is a data structure that follows certain constraints."""),
                 html.Hr(),
                 html.Label([

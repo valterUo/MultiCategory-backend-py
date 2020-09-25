@@ -8,10 +8,11 @@ class GraphModelCategory:
     GraphModelCategory is a category with two objects and two non-identity morphism between them. The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, vertex_object_attributes = [], edge_object_attributes = [], objects = None, morphisms = None):
+    def __init__(self, name, vertex_object_attributes = [], edge_object_attributes = [], objects = None, morphisms = None, converged_model_categories = []):
         self.name = name
         self.vertex_object_attributes = vertex_object_attributes
         self.edge_object_attributes = edge_object_attributes
+        self.converged_model_categories = converged_model_categories
         if objects == None and morphisms == None:
             self.vertex_object = AbstractObject("vertexObject", "graph", self.vertex_object_attributes)
             self.edge_object = AbstractObject("edgeObject", "graph", self.edge_object_attributes)
@@ -39,6 +40,12 @@ class GraphModelCategory:
 
     def get_attributes(self):
         return {"vertices": self.vertex_object_attributes, "edges": self.edge_object_attributes}
+
+    def get_converged_model_categories(self):
+        return self.converged_model_categories
+
+    def add_converged_model_categories(self, new):
+        self.converged_model_categories.append(new)
 
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []

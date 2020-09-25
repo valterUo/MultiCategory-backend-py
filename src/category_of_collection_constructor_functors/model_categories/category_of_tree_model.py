@@ -19,9 +19,10 @@ class TreeModelCategory:
     Note that the edges in the tree do not contain any information. The identity morphisms are modelled only conceptually.
     """
 
-    def __init__(self, name, node_object_attributes = [], objects = None, morphisms = None):
+    def __init__(self, name, node_object_attributes = [], objects = None, morphisms = None, converged_model_categories = []):
         self.name = name
         self.node_object_attributes = node_object_attributes
+        self.converged_model_categories = converged_model_categories
         if objects == None or morphisms == None:
             self.root = RootObject(name)
             self.nodes = AbstractObject("nodes", "tree", self.node_object_attributes)
@@ -52,10 +53,16 @@ class TreeModelCategory:
     def get_attributes(self):
         return self.node_object_attributes
 
+    def get_converged_model_categories(self):
+        return self.converged_model_categories
+
+    def add_converged_model_categories(self, new):
+        self.converged_model_categories.append(new)
+
     def get_nx_graph(self):
         G, edges, nodes = nx.DiGraph(), [], []
         for mor in self.morphisms:
-            edges.append(mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()})
+            edges.append((mor.get_source().get_id(), mor.get_target().get_id(), {'label': mor.get_name()}))
         G.add_edges_from(edges)
         for obj in self.objects:
             nodes.append((obj.get_id(), {'label': obj.get_name()}))
