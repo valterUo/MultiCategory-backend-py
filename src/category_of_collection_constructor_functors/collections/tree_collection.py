@@ -6,9 +6,7 @@ from json import JSONDecodeError
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
 import xml.etree.cElementTree as ET
 from category_of_collection_constructor_functors.collections.collection_errors import FormatNotSupportedError
-from category_of_collection_constructor_functors.collections.graph_collection import GraphCollection
-from category_of_collection_constructor_functors.collections.table_collection import TableCollection
-from category_of_collection_constructor_functors.collections.converged_collection_connection import ConvergedCollectionConnection
+
 
 class TreeCollection:
 
@@ -50,6 +48,9 @@ class TreeCollection:
     
     def get_converged_collections(self):
         return self.converged_collections
+
+    def add_converged_collection(self, new):
+        self.converged_collections.append(new)
 
     ## This is problematic function for trees: we would like to iterate over all the nodes and the root
     ## but this is not wanted always and there is no unique identifier for all the elements and objects. 
@@ -173,17 +174,4 @@ class TreeCollection:
             return len(d.keys())
         else:
             return 0
-
-    def add_converged_collection(self, name, model_category_connections_for_collection, target_folder_path):
-        for connection in model_category_connections_for_collection:
-            model = connection.get_target_model_category().get_model()
-            target_collection = None
-            if model == "relational":
-                target_collection = TableCollection(name, h5file_path= target_folder_path + "\\" + name + ".h5")
-            elif model == "graph":
-                target_collection = GraphCollection(name, target_folder_path=target_folder_path)
-            elif model == "tree":
-                target_collection = TreeCollection(name, target_file_path=target_folder_path)
-            target_collection.add_converged_collections(name + "_sub", connection.get_target_model_category().get_converged_model_categories(), target_folder_path)
-            self.converged_collections.append(ConvergedCollectionConnection(self, connection.get_domain_id(), target_collection, connection.get_target_id()))
         

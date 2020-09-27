@@ -45,7 +45,7 @@ def model_category_building_tool(new_model_category):
                 placeholder="name",
                 style={'width': '90%',
                         "display": "inline-block"},
-            )]),
+            )]), html.Br(),
         cyto.Cytoscape(
             id='cytoscape-result',
             layout={'name': 'circle'},
@@ -127,11 +127,11 @@ def displayTapEdgeData(node_list):
     [Input("combine-domain-target", "n_clicks")]
 )
 def update_click_output(n_clicks):
+    global edges, domain, target, added_connections
     ctx = dash.callback_context
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "combine-domain-target" and domain != None and target != None:
-            global edges, domain, target, added_connections
             added_connections.append((domain["data"]["id"], target["data"]["id"]))
             edges.append({'data': {'source': domain["data"]["id"], 'target': target["data"]["id"], 'label': "new edge"}})
             domain, target = None, None

@@ -5,6 +5,9 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_frontend.server import app
 from dash_frontend.tabs.query_tabs.build_new_model_category import build_new_model_category
+from dash_frontend.tabs.query_tabs.building_constructors.build_graph_constructor import build_graph_constructor
+from dash_frontend.tabs.query_tabs.building_constructors.build_relational_constructor import build_relational_constructor
+from dash_frontend.tabs.query_tabs.building_constructors.build_tree_constructor import build_tree_constructor
 
 def create_object_subtab():
     return dcc.Tab(
@@ -42,16 +45,42 @@ def build_create_object_subtab():
                                     {'label': 'create new',
                                             'value': 'new'}]
                     )]),
-                build_new_model_category(),
+                    html.Div("create-object-input-container"),
             ])
     ])]
 
+# @app.callback(
+#     Output("build-new-model-category-main-container", "style"),
+#     [Input("select-model-category", "value")],
+# )
+# def select_model_category(value):
+#     if value == "new":
+#         return {"display": "block"}
+#     else:
+#         raise PreventUpdate
+
+# @app.callback(
+#     Output("attributes_for_table_input_container", "style"),
+#     [Input("select-model-category", "value")],
+# )
+# def select_model_category(value):
+#     if value == "relational":
+#         return {'width': '100%', 'display': 'block', 'position': 'relative'}
+#     else:
+#         raise PreventUpdate
+
 @app.callback(
-    Output("build-new-model-category-main-container", "style"),
+    Output("create-object-input-container", "children"),
     [Input("select-model-category", "value")],
 )
 def select_model_category(value):
-    if value == "new":
-        return {"display": "block"}
+    if value == "relational":
+        return build_relational_constructor()
+    elif value == "graph":
+        return build_graph_constructor()
+    elif value == "tree":
+        return build_tree_constructor()
+    elif value == "new":
+        return build_new_model_category()
     else:
         raise PreventUpdate

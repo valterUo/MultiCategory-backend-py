@@ -2,9 +2,6 @@ import networkx as nx
 import csv
 import os
 import pickle
-from category_of_collection_constructor_functors.collections.tree_collection import TreeCollection
-from category_of_collection_constructor_functors.collections.table_collection import TableCollection
-from category_of_collection_constructor_functors.collections.converged_collection_connection import ConvergedCollectionConnection
 
 class GraphCollection:
 
@@ -76,6 +73,9 @@ class GraphCollection:
 
     def get_converged_collections(self):
         return self.converged_collections
+
+    def add_converged_collection(self, new):
+        self.converged_collections.append(new)
 
     def parse_directed_graph(self):
         G = nx.DiGraph()
@@ -202,16 +202,3 @@ class GraphCollection:
             return G.number_of_nodes() + G.number_of_edges()
         else:
             return 0
-
-    def add_converged_collection(self, name, model_category_connections_for_collection, target_folder_path):
-        for connection in model_category_connections_for_collection:
-            model = connection.get_target_model_category().get_model()
-            target_collection = None
-            if model == "relational":
-                target_collection = TableCollection(name, h5file_path= target_folder_path + "\\" + name + ".h5")
-            elif model == "graph":
-                target_collection = GraphCollection(name, target_folder_path=target_folder_path)
-            elif model == "tree":
-                target_collection = TreeCollection(name, target_file_path=target_folder_path)
-            target_collection.add_converged_collections(name + "_sub", connection.get_target_model_category().get_converged_model_categories(), target_folder_path)
-            self.converged_collections.append(ConvergedCollectionConnection(self, connection.get_domain_id(), target_collection, connection.get_target_id()))

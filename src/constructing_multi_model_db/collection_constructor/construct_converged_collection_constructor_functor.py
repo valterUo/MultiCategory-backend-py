@@ -3,8 +3,11 @@ from category_of_collection_constructor_functors.collections.graph_collection im
 from category_of_collection_constructor_functors.collections.tree_collection import TreeCollection
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
 from category_of_collection_constructor_functors.model_categories.converged_model_category_connection import ConvergedModelCategoryConnection
+from category_of_collection_constructor_functors.collections.converged_collection_connection import ConvergedCollectionConnection
+import os
+dirname = os.path.dirname(__file__)
 
-def construct_converged_collection_constructor_functor(name, model_categories, added_connections, target_folder_path):
+def construct_converged_collection_constructor_functor(name, model_categories, added_connections):
     new_connections = []
     for connection in added_connections:
         domain = connection[0]
@@ -30,12 +33,12 @@ def construct_converged_collection_constructor_functor(name, model_categories, a
                 break
         else:
             root = model_category
-
-    root_collection = construct_collection(name, root, target_folder_path)
+    target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+    root_collection = construct_root_collection(name, root, target_folder_path)
     result = CollectionConstructor(name, root, root_collection)
     return result
 
-def construct_collection(name, root, target_folder_path):
+def construct_root_collection(name, root, target_folder_path):
     model = root.get_model()
     root_collection = None
     if model == "relational":
@@ -44,5 +47,18 @@ def construct_collection(name, root, target_folder_path):
         root_collection = GraphCollection(name, target_folder_path=target_folder_path)
     elif model == "tree":
         root_collection = TreeCollection(name, target_file_path=target_folder_path)
-    root_collection.add_converged_collections(name + "_sub", root.get_converged_model_categories(), target_folder_path)
+    add_converged_collection(root_collection, name + "_sub", root.get_converged_model_categories(), target_folder_path)
     return root_collection
+
+def add_converged_collection(root_collection, name, model_category_connections_for_collection, target_folder_path):
+    for connection in model_category_connections_for_collection:
+        model = connection.get_target_model_category().get_model()
+        target_collection = None
+        if model == "relational":
+            target_collection = TableCollection(name, h5file_path= target_folder_path + "\\" + name + ".h5")
+        elif model == "graph":
+            target_collection = GraphCollection(name, target_folder_path=target_folder_path)
+        elif model == "tree":
+            target_collection = TreeCollection(name, target_file_path=target_folder_path)
+        target_collection.add_converged_collection(name + "_sub", connection.get_target_model_category().get_converged_model_categories(), target_folder_path)
+        root_collection.add_converged_collection.append(ConvergedCollectionConnection(root_collection, connection.get_domain_id(), target_collection, connection.get_target_id()))
