@@ -45,7 +45,8 @@ def model_category_building_tool(new_model_category):
                 placeholder="name",
                 style={'width': '90%',
                         "display": "inline-block"},
-            )]), html.Br(),
+            )]), 
+            html.Br(),
         cyto.Cytoscape(
             id='cytoscape-result',
             layout={'name': 'circle'},

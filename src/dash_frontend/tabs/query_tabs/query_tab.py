@@ -3,6 +3,7 @@ import dash_html_components as html
 from dash_frontend.tabs.query_tabs.selective_query_subtab import selective_query_subtab, build_selective_query_subtab
 from dash_frontend.tabs.query_tabs.create_morphism_subtab import create_morphism_subtab, build_create_morphism_subtab
 from dash_frontend.tabs.query_tabs.create_object_subtab import create_object_subtab, build_create_object_subtab
+from dash_frontend.tabs.query_tabs.inserting_query import insert_query_subtab, build_insert_query_subtab
 from dash_frontend.server import app
 from dash.dependencies import Input, Output
 
@@ -30,7 +31,8 @@ def build_query_tabs():
                     children=[
                         selective_query_subtab(),
                         create_morphism_subtab(),
-                        create_object_subtab()
+                        create_object_subtab(),
+                        insert_query_subtab()
                     ],
                 ),
             ],
@@ -52,4 +54,6 @@ def render_tab_content(tab_switch):
         return build_create_morphism_subtab()
     elif tab_switch == "subtab3":
         return build_create_object_subtab()
+    elif tab_switch == "subtab4":
+        return build_insert_query_subtab()
     return build_selective_query_subtab()

@@ -23,20 +23,30 @@ def build_graph_constructor():
                 placeholder="name",
                 style={'width': '90%', "display": "inline-block"},
             )]),
-            
-            html.Button(id = "submit-graph-constructor"),
+            html.Br(),
+            html.Button(id = "submit-graph-constructor", children = "SUBMID GRAPH OBJECT"),
+            html.Br(),
             html.Div(id = "graph-constructor-notification")
     ])]
 
 @app.callback(
-    [Output("graph-constructor-notification", "children")]
-    [Input("submit-graph-constructor", "n_clicks")]
+    [Output("graph-constructor-notification", "children"), 
+    Output("graph-constructor-name-input", "value")],
+    [Input("submit-graph-constructor", "n_clicks")],
     [State("graph-constructor-name-input", "value")],
 )
 def name_input(n_clicks, name):
-    target_folder_path = os.path.join(dirname, "..\\..\\db_files")
-    model_category = GraphModelCategory(name)
-    collection = GraphCollection(name, target_file_path=target_folder_path)
-    constructor = CollectionConstructor(name, model_category, collection)
-    state.get_current_state()["db"].add_object(constructor)
-    return html.P("New graph collection constructor added to the multi-model database.")
+    ctx = dash.callback_context
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if prop_id == "submit-graph-constructor" and name.strip() != "":
+            target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+            model_category = GraphModelCategory(name)
+            collection = GraphCollection(name, target_folder_path=target_folder_path)
+            constructor = CollectionConstructor(name, model_category, collection)
+            state.get_current_state()["db"].add_object(constructor)
+            return html.P("New graph collection constructor added to the multi-model database."), ""
+        else:
+            raise PreventUpdate
+    else:
+        raise PreventUpdate

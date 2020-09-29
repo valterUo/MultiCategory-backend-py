@@ -45,29 +45,9 @@ def build_create_object_subtab():
                                     {'label': 'create new',
                                             'value': 'new'}]
                     )]),
-                    html.Div("create-object-input-container"),
+                    html.Div(id = "create-object-input-container"),
             ])
     ])]
-
-# @app.callback(
-#     Output("build-new-model-category-main-container", "style"),
-#     [Input("select-model-category", "value")],
-# )
-# def select_model_category(value):
-#     if value == "new":
-#         return {"display": "block"}
-#     else:
-#         raise PreventUpdate
-
-# @app.callback(
-#     Output("attributes_for_table_input_container", "style"),
-#     [Input("select-model-category", "value")],
-# )
-# def select_model_category(value):
-#     if value == "relational":
-#         return {'width': '100%', 'display': 'block', 'position': 'relative'}
-#     else:
-#         raise PreventUpdate
 
 @app.callback(
     Output("create-object-input-container", "children"),

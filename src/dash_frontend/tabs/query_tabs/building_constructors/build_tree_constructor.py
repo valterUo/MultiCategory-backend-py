@@ -22,20 +22,29 @@ def build_tree_constructor():
                 value="",
                 placeholder="name",
                 style={'width': '90%', "display": "inline-block"},
-            )]), 
-            html.Button(id = "submit-tree-constructor"),
+            )]),
+            html.Br(),
+            html.Button(id = "submit-tree-constructor", children = "SUBMIT TREE OBJECT"),
+            html.Br(),
             html.Div(id = "tree-constructor-notification")
     ])]
 
 @app.callback(
-    [Output("tree-constructor-notification", "children")]
-    [Input("submit-tree-constructor", "n_clicks")]
+    [Output("tree-constructor-notification", "children"), 
+    Output("tree-constructor-name-input", "value")],
+    [Input("submit-tree-constructor", "n_clicks")],
     [State("tree-constructor-name-input", "value")],
 )
 def name_input(n_clicks, name):
-    target_folder_path = os.path.join(dirname, "..\\..\\db_files")
-    model_category = TreeModelCategory(name)
-    collection = TreeCollection(name, target_file_path=target_folder_path)
-    constructor = CollectionConstructor(name, model_category, collection)
-    state.get_current_state()["db"].add_object(constructor)
-    return html.P("New tree collection constructor added to the multi-model database.")
+    ctx = dash.callback_context
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if prop_id == "submit-tree-constructor" and name.strip() != "":
+            target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+            model_category = TreeModelCategory(name)
+            collection = TreeCollection(name, target_file_path=target_folder_path)
+            constructor = CollectionConstructor(name, model_category, collection)
+            state.get_current_state()["db"].add_object(constructor)
+            return html.P("New tree collection with name '" + name + "' has been added to the multi-model database."), ""
+    else:
+        raise PreventUpdate
