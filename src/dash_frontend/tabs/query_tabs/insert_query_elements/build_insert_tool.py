@@ -1,4 +1,4 @@
-from werkzeug.utils import html
+import dash_html_components as html
 from dash_frontend.tabs.query_tabs.insert_query_elements.build_relational_insert import build_relational_insert
 from dash_frontend.tabs.query_tabs.insert_query_elements.build_tree_insert import build_tree_insert
 from dash_frontend.tabs.query_tabs.insert_query_elements.build_graph_insert import build_graph_insert
@@ -11,11 +11,11 @@ def build_insert_tool(dataset):
     root_collection_html = None
 
     if collection_constructor.get_model() == "relational":
-        root_collection_html = build_relational_insert(collection_constructor)
+        root_collection_html = build_relational_insert(None, collection_constructor)
     elif collection_constructor.get_model() == "graph":
-        root_collection_html = build_graph_insert(collection_constructor)
+        root_collection_html = build_graph_insert(None, collection_constructor)
     elif collection_constructor.get_model() == "tree":
-        root_collection_html = build_tree_insert(collection_constructor)
+        root_collection_html = build_tree_insert(None, collection_constructor)
     
     main_insert_tool_container_children.append(root_collection_html)
     main_insert_tool_container_children = main_insert_tool_container_children + walk_converged_collection_tree(collection_constructor)

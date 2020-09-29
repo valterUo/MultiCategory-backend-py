@@ -30,7 +30,7 @@ class GraphCollection:
         self.converged_collections = []
 
         if vertex_info != None and edge_info != None and target_folder_path != None:
-            base = os.path.basename(edge_info[0]["file_path"])
+            # base = os.path.basename(edge_info[0]["file_path"])
             # filename = os.path.splitext(base)[0]
             # file_extension = os.path.splitext(edge_info[0]["file_path"])[1]
 

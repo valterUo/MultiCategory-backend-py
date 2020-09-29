@@ -25,8 +25,11 @@ def build_insert_query_subtab():
         options.append({'label': str(obj), 'value': str(obj)})
 
     return [html.Div(id="insert-query-subtab-main-container", children=[
+        html.Div(
+            id="set-specs-intro-container",
+            children=[
         html.Label([
-            "Select collection",
+            "Select collection to insert",
             dcc.Dropdown(
                 id="select-insert-dataset",
                 style={'width': '90%',
@@ -34,7 +37,7 @@ def build_insert_query_subtab():
                 options=options
             )]),
             html.Div(id = "insert-tool")
-    ])]
+    ])])]
 
 @app.callback(
     Output("insert-tool", "children"),

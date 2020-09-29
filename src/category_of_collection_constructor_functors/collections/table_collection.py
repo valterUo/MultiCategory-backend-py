@@ -92,6 +92,9 @@ class TableCollection:
     def set_attributes_datatypes_dict(self, new_attributes_datatypes_dict):
         self.attributes_datatypes_dict = new_attributes_datatypes_dict
 
+    def get_converged_collections(self):
+        return self.converged_collections
+
     def add_converged_collection(self, new):
         self.converged_collections.append(new)
 
