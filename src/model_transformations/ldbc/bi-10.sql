@@ -1,7 +1,5 @@
-from model_transformations.query_language_transformations.SQL.sql import SQL
-
-query = """
 /* Q10. Central Person for a Tag
+Originally from: https://github.com/ldbc/ldbc_snb_implementations/blob/dev/postgres/queries/bi-10.sql
 \set tag '\'Che_Guevara\''
 \set date '\'2011-07-22T00:00:00.000+00:00\''::timestamp
  */
@@ -55,20 +53,3 @@ SELECT p.personid AS "person.id"
  ORDER BY p.score + sum(f.score) DESC, p.personid
  LIMIT 100
 ;
-"""
-
-query = """
-SELECT p.p_personid AS personid
-      FROM person p
-         , person_tag pt
-         , tag t
-     WHERE 1=1
-        -- join
-       AND p.p_personid = pt.pt_personid
-       AND pt.pt_tagid = t.t_tagid
-        -- filter
-       AND t.t_name = :tag
-"""
-primary_foreign_keys = ["p_personid", "pt_personid", "pt_tagid", "t_tagid"]
-
-elem = SQL("test", query, primary_foreign_keys).get_cypher()

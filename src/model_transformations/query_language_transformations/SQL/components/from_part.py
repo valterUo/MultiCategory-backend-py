@@ -3,7 +3,7 @@ import re
 class FROM:
 
     def __init__(self, tables_string):
-        self.tables_with_alias = re.split(",", tables_string)
+        self.tables_with_alias = re.split(r',', tables_string)
         self.tables = []
         for table_with_alias in self.tables_with_alias:
             table_with_alias = table_with_alias.strip()

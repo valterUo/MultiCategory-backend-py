@@ -1,6 +1,6 @@
 import re
 
-class FROM:
+class JOIN:
 
     def __init__(self, join_type, table1, table2, condition):
         self.join_type = join_type # INNER, OUTER, FULL, etc.
