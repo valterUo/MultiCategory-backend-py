@@ -57,7 +57,7 @@ SELECT p.personid AS "person.id"
 ;
 """
 
-query = """
+query1 = """
 SELECT p.p_personid AS personid
       FROM person p
          , person_tag pt
@@ -69,6 +69,7 @@ SELECT p.p_personid AS personid
         -- filter
        AND t.t_name = :tag
 """
-primary_foreign_keys = ["p_personid", "pt_personid", "pt_tagid", "t_tagid"]
+primary_foreign_keys = ["p_personid", "pt_personid", "pt_tagid", "t_tagid", "m_creatorid", "m_messageid", "mt_messageid", "mt_tagid", "k_person1id", "personid", "k_person2id"]
 
-elem = SQL("test", query, primary_foreign_keys).get_cypher()
+elem = SQL("test", query, primary_foreign_keys)
+print(elem.get_cypher(elem))

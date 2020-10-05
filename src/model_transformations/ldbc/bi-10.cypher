@@ -2,19 +2,15 @@
 /*
   :param [{tag, date}] => { RETURN 'John_Rhys-Davies' AS tag, datetime('2012-01-22') AS date }
 */
+
 MATCH (tag:Tag {name: $tag})
-// score
 OPTIONAL MATCH (tag)<-[interest:HAS_INTEREST]-(person:Person)
 WITH tag, collect(person) AS interestedPersons
-
 OPTIONAL MATCH (tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
          WHERE message.creationDate > $date
 WITH tag, interestedPersons + collect(person) AS persons
 
 UNWIND persons AS person
-
-// poor man's disjoint union (should be changed to UNION + post-union processing in the future)
-
 WITH DISTINCT tag, person
 WITH
   tag,

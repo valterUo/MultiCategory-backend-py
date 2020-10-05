@@ -1,5 +1,6 @@
 import re
 
+
 class FROM:
 
     def __init__(self, tables_string):
@@ -16,3 +17,11 @@ class FROM:
 
     def get_tables(self):
         return self.tables
+
+    def add_table(self, table):
+        self.tables.append(table)
+
+    def get_table_from_alias(self, alias_name):
+        for table in self.tables:
+            if table[1] == alias_name:
+                return table[0]
