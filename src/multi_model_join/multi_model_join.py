@@ -2,6 +2,7 @@ from category_of_collection_constructor_functors.collections.graph_collection im
 from category_of_collection_constructor_functors.collections.table_collection import TableCollection
 from category_of_collection_constructor_functors.collections.tree_collection import TreeCollection
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
+from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from multi_model_join.graph_join_table import graph_join_table
 from multi_model_join.table_join_table import table_join_table
 from multi_model_join.graph_join_graph import graph_join_graph
@@ -41,10 +42,17 @@ class MultiModelJoin:
         self.tree_attributes = tree_attributes
         self.result, self.model_category_join = self.join()
         self.name = self.result.get_name()
-        #left_leg_model_relationship, left_leg_collection_relationship = project_collection_constructor(self.first_collection_constructor, self.result)
-        #self.left_leg = CollectionConstructorMorphism(self.first_collection_constructor, left_leg_model_relationship, left_leg_collection_relationship, self.result)
-        #right_leg_model_relationship, right_leg_collection_relationship = project_collection_constructor(self.second_collection_constructor, self.result)
-        #self.right_leg = CollectionConstructorMorphism(self.second_collection_constructor, right_leg_model_relationship, right_leg_collection_relationship, self.result)
+
+        ## Projective legs from the result, the correct collection relationships needs to be implemented still
+        left_leg_model_relationship = self.model_category_join.get_left_leg_model_relationship()
+        left_leg_name = self.result.get_name() + "_to_" + self.first_collection_constructor.get_name()
+        left_leg_collection_relationship = CollectionRelationship(left_leg_name, self.result.get_collection(), lambda x : x, self.first_collection_constructor.get_collection())
+        self.left_leg = CollectionConstructorMorphism(left_leg_name, self.first_collection_constructor, left_leg_model_relationship, left_leg_collection_relationship, self.result)
+        
+        right_leg_model_relationship = self.model_category_join.get_right_leg_model_relationship()
+        right_leg_name = self.result.get_name() + "_to_" + self.second_collection_constructor.get_name()
+        right_leg_collection_relationship = CollectionRelationship(right_leg_name, self.result.get_collection(), lambda x : x, self.second_collection_constructor.get_collection())
+        self.right_leg = CollectionConstructorMorphism(right_leg_name, self.second_collection_constructor, right_leg_model_relationship, right_leg_collection_relationship, self.result)
 
     def join(self):
         first_collection = self.first_collection_constructor.get_collection()

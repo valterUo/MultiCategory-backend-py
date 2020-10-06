@@ -28,18 +28,22 @@ def build_new_model_category():
                                             'value': 'tree'}]
                     )]),
                     html.Br(),
-                    html.Button(id = "add-selected-model-category", children = "ADD MODEL CATEGORY"),
-                    html.Div(id = "collection-definition"),
+                    html.Button(id = "add-selected-model-category", children = "ADD MODEL CATEGORY"), html.Br(),
+                    html.Div(id = "collection-definition-container", style = {"margin": "5px", "border": "1px solid white", "padding": "10px"}, children = [
+                        html.Div(id = "collection-definition")
+                        ]), html.Br(),
                     html.Div(id = "current-model-category")
         ])
     ])
 
 @app.callback(
-    Output("current-model-category", "children"),
+    [Output("current-model-category", "children"), 
+    Output("collection-definition", "children")],
     [Input("add-selected-model-category", "n_clicks")],
-    [State("select-model-category-for-new-model", "value")]
+    [State("select-model-category-for-new-model", "value"), 
+    State("collection-definition", "children")]
 )
-def update_click_output(n_clicks, value):
+def update_click_output(n_clicks, value, current_children):
     ctx = dash.callback_context
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
@@ -51,19 +55,6 @@ def update_click_output(n_clicks, value):
                 model_category = GraphModelCategory("test_graph")
             elif value == "tree":
                 model_category = TreeModelCategory("test_tree")
-            return model_category_building_tool(model_category)
-    raise PreventUpdate
-
-@app.callback(
-    Output("collection-definition", "children"),
-    [Input("add-selected-model-category", "n_clicks")],
-    [State("select-model-category-for-new-model", "value"), State("collection-definition", "children")]
-)
-def render_collection_creation(n_clicks, value, current_children):
-    ctx = dash.callback_context
-    if ctx.triggered:
-        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if prop_id == "add-selected-model-category" and value != None:
             if current_children == None:
                 current_children = []
             if value == "relational":
@@ -72,8 +63,6 @@ def render_collection_creation(n_clicks, value, current_children):
                 current_children.append(build_graph_constructor())
             elif value == "tree":
                 current_children.append(build_tree_constructor())
-            return current_children
-        else:
-            raise PreventUpdate
-    else:
-        raise PreventUpdate
+            current_children.append(html.Hr())
+            return model_category_building_tool(model_category), current_children
+    raise PreventUpdate

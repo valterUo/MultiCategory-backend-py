@@ -240,7 +240,11 @@ class SQL:
                 elif attribute[0] != None and attribute[2] == None:
                     return_clause += attribute[0] + "." + attribute[1] + comma + " "
                 i += 1
-            return_clause += "}) AS " + cte_name + "\n"
+            if cte_name != None and cte_name != "":
+                print("cte_name: ", cte_name)
+                return_clause += "}) AS " + cte_name + "\n"
+            else:
+                return_clause += "})\n"
         else:
             i = 0
             comma = ","

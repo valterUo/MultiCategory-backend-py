@@ -34,10 +34,10 @@ def model_category_building_tool(new_model_category):
     added_graph = new_model_category.get_nx_graph()
     added_nodes, added_edges = parse_cytoscape_nodes_edges(added_graph)
     nodes, edges = nodes + added_nodes, edges + added_edges
-    print(nodes, edges)
+    #print(nodes, edges)
     cyto_fig = html.Div(children=[ 
         html.Label([
-            "Give a name for this object", html.Br(),
+            "Give a name for this converged data model", html.Br(),
             dcc.Input(
                 id="object-name-input",
                 type="text",
@@ -151,6 +151,6 @@ def update_click_output(n_clicks, name):
         if prop_id == "submit-final-model-category" and len(model_categories) > 0 and name != "":
             new_object = construct_converged_collection_constructor_functor(name, model_categories, added_connections)
             state.get_current_state()["db"].add_object(new_object)
-            return html.P("New collection constructor created with the given model category. The constructor is part of the multi-model database. You can insert data into the collection in the insert tab.")
+            return [html.P("New collection constructor created with the given model category. The constructor is part of the multi-model database. You can insert data into the collection in the insert tab.")]
     else:
         raise PreventUpdate

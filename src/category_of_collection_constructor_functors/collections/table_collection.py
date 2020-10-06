@@ -164,8 +164,8 @@ class TableCollection:
         if type(new_data_point) == dict:
             self.add_to_tablerow(tablerow, new_data_point)
         elif type(new_data_point) == list:
-            for elem in new_data_point:
-                self.add_to_tablerow(tablerow, elem)
+            #for elem in new_data_point:
+            self.add_to_tablerow(tablerow, new_data_point)
         table.flush()
         h5file.close()
 

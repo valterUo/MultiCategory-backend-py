@@ -9,15 +9,17 @@ from category_of_collection_constructor_functors.collections.table_collection im
 from category_of_collection_constructor_functors.model_categories.category_of_table_model import TableModelCategory
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
 import os
+import uuid
 from tables import *
 attributes = dict()
 dirname = os.path.dirname(__file__)
 name = ""
 
 def build_relational_constructor():
-    return [html.Div(id = "build-relational-constructor-main", children=[
+    uniq = uuid.uuid4()
+    return html.Div(id = "build-relational-constructor-main" + str(uniq), children=[
          html.Label([
-            "Give a name for this object", html.Br(),
+            "Give a name for the relational object", html.Br(),
             dcc.Input(
                 id="relational-constructor-name-input",
                 type="text",
@@ -26,7 +28,7 @@ def build_relational_constructor():
                 style={'width': '90%', "display": "inline-block"},
             )]), html.Button(id = "submit-relational-object-name", children = "SUBMIT NAME"), html.Div(id = "name-notification"), html.Br(),
         attributes_for_table_input_builder()
-    ])]
+    ])
 
 @app.callback( Output("name-notification", "children"), 
 [Input("submit-relational-object-name", "n_clicks")], 

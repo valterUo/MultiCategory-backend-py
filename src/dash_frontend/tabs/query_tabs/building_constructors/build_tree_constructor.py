@@ -9,13 +9,15 @@ from category_of_collection_constructor_functors.collections.tree_collection imp
 from category_of_collection_constructor_functors.model_categories.category_of_tree_model import TreeModelCategory
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
 import os
+import uuid
 dirname = os.path.dirname(__file__)
 name = ""
 
 def build_tree_constructor():
-    return [html.Div(id = "build-relational-constructor-main", children=[
+    uniq = uuid.uuid4()
+    return html.Div(id = "build-tree-constructor-main"+ str(uniq), children=[
          html.Label([
-            "Give a name for this object", html.Br(),
+            "Give a name for the tree object", html.Br(),
             dcc.Input(
                 id="tree-constructor-name-input",
                 type="text",
@@ -27,7 +29,7 @@ def build_tree_constructor():
             html.Button(id = "submit-tree-constructor", children = "SUBMIT TREE OBJECT"),
             html.Br(),
             html.Div(id = "tree-constructor-notification")
-    ])]
+    ])
 
 @app.callback(
     [Output("tree-constructor-notification", "children"), 

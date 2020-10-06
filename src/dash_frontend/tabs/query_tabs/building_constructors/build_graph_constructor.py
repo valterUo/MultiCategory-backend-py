@@ -9,13 +9,15 @@ from category_of_collection_constructor_functors.collections.graph_collection im
 from category_of_collection_constructor_functors.model_categories.category_of_graph_model import GraphModelCategory
 from category_of_collection_constructor_functors.collection_constructor import CollectionConstructor
 import os
+import uuid
 dirname = os.path.dirname(__file__)
 name = ""
 
 def build_graph_constructor():
-    return [html.Div(id = "build-relational-constructor-main", children=[
+    uniq = uuid.uuid4()
+    return html.Div(id = "build-graph-constructor-main" + str(uniq), children=[
          html.Label([
-            "Give a name for this object", html.Br(),
+            "Give a name for the graph object", html.Br(),
             dcc.Input(
                 id="graph-constructor-name-input",
                 type="text",
@@ -27,7 +29,7 @@ def build_graph_constructor():
             html.Button(id = "submit-graph-constructor", children = "SUBMID GRAPH OBJECT"),
             html.Br(),
             html.Div(id = "graph-constructor-notification")
-    ])]
+    ])
 
 @app.callback(
     [Output("graph-constructor-notification", "children"), 
