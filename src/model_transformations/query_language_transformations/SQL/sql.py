@@ -179,34 +179,57 @@ class SQL:
                 else:
                     query += "MATCH (" + table[0] + ")\n"
         else:
+            any_of_tables_refering_ctes = False
+            for table in from_part.get_tables():
+                if table[0] in self.full_query_common_table_expression_names:
+                    any_of_tables_refering_ctes = True
+            if any_of_tables_refering_ctes:
+                for table in from_part.get_tables():
+                    if table[0] in self.full_query_common_table_expression_names:
+                        query += "UNWIND " + table[0] + " AS " + table[1] + "\n"
+                    else:
+                        query += "MATCH (" + table[1] + " : " + table[0] + ")\n"
             for connection in connections:
                 #print(connection)
                 alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
                 property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
                 if property1 in self.full_query_common_table_expression_names:
-                    print("Here", property1)
-                if property2 in self.full_query_common_table_expression_names:
-                    print("Here das", property2)
-                connection_name = connection[0][1].strip() + "_" + connection[2][1].strip()
-                prefix = ""
-                if join_type == "full" or join_type == "outer":
-                    prefix = "OPTIONAL "
-                if property1 != None and property2 != None:
-                    query += prefix + "MATCH (" + alias1 + " : " + property1 + \
-                        ") -[" + connection_name + \
-                        "]-> (" + alias2 + " : " + property2 + ")\n"
-                elif property1 != None:
-                    query += prefix + \
-                        "MATCH (" + alias1 + " : " + property1 + \
-                        ") -[" + connection_name + "]-> (" + alias2 + ")\n"
-                elif property2 != None:
-                    query += prefix + \
-                        "MATCH (" + alias1 + ") -[" + connection_name + \
-                        "]-> (" + alias2 + " : " + property2 + ")\n"
+                    #print("Here:", property1)
+                    #query += "UNWIND " + property1 + " AS " + alias1 + "\n"
+                    if property2 in self.full_query_common_table_expression_names:
+                        #print("Here:", property2)
+                        #query += "UNWIND " + property2 + " AS " + alias2 + "\n"
+                        query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
+                    else:
+                        #match (a:actor)
+                        #where a.actor_id = id
+                        #query += "MATCH (" + alias2 + " : " + property2 + ")\n"
+                        query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
+                elif property2 in self.full_query_common_table_expression_names:
+                    #query += "UNWIND " + property2 + " AS " + alias2 + "\n"
+                    #query += "MATCH (" + alias1 + " : " + property1 + ")\n"
+                    query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
                 else:
-                    query += prefix + \
-                        "MATCH (" + alias1 + \
-                        ") -[" + connection_name + "]-> (" + alias2 + ")\n"
+                    connection_name = connection[0][1].strip() + "_" + connection[2][1].strip()
+                    prefix = ""
+                    if join_type == "full" or join_type == "outer":
+                        prefix = "OPTIONAL "
+                    if property1 != None and property2 != None:
+                        query += prefix + "MATCH (" + alias1 + " : " + property1 + \
+                            ") -[" + connection_name + \
+                            "]-> (" + alias2 + " : " + property2 + ")\n"
+                    elif property1 != None:
+                        query += prefix + \
+                            "MATCH (" + alias1 + " : " + property1 + \
+                            ") -[" + connection_name + "]-> (" + alias2 + ")\n"
+                    elif property2 != None:
+                        query += prefix + \
+                            "MATCH (" + alias1 + ") -[" + connection_name + \
+                            "]-> (" + alias2 + " : " + property2 + ")\n"
+                    else:
+                        query += prefix + \
+                            "MATCH (" + alias1 + \
+                            ") -[" + connection_name + "]-> (" + alias2 + ")\n"
         if len(join_part.get_filtering_conditions()) > 0:
             filtering_clause = "WHERE "
             i = 0
@@ -241,7 +264,7 @@ class SQL:
                     return_clause += attribute[0] + "." + attribute[1] + comma + " "
                 i += 1
             if cte_name != None and cte_name != "":
-                print("cte_name: ", cte_name)
+                #print("cte_name: ", cte_name)
                 return_clause += "}) AS " + cte_name + "\n"
             else:
                 return_clause += "})\n"
@@ -263,6 +286,9 @@ class SQL:
                     return_clause += attribute[1] + \
                         " AS " + attribute[2] + comma + " "
                 i += 1
+
+        if 'order by' in self.query.keys():
+            query += self.query['order by'].get_order_by_cypher() + "\n"
         query += return_clause + "\n"
         # print()
         # print(query)
