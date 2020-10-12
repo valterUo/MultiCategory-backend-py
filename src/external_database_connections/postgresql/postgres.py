@@ -27,7 +27,7 @@ class Postgres():
             print('Connecting to the PostgreSQL database...')
             self.conn = psycopg2.connect(**params)
             self.primary_keys = self.get_primary_keys()
-            self.table_names = self.primary_keys.keys()
+            self.table_names = self.get_table_names()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
 
@@ -64,15 +64,15 @@ class Postgres():
             table_name + "' ORDER BY ordinal_position;"
         attributes = self.query(query)
         for attribute in attributes:
+            print(attribute)
             result.append(attribute[0])
         return result
 
     def get_schema(self):
         result = dict()
-        table_names = self.get_table_names()
-        for name_tuple in table_names:
-            name = name_tuple[0]
+        for name in self.table_names:
             result[name] = self.get_attributes_for_table(name)
+        print(result)
         return result
 
     def get_primary_keys(self):

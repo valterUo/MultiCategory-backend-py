@@ -86,6 +86,7 @@ class Neo4j:
 
     def create_edges(self, rel_db):
         for table in rel_db.get_table_names():
+            print(table)
             for key_foreign_key_pair in rel_db.query_edge_schema_for_table(table):
                 print(key_foreign_key_pair)
                 label1 = key_foreign_key_pair[0]

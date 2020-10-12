@@ -1,3 +1,5 @@
+from external_database_connections.neo4j.neo4j import Neo4j
+from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_language_transformations.SQL.sql import SQL
 
 query = """
@@ -73,3 +75,8 @@ primary_foreign_keys = ["p_personid", "pt_personid", "pt_tagid", "t_tagid", "m_c
 
 elem = SQL("test", query, primary_foreign_keys)
 print(elem.get_cypher(elem))
+
+# db = Postgres("ldbcsf1")
+# graph_db = Neo4j("ldbcsf1")
+# graph_db.transform_tables_into_graph_db(db)
+# graph_db.create_edges(db)
