@@ -1,6 +1,5 @@
 import re
 
-
 class SELECT:
 
     def __init__(self, attributes_string):

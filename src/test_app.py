@@ -75,7 +75,6 @@ SELECT p.p_personid AS personid
 print()
 
 db = Postgres("ldbcsf1")
-print(db.get_all_pk_fk_contrainsts())
 
 elem = SQL("test", query, db)
 print(elem.get_cypher(elem))

@@ -1,5 +1,7 @@
 import re
-from re import error
+import itertools
+import random
+import string
 from model_transformations.query_language_transformations.SQL.components.select import SELECT
 from model_transformations.query_language_transformations.SQL.components.from_part import FROM
 from model_transformations.query_language_transformations.SQL.components.where import WHERE
@@ -11,15 +13,19 @@ from model_transformations.query_language_transformations.Cypher.cypher import C
 KEYWORDS = ['select', 'from', 'where', 'inner join', 'outer join',
             'left join', 'right join', 'full join', 'group by', 'order by', 'limit']
 
+## Aggregating functions are not allowed inside aggregating functions in Cypher. On the other hand, SQL allows to nest them. For Cypher we need to unnest them.
+cypher_aggregating_functions = ["collect", "sum", "count", "max", "min", "avg", "percentileCont", "percentileDisc", "stDev", "stDevP"]
+
 
 class SQL:
 
-    def __init__(self, name, query_string, rel_db, primary_foreign_keys = [], full_query_common_table_expression_names = []):
+    def __init__(self, name, query_string, rel_db, primary_foreign_keys = [], full_query_common_table_expression_names = [], previous_ctes = []):
         self.name = name
         self.original_query = query_string
         self.rel_db = rel_db
         self.pk_fk_contrainsts = self.rel_db.get_all_pk_fk_contrainsts()
         self.primary_foreign_keys = primary_foreign_keys
+        self.previous_ctes = previous_ctes
         for table in  self.pk_fk_contrainsts:
             self.primary_foreign_keys += list(self.pk_fk_contrainsts[table].keys())
             for constraint in  self.pk_fk_contrainsts[table].values():
@@ -32,7 +38,8 @@ class SQL:
             self.full_query_common_table_expression_names = list(self.common_table_expressions.keys())
         if self.common_table_expressions["main"] != "":
             for elem in self.common_table_expressions:
-                self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.rel_db, self.primary_foreign_keys, self.full_query_common_table_expression_names)
+                previous_ctes = list(itertools.takewhile(lambda ele: ele != elem, self.common_table_expressions))
+                self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.rel_db, self.primary_foreign_keys, self.full_query_common_table_expression_names, previous_ctes)
         else:
             #print(self.query_string)
             if self.query_string.count("select") == 1:
@@ -253,7 +260,7 @@ class SQL:
             query += filtering_clause
         return_clause = "RETURN "
         if cte:
-            return_clause = "WITH collect({ "
+            
             i = 0
             comma = ","
             for attribute in select_part.get_attributes():
@@ -271,6 +278,18 @@ class SQL:
                 elif attribute[0] != None and attribute[2] == None:
                     return_clause += attribute[0] + "." + attribute[1] + comma + " "
                 i += 1
+            aggre_funs = ""
+            for aggre_fun in cypher_aggregating_functions:
+                if aggre_fun in return_clause:
+                    variable = get_random_string(2)
+                    cut_fun = re.search(aggre_fun + r'(.+)', return_clause).groups()
+                    cut_fun = aggre_fun + cut_fun[0]
+                    return_clause = return_clause.replace(cut_fun, variable)
+                    aggre_funs += cut_fun + " AS " + variable + ", "
+            previous_cte = ""
+            for prev_cte in self.previous_ctes:
+                previous_cte += prev_cte + " AS " + prev_cte + ", "
+            return_clause = "WITH "+ previous_cte + aggre_funs + "collect({ " + return_clause
             if cte_name != None and cte_name != "":
                 #print("cte_name: ", cte_name)
                 return_clause += "}) AS " + cte_name + "\n"
@@ -298,3 +317,8 @@ class SQL:
         if 'order by' in self.query.keys():
             query += self.query['order by'].get_order_by_cypher() + "\n"
         return query
+
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str

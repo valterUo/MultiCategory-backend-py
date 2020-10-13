@@ -24,7 +24,7 @@ class Postgres():
         self.primary_keys = None
         try:
             params = config(section=section)
-            print('Connecting to the PostgreSQL database...')
+            #print('Connecting to the PostgreSQL database...')
             self.conn = psycopg2.connect(**params)
             self.primary_keys = self.get_primary_keys()
             self.table_names = self.get_table_names()
