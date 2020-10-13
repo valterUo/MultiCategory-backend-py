@@ -39,7 +39,7 @@ class Postgres():
         cur.execute(query)
         ## This returns list of tuples because the cursor_factory was defined with DictCursor
         rows = cur.fetchall()
-        print("The number of rows: ", cur.rowcount)
+        #print("The number of rows: ", cur.rowcount)
         # for row in rows:
         #     print(row)
         cur.close()
@@ -76,25 +76,61 @@ class Postgres():
         return result
 
     def get_primary_keys(self):
-        query = """ SELECT kcu.table_schema,
-            kcu.table_name,
-            tco.constraint_name,
-            kcu.ordinal_position as position,
-            kcu.column_name as key_column
-    FROM information_schema.table_constraints tco
-    JOIN information_schema.key_column_usage kcu 
-            on kcu.constraint_name = tco.constraint_name
-            and kcu.constraint_schema = tco.constraint_schema
-            and kcu.constraint_name = tco.constraint_name
-    WHERE tco.constraint_type = 'PRIMARY KEY'
-    ORDER BY kcu.table_schema,
-         kcu.table_name,
-         position;"""
+        query = """ 
+                SELECT kcu.table_schema,
+                    kcu.table_name,
+                    tco.constraint_name,
+                    kcu.ordinal_position as position,
+                    kcu.column_name as key_column
+            FROM information_schema.table_constraints tco
+            JOIN information_schema.key_column_usage kcu 
+                    on kcu.constraint_name = tco.constraint_name
+                    and kcu.constraint_schema = tco.constraint_schema
+                    and kcu.constraint_name = tco.constraint_name
+            WHERE tco.constraint_type = 'PRIMARY KEY'
+            ORDER BY kcu.table_schema,
+                kcu.table_name,
+                position;"""
         result = self.query(query)
         tables_keys = dict()
         for elem in result:
             tables_keys[elem[1]] = elem[4]
         return tables_keys
+
+    def get_foreign_keys_for_table(self, table_name):
+        query = """
+                SELECT
+            tc.table_schema, 
+            tc.constraint_name, 
+            tc.table_name, 
+            kcu.column_name, 
+            ccu.table_schema AS foreign_table_schema,
+            ccu.table_name AS foreign_table_name,
+            ccu.column_name AS foreign_column_name 
+        FROM 
+            information_schema.table_constraints AS tc 
+            JOIN information_schema.key_column_usage AS kcu
+            ON tc.constraint_name = kcu.constraint_name
+            AND tc.table_schema = kcu.table_schema
+            JOIN information_schema.constraint_column_usage AS ccu
+            ON ccu.constraint_name = tc.constraint_name
+            AND ccu.table_schema = tc.table_schema
+        WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='""" + table_name + "';"
+        result = self.query(query)
+        tables_foreign_keys = dict()
+        for elem in result:
+            connection = dict()
+            connection["foreign_key"] = elem[3]
+            connection["target_table"] = elem[5]
+            connection["primary_key_in_target_table"] = elem[6]
+            tables_foreign_keys[elem[3]] = connection
+        return tables_foreign_keys
+
+    def get_all_pk_fk_contrainsts(self):
+        result = dict()
+        for table in self.table_names:
+            result[table] = self.get_foreign_keys_for_table(table)
+        return result
 
     def get_primary_key(self, table_name):
         if self.primary_keys != None:

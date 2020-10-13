@@ -7,6 +7,7 @@ class SELECT:
         self.attributes_with_aliases = re.split(
             r',(?![^(]*\))', attributes_string)
         self.attributes = []
+        self.keys = []
         for attribute_with_alias in self.attributes_with_aliases:
             attribute_with_alias = attribute_with_alias.strip()
             if ' as ' in attribute_with_alias:
@@ -22,7 +23,12 @@ class SELECT:
     def get_attributes(self):
         return self.attributes
 
+    def get_keys(self):
+        return self.keys
+
     def parse_table_name(self, attribute):
+        if attribute[1] != None:
+            self.keys.append(attribute[1])
         if '.' in attribute[0]:
             table_attribute_alias = re.split(r'\.(?![^(]*\))', attribute[0])
             if len(table_attribute_alias) > 1:
@@ -33,3 +39,4 @@ class SELECT:
                     (None, table_attribute_alias[0], attribute[1]))
         else:
             self.attributes.append((None, attribute[0], attribute[1]))
+        

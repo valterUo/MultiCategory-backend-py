@@ -14,10 +14,16 @@ KEYWORDS = ['select', 'from', 'where', 'inner join', 'outer join',
 
 class SQL:
 
-    def __init__(self, name, query_string, primary_foreign_keys, full_query_common_table_expression_names = []):
+    def __init__(self, name, query_string, rel_db, primary_foreign_keys = [], full_query_common_table_expression_names = []):
         self.name = name
         self.original_query = query_string
+        self.rel_db = rel_db
+        self.pk_fk_contrainsts = self.rel_db.get_all_pk_fk_contrainsts()
         self.primary_foreign_keys = primary_foreign_keys
+        for table in  self.pk_fk_contrainsts:
+            self.primary_foreign_keys += list(self.pk_fk_contrainsts[table].keys())
+            for constraint in  self.pk_fk_contrainsts[table].values():
+                self.primary_foreign_keys.append(constraint["primary_key_in_target_table"])
         self.query_string = self.remove_comments(query_string.strip().lower())
         self.query = dict()
         self.common_table_expressions = self.parse_common_table_expressions()
@@ -26,7 +32,7 @@ class SQL:
             self.full_query_common_table_expression_names = list(self.common_table_expressions.keys())
         if self.common_table_expressions["main"] != "":
             for elem in self.common_table_expressions:
-                self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.primary_foreign_keys, self.full_query_common_table_expression_names)
+                self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.rel_db, self.primary_foreign_keys, self.full_query_common_table_expression_names)
         else:
             #print(self.query_string)
             if self.query_string.count("select") == 1:
@@ -53,14 +59,15 @@ class SQL:
             #     print(elem, self.query[elem])
             for elem in self.query:
                 if elem == "select":
-                    self.query[elem] = SELECT(self.query[elem])
+                    select_result = SELECT(self.query[elem])
+                    self.query[elem] = select_result
+                    self.primary_foreign_keys += select_result.get_keys()
                     #print(self.query[elem].get_attributes())
                 elif elem == "from":
                     self.query[elem] = FROM(self.query[elem])
                     #print(self.query[elem].get_tables())
                 elif elem == "where":
-                    self.query[elem] = WHERE(
-                        self.query[elem], self.primary_foreign_keys)
+                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys)
                     #print(self.query[elem].get_conjunctive_part())
                     #print(self.query[elem].get_disjunctive_part())
                 elif elem == "group by":
@@ -72,6 +79,9 @@ class SQL:
                 elif elem == "full join":
                     self.query[elem] = JOIN(
                         "full", self.query[elem], self.query["from"])
+                elif elem == "inner join":
+                    self.query[elem] = JOIN(
+                        "inner", self.query[elem], self.query["from"])
 
     def get_name(self):
         return self.name
@@ -130,11 +140,6 @@ class SQL:
                 except:
                     pass
             ctes[elem] = re.sub(ex2, ' ', ctes[elem])
-        # for elem in ctes:
-        #     print(elem)
-        #     print()
-        #     print(ctes[elem])
-        #     print("-----------------------------------------------")
         return ctes
 
     def get_keyword_sequence(self):
@@ -158,7 +163,6 @@ class SQL:
                 else:
                     query += self.get_cypher(self.query[elem], False)
         else:
-            #print(self.query)
             if 'where' in self.query.keys():
                 query += self.transform_select_from_join_into_graph_patterns(
                     self.query["select"], self.query["from"], self.query["where"], cte, cte_name)
@@ -192,44 +196,46 @@ class SQL:
             for connection in connections:
                 #print(connection)
                 alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
+                key1, key2 = connection[0][1].strip(), connection[2][1].strip()
                 property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
+                
+                ## Arrows are pointing from foreign to primary, we need to see which one is which one
+                
                 if property1 in self.full_query_common_table_expression_names:
-                    #print("Here:", property1)
-                    #query += "UNWIND " + property1 + " AS " + alias1 + "\n"
                     if property2 in self.full_query_common_table_expression_names:
-                        #print("Here:", property2)
-                        #query += "UNWIND " + property2 + " AS " + alias2 + "\n"
                         query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
                     else:
-                        #match (a:actor)
-                        #where a.actor_id = id
-                        #query += "MATCH (" + alias2 + " : " + property2 + ")\n"
                         query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
                 elif property2 in self.full_query_common_table_expression_names:
-                    #query += "UNWIND " + property2 + " AS " + alias2 + "\n"
-                    #query += "MATCH (" + alias1 + " : " + property1 + ")\n"
                     query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
                 else:
-                    connection_name = connection[0][1].strip() + "_" + connection[2][1].strip()
+                    source_property, source_alias, foreign_key, target_property, target_alias, primary_key = None, None, None, None, None, None
+                    if key1 in self.pk_fk_contrainsts[property1].keys() or key1 in self.pk_fk_contrainsts[property2].keys():
+                        source_property = property1
+                        source_alias = alias1
+                        foreign_key = key1
+                        target_property = property2
+                        target_alias = alias2
+                        primary_key = key2
+                    elif key2 in self.pk_fk_contrainsts[property1].keys() or key2 in self.pk_fk_contrainsts[property2].keys():
+                        source_property = property2
+                        source_alias = alias2
+                        foreign_key = key2
+                        target_property = property1
+                        target_alias = alias1
+                        primary_key = key1
                     prefix = ""
+                    connection_name = foreign_key + "_" + primary_key
                     if join_type == "full" or join_type == "outer":
                         prefix = "OPTIONAL "
-                    if property1 != None and property2 != None:
-                        query += prefix + "MATCH (" + alias1 + " : " + property1 + \
-                            ") -[" + connection_name + \
-                            "]-> (" + alias2 + " : " + property2 + ")\n"
-                    elif property1 != None:
-                        query += prefix + \
-                            "MATCH (" + alias1 + " : " + property1 + \
-                            ") -[" + connection_name + "]-> (" + alias2 + ")\n"
-                    elif property2 != None:
-                        query += prefix + \
-                            "MATCH (" + alias1 + ") -[" + connection_name + \
-                            "]-> (" + alias2 + " : " + property2 + ")\n"
+                    if source_property != None and target_property != None:
+                        query += prefix + "MATCH (" + source_alias + " : " + source_property + ") -[" + connection_name + "]-> (" + target_alias + " : " + target_property + ")\n"
+                    elif source_property != None:
+                        query += prefix + "MATCH (" + source_alias + " : " + source_property + ") -[" + connection_name + "]-> (" + target_property + ")\n"
+                    elif target_property != None:
+                        query += prefix + "MATCH (" + source_alias + ") -[" + connection_name + "]-> (" + target_alias + " : " + target_property + ")\n"
                     else:
-                        query += prefix + \
-                            "MATCH (" + alias1 + \
-                            ") -[" + connection_name + "]-> (" + alias2 + ")\n"
+                        query += prefix + "MATCH (" + source_alias + ") -[" + connection_name + "]-> (" + target_alias + ")\n"
         if len(join_part.get_filtering_conditions()) > 0:
             filtering_clause = "WHERE "
             i = 0
@@ -256,8 +262,10 @@ class SQL:
                     comma = ""
                 if attribute[0] != None and attribute[1] != None and attribute[2] != None:
                     return_clause += attribute[2] + " : " + attribute[0] + "." + attribute[1] + comma + " "
+                    self.primary_foreign_keys.append(attribute[2])
                 elif attribute[0] == None and attribute[2] != None:
                     return_clause += attribute[2] + " : " + attribute[1] + comma + " "
+                    self.primary_foreign_keys.append(attribute[2])
                 elif attribute[0] == None and attribute[2] == None:
                     return_clause += attribute[1] + comma + " "
                 elif attribute[0] != None and attribute[2] == None:
@@ -286,10 +294,7 @@ class SQL:
                     return_clause += attribute[1] + \
                         " AS " + attribute[2] + comma + " "
                 i += 1
-
+        query += return_clause + "\n"
         if 'order by' in self.query.keys():
             query += self.query['order by'].get_order_by_cypher() + "\n"
-        query += return_clause + "\n"
-        # print()
-        # print(query)
         return query

@@ -71,12 +71,16 @@ SELECT p.p_personid AS personid
         -- filter
        AND t.t_name = :tag
 """
-primary_foreign_keys = ["p_personid", "pt_personid", "pt_tagid", "t_tagid", "m_creatorid", "m_messageid", "mt_messageid", "mt_tagid", "k_person1id", "personid", "k_person2id"]
 
-elem = SQL("test", query, primary_foreign_keys)
+print()
+
+db = Postgres("ldbcsf1")
+print(db.get_all_pk_fk_contrainsts())
+
+elem = SQL("test", query, db)
 print(elem.get_cypher(elem))
 
-# db = Postgres("ldbcsf1")
+
 # graph_db = Neo4j("ldbcsf1")
 # graph_db.transform_tables_into_graph_db(db)
 # graph_db.create_edges(db)

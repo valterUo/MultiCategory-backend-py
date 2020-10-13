@@ -58,6 +58,7 @@ class WHERE:
         for elem in self.conjunctive_part:
             if elem[1] == "=":
                 left, right = False, False
+                print(self.primary_foreign_keys)
                 for key in self.primary_foreign_keys:
                     if type(elem[0]) == tuple:
                         if key.strip() == elem[0][1].strip():
