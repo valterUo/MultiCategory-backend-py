@@ -26,14 +26,17 @@ class SQL:
         self.pk_fk_contrainsts = self.rel_db.get_all_pk_fk_contrainsts()
         self.primary_foreign_keys = primary_foreign_keys
         self.previous_ctes = previous_ctes
-        for table in  self.pk_fk_contrainsts:
-            self.primary_foreign_keys += list(self.pk_fk_contrainsts[table].keys())
-            for constraint in  self.pk_fk_contrainsts[table].values():
-                self.primary_foreign_keys.append(constraint["primary_key_in_target_table"])
+        self.columns_datatypes = rel_db.get_all_columns_datatypes()
         self.query_string = self.remove_comments(query_string.strip().lower())
         self.query = dict()
         self.common_table_expressions = self.parse_common_table_expressions()
         self.full_query_common_table_expression_names = full_query_common_table_expression_names
+
+        for table in  self.pk_fk_contrainsts:
+            self.primary_foreign_keys += list(self.pk_fk_contrainsts[table].keys())
+            for constraint in  self.pk_fk_contrainsts[table].values():
+                self.primary_foreign_keys.append(constraint["primary_key_in_target_table"])
+
         if full_query_common_table_expression_names == []:
             self.full_query_common_table_expression_names = list(self.common_table_expressions.keys())
         if self.common_table_expressions["main"] != "":
@@ -182,7 +185,8 @@ class SQL:
         query = ""
         join_type = join_part.get_join_type()
         connections = join_part.get_join_conditions()
-        #print(connections)
+        where_clause = False
+        table_aliases_in_query = []
         if len(connections) == 0:
             for table in from_part.get_tables():
                 if table[1] != None:
@@ -195,26 +199,48 @@ class SQL:
                 if table[0] in self.full_query_common_table_expression_names:
                     any_of_tables_refering_ctes = True
             if any_of_tables_refering_ctes:
+                table_aliases = []
                 for table in from_part.get_tables():
                     if table[0] in self.full_query_common_table_expression_names:
                         query += "UNWIND " + table[0] + " AS " + table[1] + "\n"
+                        table_aliases.append(table[1])
                     else:
                         query += "MATCH (" + table[1] + " : " + table[0] + ")\n"
-            for connection in connections:
-                #print(connection)
+                if table_aliases != []:
+                    previous_cte = ""
+                    for prev_cte in self.previous_ctes:
+                        previous_cte += prev_cte + ", "
+                    query += "WITH " + previous_cte
+                    for i in range(len(table_aliases)):
+                        elem = table_aliases[i]
+                        if i == len(table_aliases) - 1:
+                            query += elem + " AS " + elem + "\n"
+                        else:
+                            query += elem + " AS " + elem + ", "
+            for k in range(len(connections)):
+                connection = connections[k]
                 alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
                 key1, key2 = connection[0][1].strip(), connection[2][1].strip()
                 property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
-                
+                table_aliases_in_query += [alias1, alias2]
                 ## Arrows are pointing from foreign to primary, we need to see which one is which one
-                
-                if property1 in self.full_query_common_table_expression_names:
-                    if property2 in self.full_query_common_table_expression_names:
-                        query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
-                    else:
-                        query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
-                elif property2 in self.full_query_common_table_expression_names:
-                    query += "WHERE " + alias1 + "." + connection[0][1].strip() + " = " + alias2 + "." + connection[2][1].strip() + "\n"
+                if property1 in self.full_query_common_table_expression_names or property2 in self.full_query_common_table_expression_names:
+                    for t in range(k, len(connections)):
+                        connection = connections[t]
+                        alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
+                        key1, key2 = connection[0][1].strip(), connection[2][1].strip()
+                        property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
+                        if k > t:
+                            table_aliases_in_query += [alias1, alias2]
+                        if property1 or property2 in self.full_query_common_table_expression_names:
+                            if not where_clause:
+                                query += "WHERE " + alias1 + "." + key1 + " = " + alias2 + "." + key2 + "\n"
+                                where_clause = True
+                            else:
+                                query += "AND " + alias1 + "." + key1 + " = " + alias2 + "." + key2 + "\n"
+                        else:
+                            k = t
+                            break
                 else:
                     source_property, source_alias, foreign_key, target_property, target_alias, primary_key = None, None, None, None, None, None
                     if key1 in self.pk_fk_contrainsts[property1].keys() or key1 in self.pk_fk_contrainsts[property2].keys():
@@ -245,11 +271,20 @@ class SQL:
                         query += prefix + "MATCH (" + source_alias + ") -[" + connection_name + "]-> (" + target_alias + ")\n"
         if len(join_part.get_filtering_conditions()) > 0:
             filtering_clause = "WHERE "
+            if where_clause:
+                filtering_clause = "AND "
             i = 0
             for filtering_condition in join_part.get_filtering_conditions():
                 for elem in filtering_condition:
                     if type(elem) == tuple or type(elem) == list:
-                        filtering_clause += elem[0] + "." + elem[1]
+                        attr = elem[1].strip()
+                        if attr in self.columns_datatypes.keys():
+                            if 'timestamp' in self.columns_datatypes[attr]:
+                                filtering_clause += "datetime(" + elem[0] + "." + attr + ")"
+                            else:
+                                filtering_clause += elem[0] + "." + elem[1]
+                        else:
+                                filtering_clause += elem[0] + "." + elem[1]
                     else:
                         filtering_clause += elem
                 if i == len(join_part.get_filtering_conditions()) - 1:
@@ -260,7 +295,7 @@ class SQL:
             query += filtering_clause
         return_clause = "RETURN "
         if cte:
-            
+            return_clause = ""
             i = 0
             comma = ","
             for attribute in select_part.get_attributes():
@@ -281,15 +316,25 @@ class SQL:
             aggre_funs = ""
             for aggre_fun in cypher_aggregating_functions:
                 if aggre_fun in return_clause:
-                    variable = get_random_string(2)
+                    variable = get_random_string(3)
                     cut_fun = re.search(aggre_fun + r'(.+)', return_clause).groups()
                     cut_fun = aggre_fun + cut_fun[0]
                     return_clause = return_clause.replace(cut_fun, variable)
                     aggre_funs += cut_fun + " AS " + variable + ", "
             previous_cte = ""
             for prev_cte in self.previous_ctes:
-                previous_cte += prev_cte + " AS " + prev_cte + ", "
-            return_clause = "WITH "+ previous_cte + aggre_funs + "collect({ " + return_clause
+                previous_cte += prev_cte + ", "
+            table_alias_part = ""
+            for table_alias in table_aliases_in_query:
+                #print(table_alias)
+                if " " + table_alias + "." in return_clause:
+                    table_alias_part += table_alias + ", "
+                    print(table_alias_part)
+            sub_result = aggre_funs + previous_cte + table_alias_part
+            if sub_result != "":
+                sub_result = sub_result[:-2]
+                query += "WITH " + sub_result + "\n"
+            return_clause = "WITH "+ previous_cte + "collect({ " + return_clause
             if cte_name != None and cte_name != "":
                 #print("cte_name: ", cte_name)
                 return_clause += "}) AS " + cte_name + "\n"

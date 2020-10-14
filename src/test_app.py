@@ -17,7 +17,7 @@ WITH person_tag_interest AS (
        AND p.p_personid = pt.pt_personid
        AND pt.pt_tagid = t.t_tagid
         -- filter
-       AND t.t_name = :tag
+       AND t.t_name = 'Che_Guevara'
 )
    , person_message_score AS (
     SELECT p.p_personid AS personid
@@ -32,8 +32,8 @@ WITH person_tag_interest AS (
        AND m.m_messageid = pt.mt_messageid
        AND pt.mt_tagid = t.t_tagid
         -- filter
-       AND m.m_creationdate > :date
-       AND t.t_name = :tag
+       AND m.m_creationdate > datetime('2011-07-22')
+       AND t.t_name = 'Che_Guevara'
      GROUP BY p.p_personid
 )
    , person_score AS (
@@ -43,7 +43,7 @@ WITH person_tag_interest AS (
       FROM person_tag_interest pti
            FULL JOIN person_message_score pms ON (pti.personid = pms.personid)
 )
-SELECT p.personid AS "person.id"
+SELECT p.personid AS personid
      , p.score AS score
      , sum(f.score) AS friendsScore
   FROM person_score p
@@ -69,7 +69,7 @@ SELECT p.p_personid AS personid
        AND p.p_personid = pt.pt_personid
        AND pt.pt_tagid = t.t_tagid
         -- filter
-       AND t.t_name = :tag
+       AND t.t_name = 'Che_Guevara'
 """
 
 print()

@@ -10,12 +10,12 @@ MATCH (pt : message_tag) -[mt_tagid_t_tagid]-> (t : tag)
 WHERE 1=1 AND
 datetime(m.m_creationdate) > datetime('2011-07-22') AND
 t.t_name =  'Che_Guevara'
-WITH count(*) AS count_var, p AS p, person_tag_interest AS person_tag_interest
+WITH count(*) AS count_var, p, person_tag_interest
 WITH collect({ personid : p.p_personid, message_score: count_var }) AS person_message_score, person_tag_interest AS person_tag_interest
 
 UNWIND person_tag_interest AS pti
 UNWIND person_message_score AS pms
-WITH pms, pti, person_tag_interest AS person_tag_interest, person_message_score AS person_message_score
+WITH pms, pti, person_tag_interest, person_message_score
 WHERE pti.personid = pms.personid
 WITH collect({ personid : coalesce(pti.personid, pms.personid), score : case when pti.personid is null then 0 else 100 end + coalesce(pms.message_score, 0) }) AS person_score
 

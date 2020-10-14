@@ -164,6 +164,21 @@ class Postgres():
             result[table_name] = info
         return result
 
+    def get_column_datatypes_for_table(self, table):
+        query = """
+        select column_name, data_type from information_schema.columns where table_name = '""" + table + "';"
+        result = self.query(query)
+        columns_datatypes = dict()
+        for elem in result:
+            columns_datatypes[elem[0]] = elem[1]
+        return columns_datatypes
+
+    def get_all_columns_datatypes(self):
+        result = dict()
+        for table in self.table_names:
+            result.update(self.get_column_datatypes_for_table(table))
+        return result
+
     def connect(self):
         """ Connect to the PostgreSQL database server """
         try:
