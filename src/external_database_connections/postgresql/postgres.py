@@ -1,3 +1,7 @@
+import psycopg2
+import psycopg2.extras
+from external_database_connections.config.config import config
+
 """
 Information to query schemata of the database:
 
@@ -10,11 +14,6 @@ WHERE table_name = 'actor'
 ORDER BY ordinal_position;
 
 """
-
-import psycopg2
-import psycopg2.extras
-from external_database_connections.config.config import config
-
 
 class Postgres():
 
@@ -64,15 +63,24 @@ class Postgres():
             table_name + "' ORDER BY ordinal_position;"
         attributes = self.query(query)
         for attribute in attributes:
-            print(attribute)
+            #print(attribute)
             result.append(attribute[0])
         return result
+
+    def get_table_for_attribute(self, attribute):
+        schema = self.get_schema()
+        attribute = attribute.strip()
+        for table in schema:
+            for table_attr in schema[table]:
+                if attribute == table_attr:
+                    print(table)
+                    return table
+        return None
 
     def get_schema(self):
         result = dict()
         for name in self.table_names:
             result[name] = self.get_attributes_for_table(name)
-        print(result)
         return result
 
     def get_primary_keys(self):

@@ -1,5 +1,4 @@
 /* Q10. Central Person for a Tag
-Originally from: https://github.com/ldbc/ldbc_snb_implementations/blob/dev/postgres/queries/bi-10.sql
 \set tag '\'Che_Guevara\''
 \set date '\'2011-07-22T00:00:00.000+00:00\''::timestamp
  */
@@ -34,7 +33,8 @@ WITH person_tag_interest AS (
 )
    , person_score AS (
     SELECT coalesce(pti.personid, pms.personid) AS personid
-         , CASE WHEN pti.personid IS NULL THEN 0 ELSE 100 END + coalesce(pms.message_score, 0) AS score
+         , CASE WHEN pti.personid IS NULL then 0 ELSE 100 END -- scored from interest in the given tag
+         + coalesce(pms.message_score, 0) AS score
       FROM person_tag_interest pti
            FULL JOIN person_message_score pms ON (pti.personid = pms.personid)
 )

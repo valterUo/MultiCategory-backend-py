@@ -2,9 +2,10 @@ import re
 
 class WHERE:
 
-    def __init__(self, condition_string, primary_foreign_keys):
+    def __init__(self, condition_string, primary_foreign_keys, db):
         self.condition_string = condition_string
         self.primary_foreign_keys = primary_foreign_keys
+        self.db = db
         self.join_type = "inner"
         self.conjunctive_part, self.disjunctive_part = self.parse_where()
         self.join_conditions = self.parse_join_conditions()
@@ -83,8 +84,12 @@ class WHERE:
         if table_attr0 != None and table_attr1 != None:
             return ((table_attr0[0], table_attr0[1]), operator, (table_attr1[0], table_attr1[1]))
         elif table_attr0 != None:
-            return ((table_attr0[0], table_attr0[1]), operator, res[1])
+            corresponding_table = self.db.get_table_for_attribute(res[1])
+            return ((table_attr0[0], table_attr0[1]), operator, (corresponding_table, res[1]))
         elif table_attr1 != None:
-            return (res[0], operator, (table_attr1[0], table_attr1[1]))
+            corresponding_table = self.db.get_table_for_attribute(res[0])
+            return ((res[0], corresponding_table), operator, (table_attr1[0], table_attr1[1]))
         else:
-            return (res[0], operator, res[1])
+            corresponding_table1 = self.db.get_table_for_attribute(res[0])
+            corresponding_table2 = self.db.get_table_for_attribute(res[1])
+            return ((corresponding_table1, res[0]), operator, (corresponding_table2, res[1]))

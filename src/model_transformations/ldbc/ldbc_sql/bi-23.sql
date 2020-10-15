@@ -1,5 +1,4 @@
 /* Q23. Holiday destinations
-Query originally from: https://github.com/ldbc/ldbc_snb_implementations/blob/dev/postgres/queries/bi-23.sql
 \set country  '\'Belarus\''
  */
 SELECT count(*) AS messageCount
@@ -21,4 +20,5 @@ SELECT count(*) AS messageCount
    AND m.m_locationid != pco.pl_placeid
  GROUP BY dest.pl_name, month
  ORDER BY messageCount DESC, dest.pl_name, month
- LIMIT 100;
+ LIMIT 100
+;

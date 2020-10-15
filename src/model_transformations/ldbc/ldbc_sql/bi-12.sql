@@ -1,5 +1,4 @@
 /* Q12. Trending Posts
-The query originally from: https://github.com/ldbc/ldbc_snb_implementations/blob/dev/postgres/queries/bi-12.sql
 \set date '\'2011-07-22T00:00:00.000+00:00\''::timestamp
 \set likeThreshold 400
  */
@@ -23,4 +22,5 @@ SELECT m.m_messageid AS "message.id"
         , c.p_lastname
 HAVING count(*) > :likeThreshold
  ORDER BY likeCount DESC, m.m_messageid
- LIMIT 100;
+ LIMIT 100
+;

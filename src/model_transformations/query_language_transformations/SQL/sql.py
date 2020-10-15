@@ -1,6 +1,7 @@
 import re
 import itertools
 import random
+from re import search
 import string
 from model_transformations.query_language_transformations.SQL.components.select import SELECT
 from model_transformations.query_language_transformations.SQL.components.from_part import FROM
@@ -49,18 +50,14 @@ class SQL:
                     if i < len(keyword_sequence) - 1:
                         keyword_from = keyword_sequence[i]
                         keyword_to = keyword_sequence[i+1]
-                        ex = re.compile(
-                            r'(?<=' + keyword_from + r')' + r'.*?' + r'(?=' + keyword_to + r')', re.DOTALL)
-                        result = re.search(ex, self.query_string)
+                        result = parse_query_with_keywords(keyword_from, self.query_string, keyword_to)
                         if result != None:
-                            self.query[keyword_from] = result.group()
+                            self.query[keyword_from] = result
                     else:
                         keyword_from = keyword_sequence[i]
-                        ex = re.compile(
-                            r'(?<=' + keyword_from + r')' + r'.+', re.DOTALL)
-                        result = re.search(ex, self.query_string)
+                        result = parse_query_with_keywords(keyword_from, query_string)
                         if result != None:
-                            self.query[keyword_from] = result.group()
+                            self.query[keyword_from] = result
             for elem in self.query:
                 if elem == "select":
                     select_result = SELECT(self.query[elem])
@@ -69,7 +66,7 @@ class SQL:
                 elif elem == "from":
                     self.query[elem] = FROM(self.query[elem])
                 elif elem == "where":
-                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys)
+                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys, self.rel_db)
                 elif elem == "group by":
                     self.query[elem] = GROUPBY(self.query[elem])
                 elif elem == "order by":
@@ -80,6 +77,7 @@ class SQL:
                 elif elem == "inner join":
                     self.query[elem] = JOIN(
                         "inner", self.query[elem], self.query["from"])
+
 
     def get_name(self):
         return self.name
@@ -144,30 +142,38 @@ class SQL:
         return keyword_sequence
 
     @staticmethod
-    def get_cypher(self, cte=True, cte_name=""):
+    def get_cypher(self, cte_name=""):
         query = ""
+        cte = True
+        if cte_name == 'main':
+            cte = False
         if self.common_table_expressions["main"] != "":
             for elem in self.common_table_expressions:
                 if elem != "main":
-                    query += self.get_cypher(self.query[elem], True, elem)
+                    query += self.get_cypher(self.query[elem], elem)
                 else:
-                    query += self.get_cypher(self.query[elem], False)
+                    query += self.get_cypher(self.query[elem], 'main')
         else:
             if 'where' in self.query.keys():
-                query += self.transform_into_cypher(self.query["select"], self.query["from"], self.query["where"], cte, cte_name)
-            if 'full join' in self.query.keys():
-                query += self.transform_into_cypher(self.query["select"], self.query["from"], self.query["full join"], cte, cte_name)
+                query += self.transform_into_cypher(self.query["select"], self.query["from"], cte, cte_name, self.query["where"])
+            elif 'full join' in self.query.keys():
+                query += self.transform_into_cypher(self.query["select"], self.query["from"], cte, cte_name, self.query["full join"])
+            else:
+                query += self.transform_into_cypher(self.query["select"], self.query["from"], cte, cte_name)
         return query
 
-    def transform_into_cypher(self, select_part, from_part, join_part, cte=False, cte_name=""):
+    def transform_into_cypher(self, select_part, from_part, cte, cte_name, join_part = None):
         query = ""
-        join_type = join_part.get_join_type()
-        connections = join_part.get_join_conditions()
-        conds = join_part.get_filtering_conditions()
+        connections = []
+        conds = []
+        if join_part != None:
+            join_type = join_part.get_join_type()
+            connections = join_part.get_join_conditions()
+            conds = join_part.get_filtering_conditions()
         table_aliases_in_query = []
         tables = from_part.get_tables()
         if len(connections) == 0:
-            query += parse_query_without_connections()
+            query += parse_query_without_connections(from_part)
         else:
             query += self.parse_collected_cte_for_use(tables)
             query += self.parse_joins(connections, table_aliases_in_query, from_part, join_type)
@@ -184,6 +190,7 @@ class SQL:
     def parse_match_patterns_based_on_joins(self, property1, property2, key1, key2, alias1, alias2, join_type):
         query, prefix = "", ""
         source_property, source_alias, foreign_key, target_property, target_alias, primary_key = None, None, None, None, None, None
+        print(property1)
         property1_keys = self.pk_fk_contrainsts[property1].keys()
         property2_keys = self.pk_fk_contrainsts[property2].keys()
         if key1 in property1_keys or key1 in property2_keys:
@@ -218,13 +225,16 @@ class SQL:
             for elem in filtering_condition:
                 if type(elem) == tuple or type(elem) == list:
                     attr = elem[1].strip()
-                    if attr in self.columns_datatypes.keys():
-                        if 'timestamp' in self.columns_datatypes[attr]:
-                            result += "datetime(" + elem[0] + "." + attr + ")"
+                    if elem[0] != None:
+                        if attr in self.columns_datatypes.keys():
+                            if 'timestamp' in self.columns_datatypes[attr]:
+                                result += "datetime(" + elem[0] + "." + attr + ")"
+                            else:
+                                result += elem[0] + "." + elem[1]
                         else:
-                            result += elem[0] + "." + elem[1]
+                                result += elem[0] + "." + elem[1]
                     else:
-                            result += elem[0] + "." + elem[1]
+                        result += attr
                 else:
                     result += elem
             if i == len(conds) - 1:
@@ -336,6 +346,31 @@ def remove_comments(query):
     result = re.sub(r'(--).*(\n|\r|\rn)', '', result)
     return result.strip()
 
+def parse_query_with_keywords(keyword_from, query, keyword_to = None):
+    result = ""
+    start_index = query.find(keyword_from)
+    if start_index > -1:
+        search_part = query[start_index:]
+        if keyword_to != None:
+            ending_indexes = [m.start() for m in re.finditer(keyword_to, search_part)]
+        else:
+            ending_indexes = [-1]
+        paranthesis = []
+        for i, c in enumerate(search_part):
+            if c == "(":
+                paranthesis.append("(")
+            elif c == ")":
+                if len(paranthesis) > 0:
+                    paranthesis.pop()
+            for j in ending_indexes:
+                if i == j and len(paranthesis) == 0:
+                    print(result)
+                    result = result.replace(keyword_from, "", 1)
+                    #result = result.replace(keyword_to, "", 1)
+                    result = result.strip()
+                    return result
+            result += c
+
 def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -366,5 +401,6 @@ def parse_return_clause(select_part):
 def get_property_alias_key_from_connection(from_part, connection):
     alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
     key1, key2 = connection[0][1].strip(), connection[2][1].strip()
+    print(alias1)
     property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
     return property1, alias1, key1, property2, alias2, key2
