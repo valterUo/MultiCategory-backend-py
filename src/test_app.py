@@ -2,7 +2,7 @@ from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_language_transformations.SQL.sql import SQL
 
-query = """
+query3 = """
 /* Q10. Central Person for a Tag
 \set tag '\'Che_Guevara\''
 \set date '\'2011-07-22T00:00:00.000+00:00\''::timestamp
@@ -141,11 +141,27 @@ SELECT messageYear, isComment, lengthCategory
 
 """
 
+difficult = """
+SELECT extract(year from m_creationdate) AS messageYear
+         , m_c_replyof IS NOT NULL AS isComment
+         , CASE
+             WHEN m_length <  40 THEN 0
+             WHEN m_length <  80 THEN 1
+             WHEN m_length < 160 THEN 2
+             ELSE                     3
+           END AS lengthCategory
+         , m_length
+      FROM message
+     WHERE 1=1
+       AND m_creationdate < :date
+       AND m_ps_imagefile IS NULL
+"""
+
 print()
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", query, db)
+elem = SQL("test", query3, db)
 print(elem.get_cypher(elem))
 
 

@@ -2,12 +2,16 @@ import re
 
 class SELECT:
 
-    def __init__(self, attributes_string):
+    def __init__(self, attributes_string, from_part, db):
+        #print("SELECT class: ", attributes_string)
+        #print()
+        self.from_part = from_part
+        self.db = db
         self.attributes_with_aliases = re.split(
             r',(?![^(]*\))', attributes_string)
         self.attributes = []
         self.keys = []
-        print(self.attributes_with_aliases)
+        # print(self.attributes_with_aliases)
         for attribute_with_alias in self.attributes_with_aliases:
             attribute_with_alias = attribute_with_alias.strip()
             if ' as ' in attribute_with_alias:
@@ -28,36 +32,49 @@ class SELECT:
         return self.keys
 
     def parse_table_name(self, attribute):
-        alias = None
+        property, value, alias = None, None, None
+
         if attribute[1] != None:
             alias = attribute[1].replace('"', "").replace('.','_').strip()
             self.keys.append(alias)
+        else:
+            alias = attribute[0]
+            if "_" in alias:
+                alias = alias.split("_")[1]
+            elif '.' in alias:
+                alias = alias.split(".")[1]
 
         if '.' in attribute[0]:
             table_attribute_alias = re.split(r'\.(?![^(]*\))', attribute[0])
-            value = table_attribute_alias[1]
-            if 'extract' in value:
-                value = self.map_postgres_extract_to_cypher(value)
             if len(table_attribute_alias) > 1:
-                self.attributes.append((table_attribute_alias[0], value, alias))
+                value = table_attribute_alias[1]
+                property = table_attribute_alias[0]
+                if 'extract' in value:
+                    value = self.map_postgres_extract_to_cypher(value)
             else:
                 value = table_attribute_alias[0]
                 if 'extract' in value:
                     value = self.map_postgres_extract_to_cypher(value)
-                self.attributes.append((None, value, alias))
         else:
             value = attribute[0]
             if 'extract' in value:
                 value = self.map_postgres_extract_to_cypher(value)
-            self.attributes.append((None, value, alias))
-        print(self.attributes)
+
+        if property == None:
+            for table in self.from_part.get_tables():
+                    #print("Table:", table)
+                    attributes = self.db.get_attributes_for_table(table[0])
+                    for attr in attributes:
+                        if attr.strip() in value.strip():
+                            value = value.replace(attr, table[0] + "." + attr)
+        #print((property, value, alias))
+        self.attributes.append((property, value, alias))
 
     def map_postgres_extract_to_cypher(self, function_string):
         elements2 = []
         elements = function_string.replace(")", "").split("(")
         for elem in elements:
             elements2 += elem.split(" ")
-        print(elements2)
         object_from = None
         source = None
         for i, elem in enumerate(elements2):

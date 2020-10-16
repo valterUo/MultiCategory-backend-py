@@ -2,11 +2,14 @@ import re
 
 class WHERE:
 
-    def __init__(self, condition_string, primary_foreign_keys, db):
+    def __init__(self, condition_string, primary_foreign_keys, from_part, db):
+        #print("WHERE class: ", condition_string)
+        #print()
         self.condition_string = condition_string
         self.primary_foreign_keys = primary_foreign_keys
         self.db = db
         self.join_type = "inner"
+        self.from_part = from_part
         self.conjunctive_part, self.disjunctive_part = self.parse_where()
         self.join_conditions = self.parse_join_conditions()
         self.filtering_conditions = [
@@ -46,12 +49,20 @@ class WHERE:
             if '=' in elem:
                 res = re.split(r'=', elem)
                 conds[i] = self.construct_conds(res, '=')
-            if '>' in elem:
+            elif '>' in elem:
                 res = re.split(r'>', elem)
                 conds[i] = self.construct_conds(res, '>')
-            if '<' in elem:
+            elif '<' in elem:
                 res = re.split(r'<', elem)
                 conds[i] = self.construct_conds(res, '<')
+            else:
+                for table in self.from_part.get_tables():
+                    #print("Table:", table)
+                    attributes = self.db.get_attributes_for_table(table[0])
+                    for attr in attributes:
+                        if attr.strip() in conds[i].strip():
+                            conds[i] = conds[i].replace(attr, table[0] + "." + attr)
+        #print(conds)
 
     def parse_join_conditions(self):
         join_conditions = []
@@ -73,6 +84,7 @@ class WHERE:
                             right = True
                 if left and right:
                     join_conditions.append(elem)
+        #print(join_conditions)
         return join_conditions
 
     def construct_conds(self, res, operator):

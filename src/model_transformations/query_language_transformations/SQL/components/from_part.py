@@ -4,6 +4,8 @@ import re
 class FROM:
 
     def __init__(self, tables_string):
+        #print("FROM class: ", tables_string)
+        #print()
         self.tables_with_alias = re.split(r',', tables_string)
         self.tables = []
         for table_with_alias in self.tables_with_alias:
@@ -22,7 +24,7 @@ class FROM:
                     alias = res[0][:1] + res[1][:1]
                 else:
                     alias = table_with_alias[:2]
-                self.tables.append([table_with_alias, alias])
+                self.tables.append([table_with_alias, None])
 
     def get_tables(self):
         return self.tables
@@ -32,6 +34,6 @@ class FROM:
 
     def get_table_from_alias(self, alias_name):
         for table in self.tables:
-            print(table)
+            #print(table)
             if table[1] == alias_name:
                 return table[0]

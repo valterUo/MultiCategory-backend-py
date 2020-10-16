@@ -73,7 +73,6 @@ class Postgres():
         for table in schema:
             for table_attr in schema[table]:
                 if attribute == table_attr:
-                    print(table)
                     return table
         return None
 

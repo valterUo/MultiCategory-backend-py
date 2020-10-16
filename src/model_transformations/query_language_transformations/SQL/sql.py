@@ -44,29 +44,28 @@ class SQL:
                 previous_ctes = list(itertools.takewhile(lambda ele: ele != elem, self.common_table_expressions))
                 self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.rel_db, self.primary_foreign_keys, self.all_cte_names, previous_ctes)
         else:
-            if self.query_string.count("select") == 1:
-                keyword_sequence = self.get_keyword_sequence()
-                for i in range(len(keyword_sequence)):
-                    if i < len(keyword_sequence) - 1:
-                        keyword_from = keyword_sequence[i]
-                        keyword_to = keyword_sequence[i+1]
-                        result = parse_query_with_keywords(keyword_from, self.query_string, keyword_to)
-                        if result != None:
-                            self.query[keyword_from] = result
-                    else:
-                        keyword_from = keyword_sequence[i]
-                        result = parse_query_with_keywords(keyword_from, query_string)
-                        if result != None:
-                            self.query[keyword_from] = result
-            for elem in self.query:
-                if elem == "select":
-                    select_result = SELECT(self.query[elem])
+            keyword_sequence = self.get_keyword_sequence()
+            for i in range(len(keyword_sequence)):
+                if i < len(keyword_sequence) - 1:
+                    keyword_from = keyword_sequence[i]
+                    keyword_to = keyword_sequence[i+1]
+                    result = parse_query_with_keywords(keyword_from, self.query_string, keyword_to)
+                    self.query[keyword_from] = result
+                else:
+                    keyword_from = keyword_sequence[i]
+                    result = parse_query_with_keywords(keyword_from, self.query_string)
+                    self.query[keyword_from] = result
+            keyword_sequence.remove("from")
+            keyword_sequence.insert(0, "from")
+            for elem in keyword_sequence:
+                if elem == "from":
+                    self.query[elem] = FROM(self.query[elem])
+                elif elem == "select":
+                    select_result = SELECT(self.query[elem], self.query['from'], self.rel_db)
                     self.query[elem] = select_result
                     self.primary_foreign_keys += select_result.get_keys()
-                elif elem == "from":
-                    self.query[elem] = FROM(self.query[elem])
                 elif elem == "where":
-                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys, self.rel_db)
+                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys, self.query['from'], self.rel_db)
                 elif elem == "group by":
                     self.query[elem] = GROUPBY(self.query[elem])
                 elif elem == "order by":
@@ -139,6 +138,7 @@ class SQL:
             elif words[i].strip() + " " + words[i+1].strip() in KEYWORDS:
                 keyword_sequence.append(
                     words[i].strip() + " " + words[i+1].strip())
+        keyword_sequence = list(dict.fromkeys(keyword_sequence))
         return keyword_sequence
 
     @staticmethod
@@ -174,8 +174,9 @@ class SQL:
         tables = from_part.get_tables()
         if len(connections) == 0:
             query += parse_query_without_connections(from_part)
+            #query += self.parse_collected_cte_for_use(tables, from_part)
         else:
-            query += self.parse_collected_cte_for_use(tables)
+            query += self.parse_collected_cte_for_use(tables, from_part)
             query += self.parse_joins(connections, table_aliases_in_query, from_part, join_type)
         if len(conds) > 0:
             query += self.parse_filtering_conditions(conds)
@@ -190,7 +191,6 @@ class SQL:
     def parse_match_patterns_based_on_joins(self, property1, property2, key1, key2, alias1, alias2, join_type):
         query, prefix = "", ""
         source_property, source_alias, foreign_key, target_property, target_alias, primary_key = None, None, None, None, None, None
-        print(property1)
         property1_keys = self.pk_fk_contrainsts[property1].keys()
         property2_keys = self.pk_fk_contrainsts[property2].keys()
         if key1 in property1_keys or key1 in property2_keys:
@@ -283,7 +283,7 @@ class SQL:
             result += "})\n"
         return result + "\n"
 
-    def parse_collected_cte_for_use(self, tables):
+    def parse_collected_cte_for_use(self, tables, from_part):
         result = ""
         any_of_tables_refering_ctes = False
         for table in tables:
@@ -308,6 +308,8 @@ class SQL:
                         result += elem + "\n"
                     else:
                         result += elem + ", "
+        #else:
+        #    result += parse_query_without_connections(from_part)
         return result
 
     def parse_joins(self, connections, table_aliases_in_query, from_part, join_type):
@@ -347,29 +349,33 @@ def remove_comments(query):
     return result.strip()
 
 def parse_query_with_keywords(keyword_from, query, keyword_to = None):
+    start_indexes = [m.start() for m in re.finditer(keyword_from, query)]
     result = ""
-    start_index = query.find(keyword_from)
-    if start_index > -1:
-        search_part = query[start_index:]
-        if keyword_to != None:
-            ending_indexes = [m.start() for m in re.finditer(keyword_to, search_part)]
-        else:
+    if len(start_indexes) > 0:
+        for start_index in start_indexes:
+            result = ""
+            paranthesis = []
             ending_indexes = [-1]
-        paranthesis = []
-        for i, c in enumerate(search_part):
-            if c == "(":
-                paranthesis.append("(")
-            elif c == ")":
-                if len(paranthesis) > 0:
-                    paranthesis.pop()
-            for j in ending_indexes:
-                if i == j and len(paranthesis) == 0:
-                    print(result)
-                    result = result.replace(keyword_from, "", 1)
-                    #result = result.replace(keyword_to, "", 1)
-                    result = result.strip()
-                    return result
-            result += c
+            search_part = query[start_index:]
+            if keyword_to != None:
+                ending_indexes = [m.start() for m in re.finditer(keyword_to, search_part)]
+            for i, c in enumerate(search_part):
+                if c == "(":
+                    paranthesis.append("(")
+                elif c == ")":
+                    if len(paranthesis) > 0:
+                        paranthesis.pop()
+                    else:
+                        break
+                for j in ending_indexes:
+                    if i == j and len(paranthesis) == 0:
+                        result = result.replace(keyword_from, "", 1)
+                        #result = result.replace(keyword_to, "", 1)
+                        result = result.strip()
+                        return result
+                result += c
+        result = result.replace(keyword_from, "", 1)
+        return result
 
 def get_random_string(length):
     letters = string.ascii_lowercase
@@ -401,6 +407,5 @@ def parse_return_clause(select_part):
 def get_property_alias_key_from_connection(from_part, connection):
     alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
     key1, key2 = connection[0][1].strip(), connection[2][1].strip()
-    print(alias1)
     property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
     return property1, alias1, key1, property2, alias2, key2
