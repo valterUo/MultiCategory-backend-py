@@ -157,11 +157,38 @@ SELECT extract(year from m_creationdate) AS messageYear
        AND m_ps_imagefile IS NULL
 """
 
+simple = """
+select p_firstname, p_lastname, p_birthday, p_locationip, p_browserused, p_placeid, p_gender,  p_creationdate
+from person
+where p_personid = :personId;
+"""
+
+simple2 = """
+select p_personid, p_firstname, p_lastname, k_creationdate
+from knows, person
+where k_person1id = :personId 
+and k_person2id = p_personid
+order by k_creationdate desc, p_personid asc;
+"""
+
+subquery = """
+select p2.m_messageid, p2.m_content, p2.m_creationdate, p_personid, p_firstname, p_lastname,
+    (case when exists (
+     	   	       select 1 from knows
+		       where p1.m_creatorid = k_person1id and p2.m_creatorid = k_person2id)
+      then TRUE
+      else FALSE
+      end)
+from message p1, message p2, person
+where
+  p1.m_messageid = :messageId and p2.m_c_replyof = p1.m_messageid and p2.m_creatorid = p_personid
+order by p2.m_creationdate desc, p2.m_creatorid asc;"""
+
 print()
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", query3, db)
+elem = SQL("test", subquery, db)
 print(elem.get_cypher(elem))
 
 

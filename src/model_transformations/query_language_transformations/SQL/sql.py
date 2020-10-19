@@ -154,6 +154,8 @@ class SQL:
                 else:
                     query += self.get_cypher(self.query[elem], 'main')
         else:
+            if self.all_cte_names == ["main"]:
+                cte = False
             if 'where' in self.query.keys():
                 query += self.transform_into_cypher(self.query["select"], self.query["from"], cte, cte_name, self.query["where"])
             elif 'full join' in self.query.keys():
@@ -172,18 +174,20 @@ class SQL:
             conds = join_part.get_filtering_conditions()
         table_aliases_in_query = []
         tables = from_part.get_tables()
+        for table in tables:
+            table_aliases_in_query.append(table[0])
         if len(connections) == 0:
-            query += parse_query_without_connections(from_part)
+            query += self.parse_query_without_connections(tables)
             #query += self.parse_collected_cte_for_use(tables, from_part)
         else:
-            query += self.parse_collected_cte_for_use(tables, from_part)
+            query += self.parse_collected_cte_for_use(tables)
             query += self.parse_joins(connections, table_aliases_in_query, from_part, join_type)
         if len(conds) > 0:
             query += self.parse_filtering_conditions(conds)
         if cte:
-            query += self.parse_cte_with_collect(select_part.get_attributes(), table_aliases_in_query, cte_name)
+            query += self.parse_cte_with_collect(select_part.get_attributes(), table_aliases_in_query, cte_name, from_part)
         else:
-            query += parse_return_clause(select_part)
+            query += parse_return_clause(select_part, from_part)
         if 'order by' in self.query.keys():
             query += self.query['order by'].get_order_by_cypher() + "\n"
         return query
@@ -191,6 +195,8 @@ class SQL:
     def parse_match_patterns_based_on_joins(self, property1, property2, key1, key2, alias1, alias2, join_type):
         query, prefix = "", ""
         source_property, source_alias, foreign_key, target_property, target_alias, primary_key = None, None, None, None, None, None
+        print("Property1: ", property1)
+        print("Property2: ", property2)
         property1_keys = self.pk_fk_contrainsts[property1].keys()
         property2_keys = self.pk_fk_contrainsts[property2].keys()
         if key1 in property1_keys or key1 in property2_keys:
@@ -244,9 +250,11 @@ class SQL:
             i+=1
         return result
 
-    def parse_cte_with_collect(self, attributes, table_aliases_in_query, cte_name):
+    def parse_cte_with_collect(self, attributes, table_aliases_in_query, cte_name, from_part):
         result = ""
         for attribute in attributes:
+            if attribute[2] != None:
+                from_part.add_table((cte_name, attribute[2]))
             if attribute[0] != None and attribute[1] != None and attribute[2] != None:
                 result += attribute[2] + " : " + attribute[0] + "." + attribute[1] + ", "
                 self.primary_foreign_keys.append(attribute[2])
@@ -283,7 +291,7 @@ class SQL:
             result += "})\n"
         return result + "\n"
 
-    def parse_collected_cte_for_use(self, tables, from_part):
+    def parse_collected_cte_for_use(self, tables):
         result = ""
         any_of_tables_refering_ctes = False
         for table in tables:
@@ -293,8 +301,16 @@ class SQL:
             table_aliases = []
             for table in tables:
                 if table[0] in self.all_cte_names:
-                    result += "UNWIND " + table[0] + " AS " + table[1] + "\n"
-                    table_aliases.append(table[1])
+                    if table[1] != None:
+                        result += "UNWIND " + table[0] + " AS " + table[1] + "\n"
+                        table_aliases.append(table[1])
+                    else:
+                        alias = table[0][:3]
+                        if "_" in table[0]:
+                            res = table[0].split("_")
+                            alias = res[0][0] + res[1][0]
+                        result += "UNWIND " + table[0] + " AS " + alias + "\n"
+                        table_aliases.append(alias)
                 else:
                     result += "MATCH (" + table[1] + " : " + table[0] + ")\n"
             if table_aliases != []:
@@ -302,19 +318,19 @@ class SQL:
                 for prev_cte in self.previous_ctes:
                     previous_cte += prev_cte + ", "
                 result += "WITH " + previous_cte
+                print(result)
                 for i in range(len(table_aliases)):
                     elem = table_aliases[i]
                     if i == len(table_aliases) - 1:
                         result += elem + "\n"
                     else:
                         result += elem + ", "
-        #else:
-        #    result += parse_query_without_connections(from_part)
         return result
 
     def parse_joins(self, connections, table_aliases_in_query, from_part, join_type):
         result = ""
         checked = []
+        print("Connections: ", connections)
         for k, connection in enumerate(connections):
             property1, alias1, key1, property2, alias2, key2 = get_property_alias_key_from_connection(from_part, connection)
             table_aliases_in_query += [alias1, alias2]
@@ -340,6 +356,22 @@ class SQL:
                 checked.append(k)
         return result
 
+    def parse_query_without_connections(self, tables):
+        query = ""
+        some_table_in_cte = False
+        for table in tables:
+            if table[0] in self.all_cte_names:
+                some_table_in_cte = True
+        if some_table_in_cte:
+            query += self.parse_collected_cte_for_use(tables)
+        else:
+            for table in tables:
+                if table[1] != None:
+                    query += "MATCH (" + table[1] + ":" + table[0] + ")\n"
+                else:
+                    query += "MATCH (" + table[0] + ")\n"
+        return query
+
 def remove_comments(query):
     ## Multi-line comments
     multi_line_comment_ex = re.compile(r'(\/\*).*(\*\/)', re.DOTALL)
@@ -350,6 +382,19 @@ def remove_comments(query):
 
 def parse_query_with_keywords(keyword_from, query, keyword_to = None):
     start_indexes = [m.start() for m in re.finditer(keyword_from, query)]
+    paranthesis = []
+    for i, c in enumerate(query):
+        if c == "(":
+            paranthesis.append("(")
+        elif c == ")":
+            if len(paranthesis) == 0:
+                break
+            else:
+                paranthesis.pop()
+        if len(paranthesis) > 0:
+            for start_i in start_indexes:
+                if start_i == i:
+                    start_indexes.remove(start_i)
     result = ""
     if len(start_indexes) > 0:
         for start_index in start_indexes:
@@ -382,30 +427,26 @@ def get_random_string(length):
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
-def parse_query_without_connections(from_part):
-    query = ""
-    for table in from_part.get_tables():
-        if table[1] != None:
-            query += "MATCH (" + table[1] + ":" + table[0] + ")\n"
-        else:
-            query += "MATCH (" + table[0] + ")\n"
-    return query
-
-def parse_return_clause(select_part):
+def parse_return_clause(select_part, from_part):
     result = ""
     for attr in select_part.get_attributes():
-        if attr[0] != None and attr[2] != None:
-            result += attr[0] + "." + attr[1] + " AS " + attr[2] + ", "
-        elif attr[0] == None and attr[2] == None:
-            result += attr[1] + ", "
-        elif attr[2] == None:
-            result += attr[0] + "." + attr[1] + ", "
-        elif attr[0] == None:
+        table_name = attr[0]
+        if table_name == None:
+            for table in from_part.get_tables():
+                print(attr[0], table)
+                if table[0] == attr[1]:
+                    table_name = table[1]
+        if table_name == None:
             result += attr[1] + " AS " + attr[2] + ", "
+        if attr[0] != None and attr[2] != None:
+            result += table_name + "." + attr[1] + " AS " + attr[2] + ", "
+        elif attr[2] == None:
+            result += table_name + "." + attr[1] + ", "
     return "RETURN " + result[:-2] + "\n"
 
 def get_property_alias_key_from_connection(from_part, connection):
     alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
     key1, key2 = connection[0][1].strip(), connection[2][1].strip()
+    print(alias1, alias2, key1, key2)
     property1, property2 = from_part.get_table_from_alias(alias1), from_part.get_table_from_alias(alias2)
     return property1, alias1, key1, property2, alias2, key2

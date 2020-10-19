@@ -3,15 +3,25 @@ import re
 class SELECT:
 
     def __init__(self, attributes_string, from_part, db):
-        #print("SELECT class: ", attributes_string)
-        #print()
+        print("SELECT class: ", attributes_string)
+        print()
+
         self.from_part = from_part
         self.db = db
+
         self.attributes_with_aliases = re.split(
             r',(?![^(]*\))', attributes_string)
         self.attributes = []
         self.keys = []
-        # print(self.attributes_with_aliases)
+        print(self.attributes_with_aliases)
+        self.subqueries = []
+        for elem in self.attributes_with_aliases:
+            if 'select' in elem:
+                self.subqueries.append(elem)
+                self.attributes_with_aliases.remove(elem)
+        print(self.attributes_with_aliases)
+        print()
+        print(self.subqueries)
         for attribute_with_alias in self.attributes_with_aliases:
             attribute_with_alias = attribute_with_alias.strip()
             if ' as ' in attribute_with_alias:
@@ -23,7 +33,7 @@ class SELECT:
                 self.parse_table_name(attribute_and_alias)
             else:
                 self.parse_table_name([attribute_with_alias, None])
-        #print(self.attributes)
+        print("Attributes: ", self.attributes)
 
     def get_attributes(self):
         return self.attributes
@@ -51,14 +61,20 @@ class SELECT:
                 property = table_attribute_alias[0]
                 if 'extract' in value:
                     value = self.map_postgres_extract_to_cypher(value)
+                if '||' in value:
+                    value = value.replace("||", "+")
             else:
                 value = table_attribute_alias[0]
                 if 'extract' in value:
                     value = self.map_postgres_extract_to_cypher(value)
+                if '||' in value:
+                    value = value.replace("||", "+")
         else:
             value = attribute[0]
             if 'extract' in value:
                 value = self.map_postgres_extract_to_cypher(value)
+            if '||' in value:
+                    value = value.replace("||", "+")
 
         if property == None:
             for table in self.from_part.get_tables():

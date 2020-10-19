@@ -14,6 +14,7 @@ class WHERE:
         self.join_conditions = self.parse_join_conditions()
         self.filtering_conditions = [
             cond for cond in self.conjunctive_part if cond not in self.join_conditions]
+        print("filtering cond: ", self.filtering_conditions)
 
     def get_conjunctive_part(self):
         return self.conjunctive_part
@@ -41,6 +42,7 @@ class WHERE:
                 disjunctive_part.append(res[1])
         self.parse_conditions(disjunctive_part)
         self.parse_conditions(conjunctive_part)
+        #print("conjunctive part: ", conjunctive_part)
         return conjunctive_part, disjunctive_part
 
     def parse_conditions(self, conds):
@@ -84,7 +86,7 @@ class WHERE:
                             right = True
                 if left and right:
                     join_conditions.append(elem)
-        #print(join_conditions)
+        #print("Join conditions:", join_conditions)
         return join_conditions
 
     def construct_conds(self, res, operator):
