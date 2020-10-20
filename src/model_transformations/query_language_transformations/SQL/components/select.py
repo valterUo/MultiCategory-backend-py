@@ -3,8 +3,8 @@ import re
 class SELECT:
 
     def __init__(self, attributes_string, from_part, db):
-        print("SELECT class: ", attributes_string)
-        print()
+        # print("SELECT class: ", attributes_string)
+        # print()
 
         self.from_part = from_part
         self.db = db
@@ -13,22 +13,18 @@ class SELECT:
             r',(?![^(]*\))', attributes_string)
         self.attributes = []
         self.keys = []
-        print(self.attributes_with_aliases)
         self.subqueries = []
         for elem in self.attributes_with_aliases:
             if 'select' in elem:
                 self.subqueries.append(elem)
                 self.attributes_with_aliases.remove(elem)
-        print(self.attributes_with_aliases)
-        print()
-        print(self.subqueries)
         for attribute_with_alias in self.attributes_with_aliases:
             attribute_with_alias = attribute_with_alias.strip()
             if ' as ' in attribute_with_alias:
                 attribute_and_alias = re.split(
                     r'[\s]+as[\s]+', attribute_with_alias)
                 self.parse_table_name(attribute_and_alias)
-            elif ' ' in attribute_with_alias:
+            elif ' ' in attribute_with_alias and '(' not in attribute_with_alias and ')' not in attribute_with_alias:
                 attribute_and_alias = re.split(r'\s+', attribute_with_alias)
                 self.parse_table_name(attribute_and_alias)
             else:
@@ -78,12 +74,10 @@ class SELECT:
 
         if property == None:
             for table in self.from_part.get_tables():
-                    #print("Table:", table)
                     attributes = self.db.get_attributes_for_table(table[0])
                     for attr in attributes:
                         if attr.strip() in value.strip():
                             value = value.replace(attr, table[0] + "." + attr)
-        #print((property, value, alias))
         self.attributes.append((property, value, alias))
 
     def map_postgres_extract_to_cypher(self, function_string):

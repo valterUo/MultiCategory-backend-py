@@ -184,11 +184,23 @@ where
   p1.m_messageid = :messageId and p2.m_c_replyof = p1.m_messageid and p2.m_creatorid = p_personid
 order by p2.m_creationdate desc, p2.m_creatorid asc;"""
 
+query = """
+select p_personid, p_firstname, p_lastname, m_messageid, COALESCE(m_ps_imagefile, m_content, ''), m_creationdate
+from person, message, knows
+where
+    p_personid = m_creatorid and
+    m_creationdate < :maxDate and
+    k_person1id = :personId and
+    k_person2id = p_personid
+order by m_creationdate desc, m_messageid asc
+limit 20
+"""
+
 print()
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", subquery, db)
+elem = SQL("test", query, db)
 print(elem.get_cypher(elem))
 
 

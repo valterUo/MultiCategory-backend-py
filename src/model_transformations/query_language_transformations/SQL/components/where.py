@@ -14,7 +14,7 @@ class WHERE:
         self.join_conditions = self.parse_join_conditions()
         self.filtering_conditions = [
             cond for cond in self.conjunctive_part if cond not in self.join_conditions]
-        print("filtering cond: ", self.filtering_conditions)
+        #print("filtering cond: ", self.filtering_conditions)
 
     def get_conjunctive_part(self):
         return self.conjunctive_part
