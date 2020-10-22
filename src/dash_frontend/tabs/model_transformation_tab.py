@@ -99,5 +99,5 @@ def parse_sql_query_examples():
     for i, file_name in enumerate(example_filenames):
         with open(file_name, 'r') as reader:
             lines = reader.read()
-            examples.append({'label': 'example ' + str(i), 'value': lines})
+            examples.append({'label': 'example ' + os.path.basename(file_name), 'value': lines})
     return examples

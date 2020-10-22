@@ -18,7 +18,7 @@ class FROM:
                 self.tables.append(re.split(r'\s', table_with_alias))
             else:
                 self.tables.append([table_with_alias, None])
-        print("Tables: ", self.tables)
+        #print("Tables: ", self.tables)
 
     def get_tables(self):
         return self.tables
@@ -34,7 +34,7 @@ class FROM:
             return self.cte_tables[table]
 
     def get_cte_table_from_attribute(self, attribute):
-        print(self.cte_tables, self.tables)
+        #print(self.cte_tables, self.tables)
         for key in self.cte_tables.keys():
             if attribute.strip() in self.cte_tables[key]:
                 return key

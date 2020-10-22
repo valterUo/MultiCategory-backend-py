@@ -1,34 +1,32 @@
 import re
 import itertools
-import random
-from re import search
-import string
 from model_transformations.query_language_transformations.SQL.components.select import SELECT
 from model_transformations.query_language_transformations.SQL.components.from_part import FROM
 from model_transformations.query_language_transformations.SQL.components.where import WHERE
 from model_transformations.query_language_transformations.SQL.components.group_by import GROUPBY
 from model_transformations.query_language_transformations.SQL.components.order_by import ORDERBY
 from model_transformations.query_language_transformations.SQL.components.join import JOIN
+from model_transformations.query_language_transformations.SQL.global_variables import CYPHER_AGGREGATING_FUNCTIONS
+from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import *
 
-KEYWORDS = ['select', 'from', 'where', 'inner join', 'outer join', 'left join', 'right join', 'full join', 'group by', 'order by', 'limit']
-
-## Aggregating functions are not allowed inside aggregating functions in Cypher. On the other hand, SQL allows to nest them. For Cypher we need to unnest them.
-cypher_aggregating_functions = ["collect", "sum", "count", "max", "min", "avg", "percentileCont", "percentileDisc", "stDev", "stDevP"]
-
+## Instance of SQL class contain 0 or multiple common table expressions, 0 or multiple subqueries and exactly one so called main query
 
 class SQL:
 
-    def __init__(self, name, query_string, rel_db, primary_foreign_keys = [], all_cte_names = [], previous_ctes = []):
+    def __init__(self, name, query_string, rel_db, primary_foreign_keys = [], all_cte_names = [], previous_ctes = [], main_block = True):
         self.name = name
         self.original_query = query_string
         self.rel_db = rel_db
+        self.main_block = main_block
         self.pk_fk_contrainsts = self.rel_db.get_all_pk_fk_contrainsts()
         self.primary_foreign_keys = primary_foreign_keys
         self.previous_ctes = previous_ctes
         self.columns_datatypes = rel_db.get_all_columns_datatypes()
         self.query_string = remove_comments(query_string.replace(";", "").strip().lower())
         self.query = dict()
-        self.common_table_expressions = self.parse_common_table_expressions()
+        self.ctes = dict()
+        self.subqueries = []
+        self.unparsed_ctes = extract_common_table_expressions(self.query_string)
         self.all_cte_names = all_cte_names
         self.where_keyword_used = False
         self.from_part = None
@@ -39,137 +37,78 @@ class SQL:
                 self.primary_foreign_keys.append(constraint["primary_key_in_target_table"])
 
         if all_cte_names == []:
-            self.all_cte_names = list(self.common_table_expressions.keys())
-        if self.common_table_expressions["main"] != "":
-            for elem in self.common_table_expressions:
-                previous_ctes = list(itertools.takewhile(lambda ele: ele != elem, self.common_table_expressions))
-                self.query[elem] = SQL(elem, self.common_table_expressions[elem], self.rel_db, self.primary_foreign_keys, self.all_cte_names, previous_ctes)
-        else:
-            keyword_sequence = self.get_keyword_sequence()
-            for i in range(len(keyword_sequence)):
-                if i < len(keyword_sequence) - 1:
-                    keyword_from = keyword_sequence[i]
-                    keyword_to = keyword_sequence[i+1]
-                    result = parse_query_with_keywords(keyword_from, self.query_string, keyword_to)
-                    self.query[keyword_from] = result
-                else:
-                    keyword_from = keyword_sequence[i]
-                    result = parse_query_with_keywords(keyword_from, self.query_string)
-                    self.query[keyword_from] = result
-            keyword_sequence.remove("from")
-            keyword_sequence.insert(0, "from")
-            for elem in keyword_sequence:
-                if elem == "from":
-                    self.from_part = FROM(self.query[elem])
-                    self.query[elem] = self.from_part
-                elif elem == "select":
-                    select_result = SELECT(self.query[elem], self.query['from'], self.rel_db)
-                    self.query[elem] = select_result
-                    self.primary_foreign_keys += select_result.get_keys()
-                elif elem == "where":
-                    self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys, self.query['from'], self.rel_db)
-                elif elem == "group by":
-                    self.query[elem] = GROUPBY(self.query[elem])
-                elif elem == "order by":
-                    self.query[elem] = ORDERBY(self.query[elem])
-                elif elem == "full join":
-                    self.query[elem] = JOIN(
-                        "full", self.query[elem], self.query["from"])
-                elif elem == "inner join":
-                    self.query[elem] = JOIN(
-                        "inner", self.query[elem], self.query["from"])
+            self.all_cte_names = list(self.unparsed_ctes.keys())
+            self.all_cte_names.remove("main")
+        
+        for elem in self.unparsed_ctes:
+            previous_ctes = list(itertools.takewhile(lambda ele: ele != elem, self.unparsed_ctes))
+            if elem != "main":
+                self.ctes[elem] = SQL(elem, self.unparsed_ctes[elem], self.rel_db, self.primary_foreign_keys, self.all_cte_names, previous_ctes, False)
+            else:
+                self.parse_main_query()
 
-
+        self.cypher_query = self.transform()
+            
     def get_name(self):
         return self.name
 
     def get_sql_query(self):
         return self.original_query
 
-    def parse_common_table_expressions(self):
-        ctes = dict()
-        collecting, collecting_name, collecting_subquery, collecting_main = False, False, False, False
-        name, subquery, main_query, paranthesis = "", "", "", []
-        for i in range(len(self.query_string)):
-            if self.query_string[i-4:i] == "with":
-                collecting = True
-                collecting_name = True
-            if collecting_name:
-                if self.query_string[i:i+2] == "as":
-                    collecting_name = False
-                    collecting_subquery = True
-                else:
-                    name += self.query_string[i]
-            if collecting_subquery:
-                subquery += self.query_string[i]
-                if self.query_string[i] == "(":
-                    paranthesis.append("(")
-                if self.query_string[i] == ")":
-                    paranthesis.pop()
-                    if len(paranthesis) == 0:
-                        ctes[name.strip()] = subquery
-                        name, subquery = "", ""
-                        collecting_subquery = False
-            if collecting and not collecting_subquery and not collecting_name and not collecting_main:
-                if self.query_string[i] == ",":
-                    collecting_name = True
-                else:
-                    if re.match(r'[a-z]', self.query_string[i]) != None:
-                        collecting_main = True
-            if collecting_main and collecting:
-                main_query += self.query_string[i]
+    def get_cypher(self):
+        return self.cypher_query
 
-        ctes["main"] = main_query
-        ex = re.compile(r'(?<=\().+(?=\))', re.DOTALL)
-        ex2 = re.compile(r'\s\s+')
-        for elem in ctes:
-            if elem != "main":
-                try:
-                    ctes[elem] = re.search(ex, ctes[elem]).group()
-                except:
-                    pass
-            ctes[elem] = re.sub(ex2, ' ', ctes[elem])
-        return ctes
-
-    def get_keyword_sequence(self):
-        keyword_sequence = list()
-        words = re.split(r'\s', self.query_string)
-        for i in range(len(words) - 1):
-            if words[i].strip() in KEYWORDS:
-                keyword_sequence.append(words[i].strip())
-            elif words[i].strip() + " " + words[i+1].strip() in KEYWORDS:
-                keyword_sequence.append(
-                    words[i].strip() + " " + words[i+1].strip())
-        keyword_sequence = list(dict.fromkeys(keyword_sequence))
-        return keyword_sequence
-
-    @staticmethod
-    def get_cypher(self, cte_name=""):
-        query = ""
-        cte = True
-        if cte_name == 'main':
-            cte = False
-        if self.common_table_expressions["main"] != "":
-            for elem in self.common_table_expressions:
-                if elem != "main":
-                    query += self.get_cypher(self.query[elem], elem)
-                else:
-                    query += self.get_cypher(self.query[elem], 'main')
-        else:
-            if self.all_cte_names == ["main"]:
-                cte = False
-            if 'where' in self.query.keys():
-                query += self.transform_into_cypher(self.query["select"], cte, cte_name, self.query["where"])
-            elif 'full join' in self.query.keys():
-                query += self.transform_into_cypher(self.query["select"], cte, cte_name, self.query["full join"])
+    def parse_main_query(self):
+        keyword_sequence = get_keyword_sequence(self.unparsed_ctes["main"])
+        for i in range(len(keyword_sequence)):
+            if i < len(keyword_sequence) - 1:
+                keyword_from = keyword_sequence[i]
+                keyword_to = keyword_sequence[i+1]
+                result = parse_query_with_keywords(keyword_from, self.query_string, keyword_to)
+                self.query[keyword_from] = result
             else:
-                query += self.transform_into_cypher(self.query["select"], cte, cte_name)
+                keyword_from = keyword_sequence[i]
+                result = parse_query_with_keywords(keyword_from, self.query_string)
+                self.query[keyword_from] = result
+        keyword_sequence.remove("from")
+        keyword_sequence.insert(0, "from")
+        for elem in keyword_sequence:
+            if elem == "from":
+                self.from_part = FROM(self.query[elem])
+                self.query[elem] = self.from_part
+            elif elem == "select":
+                select_result = SELECT(self.query[elem], self.query['from'], self.rel_db)
+                self.query[elem] = select_result
+                self.primary_foreign_keys += select_result.get_keys()
+            elif elem == "where":
+                self.query[elem] = WHERE(self.query[elem], self.primary_foreign_keys, self.query['from'], self.rel_db)
+            elif elem == "group by":
+                self.query[elem] = GROUPBY(self.query[elem])
+            elif elem == "order by":
+                self.query[elem] = ORDERBY(self.query[elem])
+            elif elem == "full join":
+                self.query[elem] = JOIN(
+                    "full", self.query[elem], self.query["from"])
+            elif elem == "inner join":
+                self.query[elem] = JOIN(
+                    "inner", self.query[elem], self.query["from"])
+
+    def transform(self):
+        query = ""
+        for elem in self.ctes:
+            query += self.ctes[elem].get_cypher()
+        if 'where' in self.query.keys():
+            query += self.transform_into_cypher(self.query["select"], self.query["where"])
+        elif 'full join' in self.query.keys():
+            query += self.transform_into_cypher(self.query["select"], self.query["full join"])
+        else:
+            query += self.transform_into_cypher(self.query["select"])
         return query
 
-    def transform_into_cypher(self, select_part, cte, cte_name, join_part = None):
-        query = ""
-        connections = []
-        conds = []
+    def transform_into_cypher(self, select_part, join_part = None):
+        query, join_type = "", ""
+        connections, conds = [], []
+
         if join_part != None:
             join_type = join_part.get_join_type()
             connections = join_part.get_join_conditions()
@@ -185,10 +124,10 @@ class SQL:
             query += self.parse_joins(connections, table_aliases_in_query, join_type)
         if len(conds) > 0:
             query += self.parse_filtering_conditions(conds)
-        if cte:
-            query += self.parse_cte_with_collect(select_part.get_attributes(), table_aliases_in_query, cte_name)
-        else:
+        if self.main_block:
             query += self.parse_return_clause(select_part)
+        else:
+            query += self.parse_cte_with_collect(select_part.get_attributes(), table_aliases_in_query)
         return query
 
     def parse_match_patterns_based_on_joins(self, property1, property2, key1, key2, alias1, alias2, join_type):
@@ -223,9 +162,8 @@ class SQL:
             result = "AND "
         else:
             self.where_keyword_used = True
-        i = 0
-        for filtering_condition in conds:
-            for elem in filtering_condition:
+        for i, filter_cond in enumerate(conds):
+            for elem in filter_cond:
                 if type(elem) == tuple or type(elem) == list:
                     attr = elem[1].strip()
                     if elem[0] != None:
@@ -244,16 +182,13 @@ class SQL:
                 result += "\n"
             else:
                 result += " AND \n"
-            i+=1
         return result
 
-    def parse_cte_with_collect(self, attributes, table_aliases_in_query, cte_name):
+    def parse_cte_with_collect(self, attributes, table_aliases_in_query):
         result = ""
         for attribute in attributes:
-            #print("Attribute here: ", attribute)
             if attribute[2] != None:
-                print(self.from_part, cte_name)
-                self.from_part.add_cte_table_attribute(cte_name, attribute[2])
+                self.from_part.add_cte_table_attribute(self.name, attribute[2])
             if attribute[0] != None and attribute[1] != None and attribute[2] != None:
                 result += attribute[2] + " : " + attribute[0] + "." + attribute[1] + ", "
                 self.primary_foreign_keys.append(attribute[2])
@@ -266,7 +201,7 @@ class SQL:
                 result += attribute[0] + "." + attribute[1] + ", "
         result = result[:-2]
         aggre_funs = ""
-        for aggre_fun in cypher_aggregating_functions:
+        for aggre_fun in CYPHER_AGGREGATING_FUNCTIONS:
             if aggre_fun in result:
                 variable = get_random_string(3)
                 cut_fun = re.search(aggre_fun + r'(.+)', result).groups()
@@ -284,10 +219,7 @@ class SQL:
         if sub_result != "":
             sub_result = "WITH " + sub_result[:-2]+ "\n"
         result = sub_result + "WITH "+ previous_cte + "collect({ " + result
-        if cte_name != None:
-            result += "}) AS " + cte_name + "\n"
-        else:
-            result += "})\n"
+        result += "}) AS " + self.name + "\n"
         return result + "\n"
 
     def parse_collected_cte_for_use(self, tables):
@@ -326,9 +258,7 @@ class SQL:
         return result
 
     def parse_joins(self, connections, table_aliases_in_query, join_type):
-        result = ""
-        checked = []
-        #print("Connections: ", connections)
+        result, checked = "", []
         for k, connection in enumerate(connections):
             property1, alias1, key1, property2, alias2, key2 = self.get_property_alias_key_from_connection(connection)
             table_aliases_in_query += [alias1, alias2]
@@ -373,15 +303,11 @@ class SQL:
     def parse_return_clause(self, select_part):
         result = ""
         for attr in select_part.get_attributes():
-            #print("Attribute: ", attr)
             table_name = attr[0]
             if table_name == None:
-                print(self.from_part)
                 table_name = self.from_part.get_cte_table_from_attribute(attr[2])
-                print("Table name from from part: ", table_name)
             if table_name == None:
                 print("Possible error!")
-                #print(attr[0])
                 result += attr[1] + " AS " + attr[2] + ", "
             if attr[0] != None and attr[2] != None:
                 result += table_name + "." + attr[1] + " AS " + attr[2] + ", "
@@ -391,7 +317,7 @@ class SQL:
         if 'order by' in self.query.keys():
             result += self.query['order by'].get_order_by_cypher() + "\n"
         if 'limit' in self.query.keys():
-            result += 'limit ' + self.query['limit']
+            result += 'LIMIT ' + self.query['limit']
         return "RETURN " + result
 
     def get_property_alias_key_from_connection(self, connection):
@@ -399,58 +325,3 @@ class SQL:
         key1, key2 = connection[0][1].strip(), connection[2][1].strip()
         property1, property2 = self.from_part.get_table_from_alias(alias1), self.from_part.get_table_from_alias(alias2)
         return property1, alias1, key1, property2, alias2, key2
-
-def remove_comments(query):
-    ## Multi-line comments
-    multi_line_comment_ex = re.compile(r'(\/\*).*(\*\/)', re.DOTALL)
-    result = re.sub(multi_line_comment_ex, '', query)
-    ## One line comments
-    result = re.sub(r'(--).*(\n|\r|\rn)', '', result)
-    return result.strip()
-
-def parse_query_with_keywords(keyword_from, query, keyword_to = None):
-    start_indexes = [m.start() for m in re.finditer(keyword_from, query)]
-    paranthesis = []
-    for i, c in enumerate(query):
-        if c == "(":
-            paranthesis.append("(")
-        elif c == ")":
-            if len(paranthesis) == 0:
-                break
-            else:
-                paranthesis.pop()
-        if len(paranthesis) > 0:
-            for start_i in start_indexes:
-                if start_i == i:
-                    start_indexes.remove(start_i)
-    result = ""
-    if len(start_indexes) > 0:
-        for start_index in start_indexes:
-            result = ""
-            paranthesis = []
-            ending_indexes = [-1]
-            search_part = query[start_index:]
-            if keyword_to != None:
-                ending_indexes = [m.start() for m in re.finditer(keyword_to, search_part)]
-            for i, c in enumerate(search_part):
-                if c == "(":
-                    paranthesis.append("(")
-                elif c == ")":
-                    if len(paranthesis) > 0:
-                        paranthesis.pop()
-                    else:
-                        break
-                for j in ending_indexes:
-                    if i == j and len(paranthesis) == 0:
-                        result = result.replace(keyword_from, "", 1)
-                        #result = result.replace(keyword_to, "", 1)
-                        result = result.strip()
-                        return result
-                result += c
-        result = result.replace(keyword_from, "", 1)
-        return result
-
-def get_random_string(length):
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str

@@ -9,8 +9,6 @@ class JOIN:
         self.from_part = from_part
         self.table1, self.table2, self.condition, self.join_conditions = None, None, None, []
         self.parse_join()
-        print("In join class: ", self.table1, self.table2)
-        #self.from_part.add_table(self.table1)
         self.from_part.add_table(self.table2)
         self.filtering_conditions = []
 

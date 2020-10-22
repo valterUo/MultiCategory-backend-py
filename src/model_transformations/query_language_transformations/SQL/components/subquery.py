@@ -1,4 +1,3 @@
-
 from model_transformations.query_language_transformations.SQL.sql import SQL
 
 

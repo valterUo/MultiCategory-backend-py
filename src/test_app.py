@@ -17,7 +17,7 @@ WITH person_tag_interest AS (
        AND p.p_personid = pt.pt_personid
        AND pt.pt_tagid = t.t_tagid
         -- filter
-       AND t.t_name = 'Che_Guevara'
+       AND t.t_name = :tag
 )
    , person_message_score AS (
     SELECT p.p_personid AS personid
@@ -32,8 +32,8 @@ WITH person_tag_interest AS (
        AND m.m_messageid = pt.mt_messageid
        AND pt.mt_tagid = t.t_tagid
         -- filter
-       AND m.m_creationdate > datetime('2011-07-22')
-       AND t.t_name = 'Che_Guevara'
+       AND m.m_creationdate > :date
+       AND t.t_name = :tag
      GROUP BY p.p_personid
 )
    , person_score AS (
@@ -43,7 +43,7 @@ WITH person_tag_interest AS (
       FROM person_tag_interest pti
            FULL JOIN person_message_score pms ON (pti.personid = pms.personid)
 )
-SELECT p.personid AS personid
+SELECT p.personid AS "person.id"
      , p.score AS score
      , sum(f.score) AS friendsScore
   FROM person_score p
@@ -200,8 +200,8 @@ print()
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", query, db)
-print(elem.get_cypher(elem))
+elem = SQL("test", query3, db)
+print(elem.get_cypher().replace("\n", " "))
 
 
 # graph_db = Neo4j("ldbcsf1")

@@ -29,7 +29,7 @@ class SELECT:
                 self.parse_table_name(attribute_and_alias)
             else:
                 self.parse_table_name([attribute_with_alias, None])
-        print("Attributes: ", self.attributes)
+        #print("Attributes: ", self.attributes)
 
     def get_attributes(self):
         return self.attributes
