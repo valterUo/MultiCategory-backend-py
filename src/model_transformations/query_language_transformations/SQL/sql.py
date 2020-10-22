@@ -307,7 +307,6 @@ class SQL:
             if table_name == None:
                 table_name = self.from_part.get_cte_table_from_attribute(attr[2])
             if table_name == None:
-                print("Possible error!")
                 result += attr[1] + " AS " + attr[2] + ", "
             if attr[0] != None and attr[2] != None:
                 result += table_name + "." + attr[1] + " AS " + attr[2] + ", "

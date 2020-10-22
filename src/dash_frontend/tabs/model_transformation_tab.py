@@ -87,7 +87,7 @@ def execute_query_transformation(button_click, query):
         if prop_id == "transform-sql-query":
             db = Postgres("ldbcsf1")
             elem = SQL("test", query, db)
-            result = elem.get_cypher(elem)
+            result = elem.get_cypher()
             return result
     else:
         raise PreventUpdate
