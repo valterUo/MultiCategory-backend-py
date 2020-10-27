@@ -1,5 +1,6 @@
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
+from model_transformations.query_language_transformations.SQL.components.recursive_cte import RECURSIVE_CTE
 from model_transformations.query_language_transformations.SQL.sql import SQL
 
 query1 = """
@@ -230,14 +231,62 @@ SELECT r.creatorid AS "person.id"
 ;
 """
 
+recursive = """
+with recursive cposts(m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid) AS (
+	  select m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid
+	  from message
+	  where m_creatorid = :personId
+	  order by m_creationdate desc
+	  limit 10
+), parent(postid,replyof,orig_postid,creator) AS (
+	  select m_messageid, m_c_replyof, m_messageid, m_creatorid from cposts
+	UNION ALL
+	  select m_messageid, m_c_replyof, orig_postid, m_creatorid
+      from message,parent
+      where m_messageid=replyof
+)
+select p1.m_messageid, COALESCE(m_ps_imagefile,'')||COALESCE(m_content,''), p1.m_creationdate,
+       p2.m_messageid, p2.p_personid, p2.p_firstname, p2.p_lastname
+from 
+     (select m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof from cposts
+     ) p1
+     left join
+     (select orig_postid, postid as m_messageid, p_personid, p_firstname, p_lastname
+      from parent, person
+      where replyof is null and creator = p_personid
+     ) p2  
+     on p2.orig_postid = p1.m_messageid
+      order by m_creationdate desc, p2.m_messageid desc;
+"""
 
-# print()
+short = """
+select m_messageid, m_c_replyof, orig_postid, m_creatorid
+       from message, parent
+       where m_messageid=replyof
+"""
+
+testt = """
+select p1.m_messageid, COALESCE(m_ps_imagefile,'')||COALESCE(m_content,''), p1.m_creationdate,
+       p2.m_messageid, p2.p_personid, p2.p_firstname, p2.p_lastname
+from 
+     (select m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof from cposts
+     ) p1
+     left join
+     (select orig_postid, postid as m_messageid, p_personid, p_firstname, p_lastname
+      from parent, person
+      where replyof is null and creator = p_personid
+     ) p2  
+     on p2.orig_postid = p1.m_messageid
+      order by m_creationdate desc, p2.m_messageid desc;
+"""
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", query3, db)
-print(elem.get_cypher())
+# elem = SQL("test", testt, db, main_block = False)
+# print(elem.get_cypher())
 
+elem = RECURSIVE_CTE(recursive, db)
+print(elem.get_cypher())
 
 # graph_db = Neo4j("ldbcsf1")
 # graph_db.transform_tables_into_graph_db(db)

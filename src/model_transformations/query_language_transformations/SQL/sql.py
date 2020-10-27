@@ -1,5 +1,6 @@
 import re
 import itertools
+from collections import OrderedDict
 from model_transformations.query_language_transformations.SQL.components.select import SELECT
 from model_transformations.query_language_transformations.SQL.components.from_part import FROM
 from model_transformations.query_language_transformations.SQL.components.where import WHERE
@@ -23,8 +24,8 @@ class SQL:
         self.previous_ctes = previous_ctes
         self.columns_datatypes = rel_db.get_all_columns_datatypes()
         self.query_string = remove_comments(query_string.replace(";", "").strip().lower())
-        self.query = dict()
-        self.ctes = dict()
+        self.query = OrderedDict()
+        self.ctes = OrderedDict()
         self.subqueries = []
         self.unparsed_ctes = extract_common_table_expressions(self.query_string)
         self.all_cte_names = all_cte_names
@@ -219,7 +220,10 @@ class SQL:
         if sub_result != "":
             sub_result = "WITH " + sub_result[:-2]+ "\n"
         result = sub_result + "WITH "+ previous_cte + "collect({ " + result
-        result += "}) AS " + self.name + "\n"
+        limit_string = ""
+        if "limit" in self.query.keys():
+            limit_string = "[0.." + self.query["limit"].strip() + "]" 
+        result += "})" + limit_string + " AS " + self.name + "\n"
         return result + "\n"
 
     def parse_collected_cte_for_use(self, tables):
