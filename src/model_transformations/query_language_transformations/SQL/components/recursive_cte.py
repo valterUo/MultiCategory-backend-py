@@ -1,6 +1,8 @@
+from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import get_random_string
 from model_transformations.query_language_transformations.SQL.sql import SQL
 import re
 from collections import OrderedDict
+from model_transformations.query_language_transformations.SQL.global_variables import KEYWORDS
 
 # with recursive cposts(m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid) AS (
 # 	  select m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid
@@ -38,10 +40,9 @@ class RECURSIVE_CTE:
         self.main_string = None
         self.cte = self.match_names_attributes_blocks()
         for key in self.cte:
+            #print(key)
             self.cte[key]["query_string"] = process_cte_queries(
                 self.cte[key]["query"])
-            print("query ", self.cte[key]["query_string"])
-            print()
         self.cypher_query = self.transform()
 
     def get_cypher(self):
@@ -55,7 +56,6 @@ class RECURSIVE_CTE:
         cte_name = ""
         paranthesis = []
         for i, elem in enumerate(res):
-            #print(elem, cte_name)
             if "(" in elem:
                 paranthesis.append("(")
             elif ")" in elem:
@@ -77,15 +77,17 @@ class RECURSIVE_CTE:
             elif elem == ")" and len(paranthesis) == 0 and not collecting_main:
                 collecting_attributes = True
                 collecting_query = False
-                cte_name = res[i+1]
+                cte_name = res[i+2]
                 cte[cte_name] = dict()
                 cte[cte_name]["attributes"], cte[cte_name]["query"] = [], []
                 cte[cte_name]["recursive"] = False
             if collecting_attributes:
                 if elem != cte_name:
-                    cte[cte_name]["attributes"].append(
-                        elem.replace(")", "").replace("(", ""))
+                    cleaned = elem.replace(")", "").replace("(", "").replace(",", "")
+                    if cleaned != "":
+                        cte[cte_name]["attributes"].append(cleaned)
             if collecting_query:
+                elem = elem.replace(",", "").strip()
                 if elem == cte_name:
                     cte[cte_name]["recursive"] = True
                 cte[cte_name]["query"].append(elem)
@@ -100,8 +102,9 @@ class RECURSIVE_CTE:
         query = ""
         for key in self.cte:
             if key != 'main':
+                print(self.cte[key]["recursive"])
                 if self.cte[key]["recursive"]:
-                    query += self.parse_recursive_cte(self.cte[key]["query"])
+                    query += self.parse_recursive_cte(key, self.cte[key]["query"])
                 else:
                     res = SQL(
                         key, self.cte[key]["query_string"], self.db, main_block=False)
@@ -115,7 +118,7 @@ class RECURSIVE_CTE:
                 query = query
         return query
 
-    def parse_recursive_cte(self, orig_query):
+    def parse_recursive_cte(self, cte_name, orig_query):
         union_index = orig_query.index("UNION")
         before_union = orig_query[:union_index]
         after_union = orig_query[union_index:]
@@ -127,14 +130,88 @@ class RECURSIVE_CTE:
             before_union = before_union[3:]
         elif before_union[0] == "(":
             before_union = before_union[1:]
-        print("Before: ", before_union)
-        print("After union: ", after_union)
         query = ""
-        print(orig_query)
+        before_union_parsed = self.assign_keyword_parts(before_union)
+        after_union_parsed = self.assign_keyword_parts(after_union)
+        print("Before: ", before_union_parsed)
+        print("After union: ", after_union_parsed)
         initial_node = ""
-        #if self.db.contains_table()
+
+        ## Mapping before the union part to cypher
+        for col in before_union_parsed["from"]:
+            if self.db.contains_table(col):
+                initial_node += "MATCH (" + col + ")\n"
+            elif col in self.cte.keys():
+                var = get_random_string(3)
+                initial_node += "UNWIND " + col + " AS " + var + "\n"
+                initial_node += "WITH collect({ "
+                for i, attr in enumerate(before_union_parsed["select"]):
+                    if i == len(before_union_parsed["select"]) - 1:
+                        initial_node += var + "." + attr + "}) AS " + col
+                    else: 
+                        initial_node += var + "." + attr + ", "
+
+        ## Mapping after the union part to cypher path expression
+        ## The algorithm assumes that the WHERE clause defines edge property in the graph
+
+        ## MATCH (m : message) -[m_c_replyof_m_messageid*0..] -> (n : message)
+        ## RETURN collect({postid : n.m_messageid, replyof : n.m_c_replyof, orig_postid : m.m_messageid, creator: n.m_creatorid}) as parent
+        path_expression = ""
+        if len(after_union_parsed["from"]) == 1:
+            prop = after_union_parsed["from"][0]
+            edge_label = self.parse_edge_label(cte_name, before_union_parsed, after_union_parsed)
+            aliases_with_attributes = self.connect_aliases_with_attributes(after_union_parsed)
+            path_expression += "MATCH (m : " + prop + ") -[" + edge_label + "*0..] -> (n :" + prop + ")"
+        #for col in after_union_parsed["from"]:
         return query
 
+    def assign_keyword_parts(self, orig_query):
+        query = dict()
+        current = ""
+        for elem in orig_query:
+            if current != "":
+                if elem not in KEYWORDS:
+                    cleaned = elem.replace(",", "").strip()
+                    if cleaned != "" and cleaned not in self.cte.keys():
+                        query[current].append(cleaned)
+            if elem in KEYWORDS:
+                current = elem
+                query[current] = []
+        return query
+
+    def parse_edge_label(self, cte_name, before_union_parsed, after_union_parsed):
+        connection = after_union_parsed["where"]
+        if len(connection) == 1:
+            conn = connection[0]
+            parts = conn.split("=")
+            primary, foreign = None, None
+            for part in parts:
+                part = part.strip()
+                if "." in part:
+                    part = part.split(".")[1]
+                print(self.db.is_primary_key(part))
+                print(self.db.get_primary_keys())
+                if self.db.is_primary_key(part):
+                    print(part)
+                    primary = part
+                elif self.db.is_foreign_key(part):
+                    print(part)
+                    foreign = part
+                else:
+                    if foreign == None:
+                        print(self.cte[cte_name]["attributes"])
+                        i = self.cte[cte_name]["attributes"].index(part)
+                        foreign = before_union_parsed["select"][i]
+                    elif primary == None:
+                        i = self.cte[cte_name]["attributes"].index(part)
+                        primary = before_union_parsed["select"][i]
+            #print("Primary", primary)
+            #print("Foreign", foreign)
+            return foreign + "_" + primary
+        return None
+
+    def connect_aliases_with_attributes(self, attributes):
+        return None
 
 def clean(l):
     r = []
