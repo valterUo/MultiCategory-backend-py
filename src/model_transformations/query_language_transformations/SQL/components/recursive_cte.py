@@ -157,13 +157,16 @@ class RECURSIVE_CTE:
 
             pk, edge_label = self.parse_edge_label(
                 cte_name, before_union_parsed, after_union_parsed)
+            pk2 = pk
+            if "_" in pk:
+                pk2 = pk.split("_")[1]
 
             aliases_with_attributes = self.connect_aliases_with_attributes(
                 cte_name, prop, after_union_parsed["select"], before_union_parsed)
 
             path_expression += "MATCH (m : " + prop + ") -[" + edge_label + "*0..] -> (n :" + prop + ")\n"
 
-            path_expression += "WHERE " + unwind_var + "." + pk + "= m." + pk + "\n" 
+            path_expression += "WHERE " + unwind_var + "." + pk2 + "= m." + pk + "\n" 
 
             path_expression += "WITH collect({ "
             for i, alias_attribute in enumerate(aliases_with_attributes):
@@ -174,7 +177,7 @@ class RECURSIVE_CTE:
                     path_expression += prop + " : " + alias_attribute + ", "
         else:
             print("Not supported when there are more tables than one!")
-            
+
         query += initial_node + path_expression
         return query
 
