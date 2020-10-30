@@ -118,3 +118,11 @@ def extract_common_table_expressions(query):
                 pass
         ctes[elem] = re.sub(ex2, ' ', ctes[elem])
     return ctes
+
+def clean(l):
+    r = []
+    for e in l:
+        e = e.strip()
+        if e != None and e != "":
+            r.append(e)
+    return r

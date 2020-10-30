@@ -1,6 +1,7 @@
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_language_transformations.SQL.components.recursive_cte import RECURSIVE_CTE
+from model_transformations.query_language_transformations.SQL.components.sql_with_subquery import SQL_with_subquery
 from model_transformations.query_language_transformations.SQL.sql import SQL
 
 query1 = """
@@ -285,7 +286,10 @@ db = Postgres("ldbcsf1")
 # elem = SQL("test", testt, db, main_block = False)
 # print(elem.get_cypher())
 
-elem = RECURSIVE_CTE(recursive, db)
+# elem = RECURSIVE_CTE("test", recursive, db)
+# print(elem.get_cypher())
+
+elem = SQL_with_subquery("test", testt, db)
 print(elem.get_cypher())
 
 # graph_db = Neo4j("ldbcsf1")

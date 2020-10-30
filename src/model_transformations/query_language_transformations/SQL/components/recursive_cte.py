@@ -1,4 +1,4 @@
-from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import get_random_string
+from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import clean, get_random_string
 from model_transformations.query_language_transformations.SQL.sql import SQL
 import re
 from collections import OrderedDict
@@ -26,14 +26,15 @@ from model_transformations.query_language_transformations.SQL.global_variables i
 #      (select orig_postid, postid as m_messageid, p_personid, p_firstname, p_lastname
 #       from parent, person
 #       where replyof is null and creator = p_personid
-#      )p2
+#      ) p2
 #      on p2.orig_postid = p1.m_messageid
 #       order by m_creationdate desc, p2.m_messageid desc;
 
 
 class RECURSIVE_CTE:
 
-    def __init__(self, query_string, rel_db):
+    def __init__(self, name, query_string, rel_db):
+        self.name = name
         self.query_string = query_string
         self.db = rel_db
         self.recursive_cte_string = None
@@ -111,9 +112,6 @@ class RECURSIVE_CTE:
                         key, self.cte[key]["query_string"], self.db, main_block=False)
                     query += res.get_cypher()
             else:
-                # print()
-                # print(self.cte["main"]["query_string"])
-                # print()
                 # res = SQL(key, self.cte["main"]["query_string"], self.db)
                 # query += res.get_cypher()
                 query = query
@@ -232,15 +230,6 @@ class RECURSIVE_CTE:
             else:
                 print("Attribute not found: ", attr)
         return result
-
-
-def clean(l):
-    r = []
-    for e in l:
-        e = e.strip()
-        if e != None and e != "":
-            r.append(e)
-    return r
 
 
 def process_cte_queries(query_list):
