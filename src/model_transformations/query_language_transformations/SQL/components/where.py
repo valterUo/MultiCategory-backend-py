@@ -11,6 +11,7 @@ class WHERE:
         self.join_type = "inner"
         self.from_part = from_part
         self.conjunctive_part, self.disjunctive_part = self.parse_where()
+        print(self.conjunctive_part)
         self.join_conditions = self.parse_join_conditions()
         self.filtering_conditions = [
             cond for cond in self.conjunctive_part if cond not in self.join_conditions]
@@ -86,19 +87,39 @@ class WHERE:
 
     def construct_conds(self, res, operator):
         table_attr0, table_attr1 = None, None
+        attr1, attr2 = None, None
+        corresponding_table1, corresponding_table2 = None, None
         if '.' in res[0]:
             table_attr0 = re.split(r'\.', res[0])
         if '.' in res[1]:
             table_attr1 = re.split(r'\.', res[1])
         if table_attr0 != None and table_attr1 != None:
-            return ((table_attr0[0], table_attr0[1]), operator, (table_attr1[0], table_attr1[1]))
+            attr1 =  table_attr0[1]
+            attr2 = table_attr1[1]
+            corresponding_table1 = table_attr0[0]
+            corresponding_table2 = table_attr1[0]
+            # return ((table_attr0[0], table_attr0[1]), operator, (table_attr1[0], table_attr1[1]))
         elif table_attr0 != None:
-            corresponding_table = self.db.get_table_for_attribute(res[1])
-            return ((table_attr0[0], table_attr0[1]), operator, (corresponding_table, res[1]))
+            attr1 =  table_attr0[1]
+            attr2 = res[1]
+            corresponding_table1 = table_attr0[0]
+            corresponding_table2 = self.db.get_table_for_attribute(res[1])
+            #return ((table_attr0[0], table_attr0[1]), operator, (corresponding_table, res[1]))
         elif table_attr1 != None:
-            corresponding_table = self.db.get_table_for_attribute(res[0])
-            return ((res[0], corresponding_table), operator, (table_attr1[0], table_attr1[1]))
+            attr1 = self.db.get_table_for_attribute(res[0])
+            attr2 =  table_attr1[1]
+            corresponding_table1 = res[0]
+            corresponding_table2 = table_attr1[0]
+            #return ((res[0], corresponding_table), operator, (table_attr1[0], table_attr1[1]))
         else:
+            attr1 =  res[0]
+            attr2 =  res[1]
             corresponding_table1 = self.db.get_table_for_attribute(res[0])
             corresponding_table2 = self.db.get_table_for_attribute(res[1])
-            return ((corresponding_table1, res[0]), operator, (corresponding_table2, res[1]))
+            #return ((corresponding_table1, res[0]), operator, (corresponding_table2, res[1]))
+        if corresponding_table1 == None:
+            corresponding_table1 = self.from_part.get_cte_table_from_attribute(res[0])
+        if corresponding_table2 == None:
+            corresponding_table2 = self.from_part.get_cte_table_from_attribute(res[1])
+
+        return ((corresponding_table1, attr1), operator, (corresponding_table2, attr2))

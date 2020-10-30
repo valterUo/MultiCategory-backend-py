@@ -1,5 +1,7 @@
 import re
 
+from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import get_random_string
+
 
 class FROM:
 
@@ -17,7 +19,9 @@ class FROM:
             elif ' ' in table_with_alias:
                 self.tables.append(re.split(r'\s', table_with_alias))
             else:
-                self.tables.append([table_with_alias, None])
+                print(table_with_alias)
+                var = get_random_string(3)
+                self.tables.append([table_with_alias, var])
         #print("Tables: ", self.tables)
 
     def get_tables(self):
@@ -34,7 +38,6 @@ class FROM:
             return self.cte_tables[table]
 
     def get_cte_table_from_attribute(self, attribute):
-        #print(self.cte_tables, self.tables)
         for key in self.cte_tables.keys():
             if attribute.strip() in self.cte_tables[key]:
                 return key

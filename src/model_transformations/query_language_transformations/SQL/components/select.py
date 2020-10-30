@@ -1,5 +1,6 @@
 import re
 
+
 class SELECT:
 
     def __init__(self, attributes_string, from_part, db):
@@ -41,13 +42,11 @@ class SELECT:
         property, value, alias = None, None, None
 
         if attribute[1] != None:
-            alias = attribute[1].replace('"', "").replace('.','_').strip()
+            alias = attribute[1].replace('"', "").replace('.', '_').strip()
             self.keys.append(alias)
         else:
             alias = attribute[0]
-            if "_" in alias:
-                alias = alias.split("_")[1]
-            elif '.' in alias:
+            if '.' in alias:
                 alias = alias.split(".")[1]
 
         if '.' in attribute[0]:
@@ -55,29 +54,33 @@ class SELECT:
             if len(table_attribute_alias) > 1:
                 value = table_attribute_alias[1]
                 property = table_attribute_alias[0]
-                if 'extract' in value:
-                    value = self.map_postgres_extract_to_cypher(value)
-                if '||' in value:
-                    value = value.replace("||", "+")
             else:
                 value = table_attribute_alias[0]
-                if 'extract' in value:
-                    value = self.map_postgres_extract_to_cypher(value)
-                if '||' in value:
-                    value = value.replace("||", "+")
         else:
             value = attribute[0]
-            if 'extract' in value:
-                value = self.map_postgres_extract_to_cypher(value)
-            if '||' in value:
-                    value = value.replace("||", "+")
 
+        if 'extract' in value:
+            value = self.map_postgres_extract_to_cypher(value)
+        if '||' in value:
+            value = value.replace("||", "+")
+
+        tables = self.from_part.get_tables()
         if property == None:
-            for table in self.from_part.get_tables():
-                    attributes = self.db.get_attributes_for_table(table[0])
-                    for attr in attributes:
-                        if attr.strip() in value.strip():
-                            value = value.replace(attr, table[0] + "." + attr)
+            for table in tables:
+                attributes = self.db.get_attributes_for_table(table[0])
+                for attr in attributes:
+                    if attr.strip() in value.strip():
+                        #value = value.replace(attr, table[0] + "." + attr)
+                        property = table[0]
+        if property == None:
+            if len(tables) == 1:
+                property = tables[0][1]
+            elif len(tables) == 2:
+                if self.db.contains_table(tables[0][0]) and not self.db.contains_table(tables[1][0]):
+                    property = tables[1][1]
+                elif self.db.contains_table(tables[1][0]) and not self.db.contains_table(tables[0][0]):
+                    property = tables[0][1]
+
         self.attributes.append((property, value, alias))
 
     def map_postgres_extract_to_cypher(self, function_string):
@@ -94,4 +97,3 @@ class SELECT:
                 object_from = elements2[i+1]
 
         return "datetime(" + object_from + ")." + source
-        

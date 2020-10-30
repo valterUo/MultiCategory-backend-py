@@ -162,9 +162,10 @@ class RECURSIVE_CTE:
             aliases_with_attributes = self.connect_aliases_with_attributes(
                 cte_name, prop, after_union_parsed["select"], before_union_parsed)
 
-            path_expression += "MATCH (m : " + prop + ") -[" + edge_label + "*0..] -> (n :" + prop + ")\n"
+            path_expression += "MATCH (m : " + prop + \
+                ") -[" + edge_label + "*0..] -> (n :" + prop + ")\n"
 
-            path_expression += "WHERE " + unwind_var + "." + pk2 + "= m." + pk + "\n" 
+            path_expression += "WHERE " + unwind_var + "." + pk2 + "= m." + pk + "\n"
 
             path_expression += "WITH collect({ "
             for i, alias_attribute in enumerate(aliases_with_attributes):

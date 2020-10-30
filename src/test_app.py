@@ -281,10 +281,14 @@ from
       order by m_creationdate desc, p2.m_messageid desc;
 """
 
+small = """select orig_postid, postid as m_messageid, p_personid, p_firstname, p_lastname
+      from parent, person
+      where replyof is null and creator = p_personid"""
+
 db = Postgres("ldbcsf1")
 
-# elem = SQL("test", testt, db, main_block = False)
-# print(elem.get_cypher())
+#elem = SQL("test", small, db, main_block = False)
+#print(elem.get_cypher())
 
 # elem = RECURSIVE_CTE("test", recursive, db)
 # print(elem.get_cypher())

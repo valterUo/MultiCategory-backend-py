@@ -3,6 +3,7 @@ import re
 import random
 from model_transformations.query_language_transformations.SQL.global_variables import KEYWORDS
 
+
 def remove_comments(query):
     ## Multi-line comments
     multi_line_comment_ex = re.compile(r'(\/\*).*(\*\/)', re.DOTALL)
@@ -10,6 +11,7 @@ def remove_comments(query):
     ## One line comments
     result = re.sub(r'(--).*(\n|\r|\rn)', '', result)
     return result.strip()
+
 
 def get_keyword_sequence(query):
     keyword_sequence = list()
@@ -23,7 +25,8 @@ def get_keyword_sequence(query):
     keyword_sequence = list(dict.fromkeys(keyword_sequence))
     return keyword_sequence
 
-def parse_query_with_keywords(keyword_from, query, keyword_to = None):
+
+def parse_query_with_keywords(keyword_from, query, keyword_to=None):
     start_indexes = [m.start() for m in re.finditer(keyword_from, query)]
     paranthesis = []
     for i, c in enumerate(query):
@@ -46,7 +49,8 @@ def parse_query_with_keywords(keyword_from, query, keyword_to = None):
             ending_indexes = [-1]
             search_part = query[start_index:]
             if keyword_to != None:
-                ending_indexes = [m.start() for m in re.finditer(keyword_to, search_part)]
+                ending_indexes = [m.start()
+                                  for m in re.finditer(keyword_to, search_part)]
             for i, c in enumerate(search_part):
                 if c == "(":
                     paranthesis.append("(")
@@ -64,6 +68,7 @@ def parse_query_with_keywords(keyword_from, query, keyword_to = None):
                 result += c
         result = result.replace(keyword_from, "", 1)
         return result
+
 
 def get_random_string(length):
     letters = string.ascii_lowercase
@@ -118,6 +123,7 @@ def extract_common_table_expressions(query):
                 pass
         ctes[elem] = re.sub(ex2, ' ', ctes[elem])
     return ctes
+
 
 def clean(l):
     r = []
