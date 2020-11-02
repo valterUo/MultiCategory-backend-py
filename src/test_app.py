@@ -285,16 +285,25 @@ small = """select orig_postid, postid as m_messageid, p_personid, p_firstname, p
       from parent, person
       where replyof is null and creator = p_personid"""
 
+main_subquery = """
+select p1.m_messageid, COALESCE(m_ps_imagefile,'')||COALESCE(m_content,''), p1.m_creationdate,
+        p2.m_messageid, p2.p_personid, p2.p_firstname, p2.p_lastname
+ from 
+      p1 
+      left join p2
+      on p1.m_messageid = p2.orig_postid
+       order by m_creationdate desc, p2.m_messageid desc;"""
+
 db = Postgres("ldbcsf1")
 
-#elem = SQL("test", small, db, main_block = False)
-#print(elem.get_cypher())
+elem = SQL("test", main_subquery, db)
+print(elem.get_cypher())
 
 # elem = RECURSIVE_CTE("test", recursive, db)
 # print(elem.get_cypher())
 
-elem = SQL_with_subquery("test", testt, db)
-print(elem.get_cypher())
+# elem = SQL_with_subquery("test", main_subquery, db)
+# print(elem.get_cypher())
 
 # graph_db = Neo4j("ldbcsf1")
 # graph_db.transform_tables_into_graph_db(db)

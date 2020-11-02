@@ -1,16 +1,17 @@
 import re
 
+from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import get_random_string
+
 
 class JOIN:
 
     def __init__(self, join_type, join_string, from_part):
         self.join_type = join_type  # INNER, OUTER, FULL, etc.
-        self.join_string = join_string.strip()
+        self.join_string = join_string.replace("\n", "").strip()
         self.from_part = from_part
         self.table1, self.table2, self.condition, self.join_conditions = None, None, None, []
         self.parse_join()
         self.from_part.add_table(self.table2)
-        self.filtering_conditions = []
 
     def get_join_type(self):
         return self.join_type
@@ -28,12 +29,15 @@ class JOIN:
         return self.join_conditions
 
     def get_filtering_conditions(self):
-        return self.filtering_conditions
+        return []
 
     def parse_join(self):
         parse = re.split(r' on ', self.join_string)
         res_table2 = (re.split(r' ', parse[0]))
-        self.table2 = (res_table2[0], res_table2[1])
+        if res_table2[1] == '':
+            self.table2 = (res_table2[0], get_random_string(3))
+        else:
+            self.table2 = (res_table2[0], res_table2[1])
         condition_without_paranthesis = re.sub(r'\(|\)', "", parse[1])
         parsed_condition = re.search(
             r'(.+)\.(.+)(=)(.+)\.(.+)', condition_without_paranthesis).groups()

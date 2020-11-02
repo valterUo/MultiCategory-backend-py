@@ -22,7 +22,7 @@ class FROM:
                 print(table_with_alias)
                 var = get_random_string(3)
                 self.tables.append([table_with_alias, var])
-        #print("Tables: ", self.tables)
+        print("Tables: ", self.tables)
 
     def get_tables(self):
         return self.tables
@@ -44,9 +44,16 @@ class FROM:
 
     def add_table(self, table):
         self.tables.append(table)
+        print("Tables: ", self.tables)
 
     def get_table_from_alias(self, alias_name):
         for table in self.tables:
             if table[1] == alias_name:
                 return table[0]
         return alias_name
+
+    def get_alias_from_table(self, table_name):
+        for table in self.tables:
+            if table[0] == table_name:
+                return table[1]
+        return table_name

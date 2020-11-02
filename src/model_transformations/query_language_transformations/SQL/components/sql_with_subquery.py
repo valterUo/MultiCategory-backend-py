@@ -20,6 +20,13 @@ from model_transformations.query_language_transformations.SQL.sql import SQL
 #      on p2.orig_postid = p1.m_messageid
 #       order by m_creationdate desc, p2.m_messageid desc;
 
+# select p1.m_messageid, COALESCE(m_ps_imagefile,'')||COALESCE(m_content,''), p1.m_creationdate,
+#        p2.m_messageid, p2.p_personid, p2.p_firstname, p2.p_lastname
+# from 
+#      p1 left join p2
+#      on p2.orig_postid = p1.m_messageid
+#       order by m_creationdate desc, p2.m_messageid desc;
+
 # ## First subquery
 # UNWIND cposts as var1
 # collect({ m_messageid : var1.m_messageid, m_content : var1.m_content, m_ps_imagefile : var1.m_ps_imagefile, m_creationdate : var1.m_creationdate, m_c_replyof : var1.m_c_replyof}) AS p1

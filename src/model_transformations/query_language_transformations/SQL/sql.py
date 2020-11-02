@@ -98,12 +98,9 @@ class SQL:
                 self.query[elem] = GROUPBY(self.query[elem])
             elif elem == "order by":
                 self.query[elem] = ORDERBY(self.query[elem])
-            elif elem == "full join":
-                self.query[elem] = JOIN(
-                    "full", self.query[elem], self.query["from"])
-            elif elem == "inner join":
-                self.query[elem] = JOIN(
-                    "inner", self.query[elem], self.query["from"])
+            elif 'join' in elem:
+                self.query['join'] = JOIN(
+                    elem, self.query[elem], self.query["from"])
 
     def transform(self):
         query = ""
@@ -112,9 +109,9 @@ class SQL:
         if 'where' in self.query.keys():
             query += self.transform_into_cypher(
                 self.query["select"], self.query["where"])
-        elif 'full join' in self.query.keys():
+        elif 'join' in self.query.keys():
             query += self.transform_into_cypher(
-                self.query["select"], self.query["full join"])
+                self.query["select"], self.query["join"])
         else:
             query += self.transform_into_cypher(self.query["select"])
         return query
@@ -306,6 +303,10 @@ class SQL:
                 connection)
             table_aliases_in_query += [alias1, alias2]
             ## Arrows are pointing from foreign to primary, we need to see which one is which one
+            if not self.rel_db.contains_table(property1) and property1 not in self.all_cte_names:
+                self.all_cte_names.append(property1)
+            if not self.rel_db.contains_table(property2) and property2 not in self.all_cte_names:
+                self.all_cte_names.append(property2)
             if property1 in self.all_cte_names or property2 in self.all_cte_names:
                 for t in range(k, len(connections)):
                     if t not in checked:
@@ -313,6 +314,7 @@ class SQL:
                         connection = connections[t]
                         property1, alias1, key1, property2, alias2, key2 = self.get_property_alias_key_from_connection(
                             connection)
+                        print(property1, alias1, key1, property2, alias2, key2)
                         if t > k:
                             table_aliases_in_query += [alias1, alias2]
                         if property1 or property2 in self.all_cte_names:
@@ -355,16 +357,18 @@ class SQL:
     def parse_return_clause(self, select_part):
         result = ""
         for attr in select_part.get_attributes():
-            table_name = attr[0]
-            if table_name == None:
-                table_name = self.from_part.get_cte_table_from_attribute(
+            prop = attr[0]
+            if prop == None:
+                prop = self.from_part.get_cte_table_from_attribute(
                     attr[2])
-            if table_name == None:
+            if prop == None:
                 result += attr[1] + " AS " + attr[2] + ", "
+            if prop in self.all_cte_names:
+                prop = self.from_part.get_alias_from_table(prop)
             if attr[0] != None and attr[2] != None:
-                result += table_name + "." + attr[1] + " AS " + attr[2] + ", "
+                result += prop + "." + attr[1] + " AS " + attr[2] + ", "
             elif attr[2] == None:
-                result += table_name + "." + attr[1] + ", "
+                result += prop + "." + attr[1] + ", "
         result = result[:-2] + "\n"
         if 'order by' in self.query.keys():
             result += self.query['order by'].get_order_by_cypher() + "\n"
@@ -377,4 +381,8 @@ class SQL:
         key1, key2 = connection[0][1].strip(), connection[2][1].strip()
         property1, property2 = self.from_part.get_table_from_alias(
             alias1), self.from_part.get_table_from_alias(alias2)
+        if property1 == alias1:
+            alias1 = self.from_part.get_alias_from_table(property1)
+        if property2 == alias2:
+            alias2 = self.from_part.get_alias_from_table(property2)
         return property1, alias1, key1, property2, alias2, key2
