@@ -56,9 +56,6 @@ class SQL_with_subquery:
         for key in self.query:
             for key2 in self.query[key]:
                 self.query[key][key2] = clean(self.query[key][key2])
-            # print(key)
-            # print(self.query[key])
-            # print()
         self.cypher_query = self.transform_into_cypher()
 
     def parse_subqueries(self):
@@ -66,7 +63,6 @@ class SQL_with_subquery:
             re.split(r'\s|(?=\()|(?<=\()|(?=\))|(?<=\))', self.whole_query))
         query = OrderedDict()
         select_indices = [i for i, x in enumerate(words) if x == "select"]
-        #print(select_indices)
         current_keyword = None
         for j in select_indices:
             paranthesis = []

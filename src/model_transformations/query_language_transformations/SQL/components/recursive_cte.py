@@ -107,7 +107,7 @@ class RECURSIVE_CTE:
                     query += self.parse_recursive_cte(key,
                                                       self.cte[key]["query"])
                 else:
-                    print(self.cte[key]["query_string"])
+                    #print(self.cte[key]["query_string"])
                     res = SQL(
                         key, self.cte[key]["query_string"], self.db, main_block=False)
                     query += res.get_cypher()
@@ -132,13 +132,13 @@ class RECURSIVE_CTE:
         query = ""
         before_union_parsed = self.assign_keyword_parts(cte_name, before_union)
         after_union_parsed = self.assign_keyword_parts(cte_name, after_union)
-        print("Before: ", before_union_parsed)
+        #print("Before: ", before_union_parsed)
         # print("After union: ", after_union_parsed)
         initial_node = ""
         unwind_var = get_random_string(3)
         ## Mapping before the union part to cypher
         for col in before_union_parsed["from"]:
-            print(col)
+            #print(col)
             if self.db.contains_table(col):
                 initial_node += "MATCH (" + col + ")\n"
             elif col in self.cte.keys():

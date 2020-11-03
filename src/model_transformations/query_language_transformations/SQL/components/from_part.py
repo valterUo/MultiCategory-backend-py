@@ -5,7 +5,7 @@ from model_transformations.query_language_transformations.SQL.independent_sql_pa
 
 class FROM:
 
-    def __init__(self, tables_string):
+    def __init__(self, tables_string, ctes):
         # print("FROM class: ", tables_string)
         # print()
 
@@ -19,13 +19,18 @@ class FROM:
             elif ' ' in table_with_alias:
                 self.tables.append(re.split(r'\s', table_with_alias))
             else:
-                print(table_with_alias)
-                var = get_random_string(3)
-                self.tables.append([table_with_alias, var])
-        print("Tables: ", self.tables)
+                if table_with_alias not in ctes:
+                    self.tables.append([table_with_alias, table_with_alias])
+                else:
+                    var = get_random_string(3)
+                    self.tables.append([table_with_alias, var])
+        #print("Tables: ", self.tables)
 
     def get_tables(self):
         return self.tables
+
+    def get_cte_tables(self):
+        return self.cte_tables
 
     def add_cte_table_attribute(self, table, attribute):
         if table not in self.cte_tables.keys():
@@ -44,7 +49,7 @@ class FROM:
 
     def add_table(self, table):
         self.tables.append(table)
-        print("Tables: ", self.tables)
+        #print("Tables: ", self.tables)
 
     def get_table_from_alias(self, alias_name):
         for table in self.tables:

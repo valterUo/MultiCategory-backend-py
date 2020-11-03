@@ -11,7 +11,6 @@ class WHERE:
         self.join_type = "inner"
         self.from_part = from_part
         self.conjunctive_part, self.disjunctive_part = self.parse_where()
-        print(self.conjunctive_part)
         self.join_conditions = self.parse_join_conditions()
         self.filtering_conditions = [
             cond for cond in self.conjunctive_part if cond not in self.join_conditions]

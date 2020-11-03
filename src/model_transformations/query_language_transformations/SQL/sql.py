@@ -33,7 +33,8 @@ class SQL:
             self.query_string)
         self.all_cte_names = all_cte_names
         self.where_keyword_used = False
-        self.from_part = None
+        self.from_clause = None
+        self.select = None
 
         for table in self.pk_fk_contrainsts:
             self.primary_foreign_keys += list(
@@ -66,6 +67,9 @@ class SQL:
     def get_cypher(self):
         return self.cypher_query
 
+    def get_from_clause(self):
+        return self.from_clause
+
     def parse_main_query(self):
         keyword_sequence = get_keyword_sequence(self.unparsed_ctes["main"])
         for i in range(len(keyword_sequence)):
@@ -84,13 +88,13 @@ class SQL:
         keyword_sequence.insert(0, "from")
         for elem in keyword_sequence:
             if elem == "from":
-                self.from_part = FROM(self.query[elem])
-                self.query[elem] = self.from_part
+                self.from_clause = FROM(self.query[elem], self.all_cte_names)
+                self.query[elem] = self.from_clause
             elif elem == "select":
-                select_result = SELECT(
+                self.select = SELECT(
                     self.query[elem], self.query['from'], self.rel_db)
-                self.query[elem] = select_result
-                self.primary_foreign_keys += select_result.get_keys()
+                self.query[elem] = self.select
+                self.primary_foreign_keys += self.select.get_keys()
             elif elem == "where":
                 self.query[elem] = WHERE(
                     self.query[elem], self.primary_foreign_keys, self.query['from'], self.rel_db)
@@ -107,16 +111,14 @@ class SQL:
         for elem in self.ctes:
             query += self.ctes[elem].get_cypher()
         if 'where' in self.query.keys():
-            query += self.transform_into_cypher(
-                self.query["select"], self.query["where"])
+            query += self.transform_into_cypher(self.query["where"])
         elif 'join' in self.query.keys():
-            query += self.transform_into_cypher(
-                self.query["select"], self.query["join"])
+            query += self.transform_into_cypher(self.query["join"])
         else:
-            query += self.transform_into_cypher(self.query["select"])
+            query += self.transform_into_cypher()
         return query
 
-    def transform_into_cypher(self, select_part, join_part=None):
+    def transform_into_cypher(self, join_part=None):
         query, join_type = "", ""
         connections, conds = [], []
 
@@ -125,15 +127,17 @@ class SQL:
             connections = join_part.get_join_conditions()
             conds = join_part.get_filtering_conditions()
         table_aliases_in_query = []
-        tables = self.from_part.get_tables()
+        tables = self.from_clause.get_tables()
 
         for table in tables:
             table_aliases_in_query.append(table[0])
 
         if len(connections) == 0 and len(conds) == 0:
             query += self.parse_query_without_connections(tables)
+        elif len(connections) == 0:
+            query += self.parse_collected_cte_for_use(tables, True)
         else:
-            query += self.parse_collected_cte_for_use(tables)
+            query += self.parse_collected_cte_for_use(tables, False)
 
         if len(connections) > 0:
             query += self.parse_joins(connections,
@@ -143,10 +147,9 @@ class SQL:
             query += self.parse_filtering_conditions(conds)
 
         if self.main_block:
-            query += self.parse_return_clause(select_part)
+            query += self.parse_return_clause()
         else:
-            query += self.parse_cte_with_collect(
-                select_part.get_attributes(), table_aliases_in_query)
+            query += self.parse_cte_with_collect(table_aliases_in_query)
 
         return query
 
@@ -212,23 +215,34 @@ class SQL:
                 result += " AND \n"
         return result
 
-    def parse_cte_with_collect(self, attributes, table_aliases_in_query):
+    def parse_cte_with_collect(self, table_aliases_in_query):
         result = ""
-        for attribute in attributes:
-            if attribute[2] != None:
-                self.from_part.add_cte_table_attribute(self.name, attribute[2])
-            if attribute[0] != None and attribute[1] != None and attribute[2] != None:
-                result += attribute[2] + " : " + \
-                    attribute[0] + "." + attribute[1] + ", "
-                self.primary_foreign_keys.append(attribute[2])
-            elif attribute[0] == None and attribute[2] != None:
-                result += attribute[2] + " : " + attribute[1] + ", "
-                self.primary_foreign_keys.append(attribute[2])
-            elif attribute[0] == None and attribute[2] == None:
-                result += attribute[1] + ", "
-            elif attribute[0] != None and attribute[2] == None:
-                result += attribute[0] + "." + attribute[1] + ", "
+        for attr in self.select.get_attributes():
+            prop = attr["property"]
+            value = attr["value"]
+            alias = attr["alias"]
+            attr_in_value = attr["attribute_in_value"]
+            new_value = value
+            if value != None and attr_in_value != [] and prop != None:
+                for elem in attr_in_value:
+                    new_value = new_value.replace(elem, prop + "." + elem)
+            elif attr_in_value == [] and prop != None and "(" not in value and ")" not in value:
+                new_value = prop + "." + value
+
+            if alias != None:
+                self.from_clause.add_cte_table_attribute(self.name, alias)
+            if prop != None and new_value != None and alias != None:
+                result += alias + " : " + new_value + ", "
+                self.primary_foreign_keys.append(alias)
+            elif prop == None and alias != None:
+                result += alias + " : " + new_value + ", "
+                self.primary_foreign_keys.append(alias)
+            elif prop == None and alias == None:
+                result += new_value + ", "
+            elif prop != None and alias == None:
+                result += new_value + ", "
         result = result[:-2]
+
         aggre_funs = ""
         for aggre_fun in CYPHER_AGGREGATING_FUNCTIONS:
             if aggre_fun in result:
@@ -237,9 +251,11 @@ class SQL:
                 cut_fun = aggre_fun + cut_fun[0]
                 result = result.replace(cut_fun, variable)
                 aggre_funs += cut_fun + " AS " + variable + ", "
+
         previous_cte = ""
         for prev_cte in self.previous_ctes:
             previous_cte += prev_cte + ", "
+
         table_alias_part = ""
         for table_alias in table_aliases_in_query:
             if " " + table_alias + "." in result:
@@ -247,6 +263,7 @@ class SQL:
         sub_result = aggre_funs + previous_cte + table_alias_part
         if sub_result != "":
             sub_result = "WITH " + sub_result[:-2] + "\n"
+
         result = sub_result + "WITH " + previous_cte + "collect({ " + result
         limit_string = ""
         if "limit" in self.query.keys():
@@ -254,7 +271,7 @@ class SQL:
         result += "})" + limit_string + " AS " + self.name + "\n"
         return result + "\n"
 
-    def parse_collected_cte_for_use(self, tables):
+    def parse_collected_cte_for_use(self, tables, empty_joins):
         query = ""
         any_of_tables_refering_ctes = False
         for table in tables:
@@ -288,11 +305,15 @@ class SQL:
                     else:
                         previous_cte += elem + ", "
                 query += "WITH " + previous_cte
+        elif empty_joins:
+            for table in tables:
+                if not self.rel_db.contains_table(table[0]):
+                    query += "UNWIND " + table[0] + " AS " + table[1] + "\n"
+                else:
+                    query += "MATCH (" + table[0] + ": " + table[0] + ")\n"
         else:
             for table in tables:
-                if self.rel_db.contains_table(table[0]):
-                    query += "MATCH (" + table[0] + " : " + table[0] + ")\n"
-                else:
+                if not self.rel_db.contains_table(table[0]):
                     query += "UNWIND " + table[0] + " AS " + table[1] + "\n"
         return query
 
@@ -314,7 +335,7 @@ class SQL:
                         connection = connections[t]
                         property1, alias1, key1, property2, alias2, key2 = self.get_property_alias_key_from_connection(
                             connection)
-                        print(property1, alias1, key1, property2, alias2, key2)
+                        #print(property1, alias1, key1, property2, alias2, key2)
                         if t > k:
                             table_aliases_in_query += [alias1, alias2]
                         if property1 or property2 in self.all_cte_names:
@@ -338,7 +359,7 @@ class SQL:
             if table[0] in self.all_cte_names:
                 some_table_in_cte = True
         if some_table_in_cte:
-            query += self.parse_collected_cte_for_use(tables)
+            query += self.parse_collected_cte_for_use(tables, False)
         else:
             for table in tables:
                 if self.rel_db.contains_table(table[0]):
@@ -354,22 +375,40 @@ class SQL:
                         print("Error!")
         return query
 
-    def parse_return_clause(self, select_part):
+    def parse_return_clause(self):
         result = ""
-        for attr in select_part.get_attributes():
-            prop = attr[0]
-            if prop == None:
-                prop = self.from_part.get_cte_table_from_attribute(
-                    attr[2])
-            if prop == None:
-                result += attr[1] + " AS " + attr[2] + ", "
+        for attr in self.select.get_attributes():
+            prop = attr["property"]
+            value = attr["value"]
+            alias = attr["alias"]
+            attr_in_value = attr["attribute_in_value"]
+            new_value = value
+
+            if prop == None and attr_in_value == []:
+                for cte in self.ctes:
+                    tables = self.ctes[cte].get_from_clause().get_cte_tables()
+                    for table in tables:
+                        attributes = tables[table]
+                        for attr in attributes:
+                            if attr in value:
+                                attr_in_value.append(attr)
+                                prop = table
+
             if prop in self.all_cte_names:
-                prop = self.from_part.get_alias_from_table(prop)
-            if attr[0] != None and attr[2] != None:
-                result += prop + "." + attr[1] + " AS " + attr[2] + ", "
-            elif attr[2] == None:
-                result += prop + "." + attr[1] + ", "
+                prop = self.from_clause.get_alias_from_table(prop)
+
+            if value != None and attr_in_value != [] and prop != None:
+                for elem in attr_in_value:
+                    new_value = new_value.replace(elem, prop + "." + elem)
+            elif attr_in_value == [] and prop != None and "(" not in value and ")" not in value:
+                new_value = prop + "." + value
+            
+            if alias != None:
+                result += new_value + " AS " + alias + ", "
+            elif alias == None:
+                result += new_value + ", "
         result = result[:-2] + "\n"
+
         if 'order by' in self.query.keys():
             result += self.query['order by'].get_order_by_cypher() + "\n"
         if 'limit' in self.query.keys():
@@ -379,10 +418,10 @@ class SQL:
     def get_property_alias_key_from_connection(self, connection):
         alias1, alias2 = connection[0][0].strip(), connection[2][0].strip()
         key1, key2 = connection[0][1].strip(), connection[2][1].strip()
-        property1, property2 = self.from_part.get_table_from_alias(
-            alias1), self.from_part.get_table_from_alias(alias2)
+        property1, property2 = self.from_clause.get_table_from_alias(
+            alias1), self.from_clause.get_table_from_alias(alias2)
         if property1 == alias1:
-            alias1 = self.from_part.get_alias_from_table(property1)
+            alias1 = self.from_clause.get_alias_from_table(property1)
         if property2 == alias2:
-            alias2 = self.from_part.get_alias_from_table(property2)
+            alias2 = self.from_clause.get_alias_from_table(property2)
         return property1, alias1, key1, property2, alias2, key2

@@ -3,18 +3,13 @@ import re
 
 class SELECT:
 
-    def __init__(self, attributes_string, from_part, db):
+    def __init__(self, st, from_part, db):
         # print("SELECT class: ", attributes_string)
         # print()
-
         self.from_part = from_part
         self.db = db
-
-        self.attributes_with_aliases = re.split(
-            r',(?![^(]*\))', attributes_string)
-        self.attributes = []
-        self.keys = []
-        self.subqueries = []
+        self.attributes_with_aliases = re.split(r',(?![^(]*\))', st)
+        self.attributes, self.keys, self.subqueries = [], [], []
         for elem in self.attributes_with_aliases:
             if 'select' in elem:
                 self.subqueries.append(elem)
@@ -39,17 +34,16 @@ class SELECT:
         return self.keys
 
     def parse_table_name(self, attribute):
-        property, value, alias = None, None, None
-
+        property, value, attr_in_value, alias = None, None, [], None
         if attribute[1] != None:
             alias = attribute[1].replace('"', "").replace('.', '_').strip()
             self.keys.append(alias)
         else:
-            alias = attribute[0]
-            if '.' in alias:
-                alias = alias.split(".")[1]
-
-        if '.' in attribute[0]:
+            if 'coalesce' not in attribute[0]:
+                alias = attribute[0]
+                if '.' in alias and '/' not in alias and '(' not in alias and ')' not in alias:
+                    alias = alias.split(".")[1]
+        if '.' in attribute[0] and '(' not in attribute[0] and 'coalesce' not in attribute[0] and 'case' not in attribute[0]:
             table_attribute_alias = re.split(r'\.(?![^(]*\))', attribute[0])
             if len(table_attribute_alias) > 1:
                 value = table_attribute_alias[1]
@@ -58,20 +52,19 @@ class SELECT:
                 value = table_attribute_alias[0]
         else:
             value = attribute[0]
-
         if 'extract' in value:
             value = self.map_postgres_extract_to_cypher(value)
         if '||' in value:
             value = value.replace("||", "+")
-
         tables = self.from_part.get_tables()
         if property == None:
             for table in tables:
                 attributes = self.db.get_attributes_for_table(table[0])
                 for attr in attributes:
                     if attr.strip() in value.strip():
-                        #value = value.replace(attr, table[0] + "." + attr)
+                        attr_in_value.append(attr)
                         property = table[0]
+                        #print(attr, property)
         if property == None:
             if len(tables) == 1:
                 property = tables[0][1]
@@ -80,8 +73,15 @@ class SELECT:
                     property = tables[1][1]
                 elif self.db.contains_table(tables[1][0]) and not self.db.contains_table(tables[0][0]):
                     property = tables[0][1]
-
-        self.attributes.append((property, value, alias))
+        if property == None:
+                property = self.from_part.get_cte_table_from_attribute(alias)
+        result = dict()
+        result["property"] = property
+        result["value"] = value
+        result["alias"] = alias
+        result["attribute_in_value"] = attr_in_value
+        #print(result)
+        self.attributes.append(result)
 
     def map_postgres_extract_to_cypher(self, function_string):
         elements2 = []
@@ -95,5 +95,4 @@ class SELECT:
                 source = elements2[i+1]
             if elem.strip() == "from":
                 object_from = elements2[i+1]
-
         return "datetime(" + object_from + ")." + source
