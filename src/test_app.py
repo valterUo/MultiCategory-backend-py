@@ -1,5 +1,7 @@
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
+from model_transformations.data_transformations.data_transformation import Transformation
+from model_transformations.data_transformations.rel_to_graph_functor import RelToGraphFunctor
 from model_transformations.query_language_transformations.SQL.components.recursive_cte import RECURSIVE_CTE
 from model_transformations.query_language_transformations.SQL.components.sql_with_subquery import SQL_with_subquery
 from model_transformations.query_language_transformations.SQL.sql import SQL
@@ -336,8 +338,8 @@ SELECT messageYear, isComment, lengthCategory
 
 db = Postgres("ldbcsf1")
 
-elem = SQL("test", main_subquery, db)
-print(elem.get_cypher())
+#elem = SQL("test", main_subquery, db)
+#print(elem.get_cypher())
 
 # elem = RECURSIVE_CTE("test", recursive, db)
 # print(elem.get_cypher())
@@ -345,6 +347,10 @@ print(elem.get_cypher())
 # elem = SQL_with_subquery("test", main_subquery, db)
 # print(elem.get_cypher())
 
-# graph_db = Neo4j("ldbcsf1")
-# graph_db.transform_tables_into_graph_db(db)
-# graph_db.create_edges(db)
+graph_db = Neo4j("testdb")
+#graph_db.transform_tables_into_graph_db(db)
+#graph_db.create_edges(db)
+
+functor = RelToGraphFunctor(["person"], [("knows", "knows_person1id", "knows_person2id")], {"knows_person1id": ("person", "p_personid")}, {"knows_person2id": ("person", "p_personid")})
+
+tr = Transformation(db, graph_db, functor)

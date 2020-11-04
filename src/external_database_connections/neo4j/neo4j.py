@@ -23,12 +23,6 @@ class Neo4j:
     def close(self):
         self.driver.close()
 
-    def create_and_return_node(self, property_name, attributes):
-        with self.driver.session() as session:
-            node = session.write_transaction(
-                self._create_and_return_node, property_name, attributes)
-            #print(node)
-
     def execute_write(self, query):
         with self.driver.session() as session:
             node = session.write_transaction(self._execute_query, query)
@@ -43,6 +37,11 @@ class Neo4j:
         query = "MATCH (n) DETACH DELETE n"
         result = self.execute_write(query)
         #print(result)
+
+    def create_and_return_node(self, property_name, attributes):
+        with self.driver.session() as session:
+            node = session.write_transaction(
+                self._create_and_return_node, property_name, attributes)
 
     def create_index(self, rel_db, table_name, recalculate=False):
         primary_key = rel_db.get_primary_key(table_name)
@@ -60,6 +59,13 @@ class Neo4j:
             else:
                 print("Index exists. Index is not recalculated.")
 
+    def transform_table_into_collection_of_nodes(self, rel_db, table_name):
+        self.create_index(rel_db, table_name, True)
+        result = rel_db.query("SELECT * FROM " + table_name + ";")
+        for result_dict in result:
+            d = dict(result_dict)
+            self.create_and_return_node(table_name, d)
+
     def transform_tables_into_graph_db(self, rel_db):
         rel_schema = rel_db.get_schema()
         for table_name in rel_schema:
@@ -67,22 +73,6 @@ class Neo4j:
         result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
         for record in result:
             self.labels.append(record["labels(n)"])
-        print(self.labels)
-
-    def transform_table_into_collection_of_nodes(self, rel_db, table_name):
-        self.create_index(rel_db, table_name, True)
-        result = rel_db.query("SELECT * FROM " + table_name + ";")
-        #print(result)
-        for result_dict in result:
-            d = dict(result_dict)
-            self.create_and_return_node(table_name, d)
-
-    def create_collection_of_nodes(self, property_name, attributes_values):
-        for elem in attributes_values:
-            self.create_and_return_node(property_name, attributes_values)
-
-    def create_edges_from_foreign_key_to_primary_key(self, rel_db):
-        edge_schema = rel_db.query_edge_schema_for_table()
 
     def create_edges(self, rel_db):
         for table in rel_db.get_table_names():
