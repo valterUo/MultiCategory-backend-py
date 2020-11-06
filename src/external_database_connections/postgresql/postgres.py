@@ -1,6 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from external_database_connections.config.config import config
+import json
 
 """
 Information to query schemata of the database:
@@ -44,11 +45,14 @@ class Postgres():
     def is_foreign_key(self, key):
         return key in self.foreign_keys
 
-    def query(self, query="SELECT version()"):
+    def query(self, query="SELECT version()", mode = "list",):
         cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute(query)
         ## This returns list of tuples because the cursor_factory was defined with DictCursor
-        rows = cur.fetchall()
+        if mode == "dict":
+            rows = [dict(record) for record in cur]
+        else:
+            rows = cur.fetchall()
         cur.close()
         return rows
 

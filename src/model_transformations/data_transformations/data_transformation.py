@@ -3,11 +3,12 @@ class Transformation:
     ## rel_schema_to_graph_functor is a mapping that takes a relational schema or part of the schema
     ## and maps it to edge -> node category that defines any graph
 
-    def __init__(self, rel_db, graph_db, rel_to_graph_functor):
+    def __init__(self, rel_db, graph_db, rel_to_graph_functor = []):
         self.rel_db = rel_db
         self.graph_db = graph_db
         self.rel_to_graph_functor = rel_to_graph_functor
         self.labels = []
+        self.transform()
 
     def get_rel_db(self):
         return self.rel_db
@@ -17,6 +18,14 @@ class Transformation:
 
     def get_rel_to_graph_functor(self):
         return self.rel_to_graph_functor
+
+    def transform(self):
+        if len(self.rel_to_graph_functor.get_tables_to_nodes()) == 0:
+            self.graph_db.transform_tables_into_graph_db(self.rel_db)
+            self.graph_db.create_edges(self.rel_db)
+        else:
+            self.transform_tables_into_graph_db()
+            self.create_edges()
 
     def transform_table_into_collection_of_nodes(self, table_name):
         self.graph_db.create_index(self.rel_db, table_name, True)
@@ -29,36 +38,40 @@ class Transformation:
         tables = self.rel_to_graph_functor.get_tables_to_nodes()
         for table in tables:
             self.transform_table_into_collection_of_nodes(table)
-        result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
+        result = self.graph_db.execute_read("MATCH (n) RETURN distinct labels(n)")
         for record in result:
             self.labels.append(record["labels(n)"])
 
     def collect_edge_data(self, rel1, rel2, relationship):
         res = "{ "
-        for i, key in enumerate(relationship):
+        #print(res)
+        #print(rel1, rel2)
+        for key in relationship:
             if key != rel1 and key != rel2:
-                if i == len(relationship):
-                    res += key + " : " + relationship[key]
-                else:
-                    res += key + " : " + relationship[key] + ","
-        res += res + "}"
+                res = res + str(key) + " : " + str(relationship[key]) + ", "
+        res = res[:2] + " }"
+        #print(res)
         return res
 
     def create_edges_between_two_collections_of_nodes(self, label1, rel1, rel2, label2, edge_label1, edge_label2, relationship):
-        edge_data = self.collect_edge_data(rel1, rel2, relationship)
+        edge_data = self.collect_edge_data(edge_label1, edge_label2, relationship)
+        #print(edge_data)
         query = """
             MATCH (a: """ + label1 + """)
             MATCH (b: """ + label2 + """)
-            WHERE a.""" + rel1 + """=""" + relationship[rel2] + """ 
-            AND b.""" + rel2 + """=""" + relationship[rel2] + """
+            WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
+            AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
             CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
+        #print()
+        #print(query)
+        #print()
         res = self.graph_db.execute_write(query)
         return res
 
     def query_relationships(self, table):
         query = "SELECT * FROM " + table + ";"
-        result = self.rel_db.query(query)
-        print(result)
+        result = self.rel_db.query(query, "dict")
+        #print(result)
         return result
 
     def create_edges(self):
@@ -71,7 +84,7 @@ class Transformation:
             edge_label2 = edge["target"]
             rel1 = source_map[edge_label1][1]
             rel2 = target_map[edge_label2][1]
-            relationships = self.query_relationships(table, edge_label1, edge_label2)
+            relationships = self.query_relationships(table)
             label1 = source_map[edge_label1][0]
             label2 = target_map[edge_label2][0]
             for relationship in relationships:

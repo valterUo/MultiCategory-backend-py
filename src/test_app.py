@@ -351,6 +351,7 @@ graph_db = Neo4j("testdb")
 #graph_db.transform_tables_into_graph_db(db)
 #graph_db.create_edges(db)
 
-functor = RelToGraphFunctor(["person"], [("knows", "knows_person1id", "knows_person2id")], {"knows_person1id": ("person", "p_personid")}, {"knows_person2id": ("person", "p_personid")})
+functor = RelToGraphFunctor(["person"], [{"table": "knows", "source": "k_person1id", "target": "k_person2id"}], {
+                            "k_person1id": ("person", "p_personid")}, {"k_person2id": ("person", "p_personid")})
 
 tr = Transformation(db, graph_db, functor)
