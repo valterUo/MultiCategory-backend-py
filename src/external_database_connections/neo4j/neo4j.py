@@ -23,6 +23,11 @@ class Neo4j:
     def close(self):
         self.driver.close()
 
+    def is_empty(self):
+        query = "MATCH (n) RETURN count(n)"
+        res = self.execute_read(query)
+        return res[0]["count(n)"] == 0
+
     def execute_write(self, query):
         with self.driver.session() as session:
             node = session.write_transaction(self._execute_query, query)

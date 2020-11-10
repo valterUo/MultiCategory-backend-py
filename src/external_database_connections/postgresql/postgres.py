@@ -29,7 +29,8 @@ class Postgres():
             self.conn = psycopg2.connect(**params)
             self.table_names = self.get_table_names()
             self.primary_keys = self.get_primary_keys()
-            self.foreign_keys = self.get_all_pk_fk_contrainsts().values()
+            self.all_pk_fk_contrainsts = self.get_all_pk_fk_contrainsts()
+            self.foreign_keys = self.all_pk_fk_contrainsts.values()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
 
@@ -44,6 +45,9 @@ class Postgres():
 
     def is_foreign_key(self, key):
         return key in self.foreign_keys
+    
+    def return_all_pk_fk_contrainsts(self):
+        return self.all_pk_fk_contrainsts
 
     def query(self, query="SELECT version()", mode = "list",):
         cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)

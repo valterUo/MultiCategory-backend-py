@@ -44,34 +44,26 @@ class Transformation:
 
     def collect_edge_data(self, rel1, rel2, relationship):
         res = "{ "
-        #print(res)
-        #print(rel1, rel2)
         for key in relationship:
             if key != rel1 and key != rel2:
-                res = res + str(key) + " : " + str(relationship[key]) + ", "
-        res = res[:2] + " }"
-        #print(res)
+                res += str(key) + " : '" + str(relationship[key]) + "', "
+        res = res[:-2] + " }"
         return res
 
     def create_edges_between_two_collections_of_nodes(self, label1, rel1, rel2, label2, edge_label1, edge_label2, relationship):
         edge_data = self.collect_edge_data(edge_label1, edge_label2, relationship)
-        #print(edge_data)
         query = """
             MATCH (a: """ + label1 + """)
             MATCH (b: """ + label2 + """)
             WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
             AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
             CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
-        #print()
-        #print(query)
-        #print()
         res = self.graph_db.execute_write(query)
         return res
 
     def query_relationships(self, table):
         query = "SELECT * FROM " + table + ";"
         result = self.rel_db.query(query, "dict")
-        #print(result)
         return result
 
     def create_edges(self):

@@ -176,7 +176,7 @@ body {
   cursor: pointer;
 }
 
-#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Model-transformation-tab.custom-tab, #Result-tab.custom-tab {
+#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Transformation-tab.custom-tab, #Result-tab.custom-tab {
   background-color: #161a28;
   letter-spacing: 1px;
   color: inherit;
@@ -190,11 +190,11 @@ body {
   height: 18px;
 }
 
-#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected, #Model-transformation-tab.custom-tab--selected, #Result-tab.custom-tab--selected {
+#Settings-tab.custom-tab--selected, #Instance-tab.custom-tab--selected, #Query-tab.custom-tab--selected, #Join-tab.custom-tab--selected, #Transformation-tab.custom-tab--selected, #Result-tab.custom-tab--selected {
   border-bottom: #91dfd2 solid 4px !important;
 }
 
-#Selective-query-tab.custom-tab, #Create-morphism-subtab.custom-tab, #Create-object-subtab.custom-tab, #Insert-query-subtab.custom-tab {
+#Selective-query-tab.custom-tab, #Create-morphism-subtab.custom-tab, #Create-object-subtab.custom-tab, #Insert-query-subtab.custom-tab, #Query-transformation-tab.custom-tab, #Data-transformation-tab.custom-tab {
   background-color: #161a28;
   letter-spacing: 1px;
   color: inherit;
@@ -208,7 +208,7 @@ body {
   height: 18px;
 }
 
-#Selective-query-tab.custom-tab--selected, #Create-morphism-subtab.custom-tab--selected, #Create-object-subtab.custom-tab--selected, #Insert-query-subtab.custom-tab--selected {
+#Selective-query-tab.custom-tab--selected, #Create-morphism-subtab.custom-tab--selected, #Create-object-subtab.custom-tab--selected, #Insert-query-subtab.custom-tab--selected, #Query-transformation-tab.custom-tab--selected, #Data-transformation-tab.custom-tab--selected {
   border-bottom: #91dfd2 solid 4px !important;
 }
 

@@ -13,17 +13,17 @@ dirname = os.path.dirname(__file__)
 example_files_path = os.path.join(dirname, "..\\..\\model_transformations\\ldbc\\ldbc_sql\\*.sql")
 
 
-def model_tranformation_tab():
+def query_tranformation_tab():
     return dcc.Tab(
-        id="Model-transformation-tab",
-        label="Model Transformations",
-        value="tab5",
+        id="Query-transformation-tab",
+        label="Query Transformations",
+        value="subtab3",
         className="custom-tab",
         selected_className="custom-tab--selected",
     )
 
 
-def build_model_tranformation_tab():
+def build_query_tranformation_tab():
     sql_examples = parse_sql_query_examples()
     cypher_examples = []
     rel_params = config(section= "postgresql")

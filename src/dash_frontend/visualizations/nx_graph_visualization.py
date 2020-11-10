@@ -3,6 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
+from networkx import DiGraph
 graph = None
 """
 Cytoscape nodes {'data': {'id': 'one', 'label': 'Node 1'}, 'position': {'x': 50, 'y': 50}}
@@ -23,7 +24,11 @@ def parse_cytoscape_nodes_edges(G):
 
 def general_nx_grah_to_cytoscape(visualized_object):
     global graph
-    graph = visualized_object.get_collection().get_graph()
+    print(type(visualized_object))
+    if type(visualized_object) == DiGraph:
+        graph = visualized_object
+    else:
+        graph = visualized_object.get_collection().get_graph()
     nodes, edges = parse_cytoscape_nodes_edges(graph)
     cyto_fig = html.Div(children=[
         cyto.Cytoscape(
