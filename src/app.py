@@ -36,7 +36,7 @@ def build_banner():
                         id="learn-more-button", children="LEARN MORE", n_clicks=0
                     ),
                     html.Img(id="logo", src=app.get_asset_url(
-                        "UDBMSTransparentLogo.png")),
+                        "favicon.png")),
                 ],
             ),
         ],
