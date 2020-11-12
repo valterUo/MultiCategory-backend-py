@@ -8,14 +8,19 @@ class Neo4j:
 
     def __init__(self, name, section="neo4j"):
         self.name = name
-        params = config(section=section)
-        uri = params["uri"]
-        auth = (params["user"], params["password"])
-        self.driver = GraphDatabase.driver(uri=uri, auth=auth)
+        self.driver = None
         self.labels = []
-        result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
-        for record in result:
-            self.labels.append(record["labels(n)"])
+        try:
+            params = config(section=section)
+            uri = params["uri"]
+            auth = (params["user"], params["password"])
+            self.driver = GraphDatabase.driver(uri=uri, auth=auth)
+            result = self.execute_read("MATCH (n) RETURN distinct labels(n)")
+            for record in result:
+                self.labels.append(record["labels(n)"])
+        except Exception as error:
+            print(error)
+            print("Neo4j is not running!")
 
     def get_name(self):
         return self.name
