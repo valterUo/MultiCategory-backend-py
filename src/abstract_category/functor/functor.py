@@ -13,8 +13,7 @@ class Functor:
                     raise FunctorError(
                         "Functor does not map every object in the domain category to the target category")
             for mor in domain_category["morphisms"]:
-                image = {"source": self.functor(mor["source"]), "morphism": self.functor(
-                    mor["morphism"]), "target": self.functor(mor["target"])}
+                image = {"source": self.functor(mor["source"]), "target": self.functor(mor["target"])}
                 if image not in target_category["morphisms"]:
                     raise FunctorError(
                         "Functor does not map every morphism in the domain category to the correct morphism in the target category")

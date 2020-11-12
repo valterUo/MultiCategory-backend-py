@@ -1,13 +1,13 @@
+import dash
 from dash.exceptions import PreventUpdate
 from dash_html_components.Button import Button
 import networkx as nx
 import dash_cytoscape as cyto
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
 graph = None
-
 
 def construct_postgres_schema(rel_db):
     res = rel_schema_to_nx_graph(rel_db)
@@ -51,7 +51,7 @@ def schema_nx_grah_to_cytoscape(g):
     global graph
     graph = g
     nodes, edges = parse_cytoscape_nodes_edges(graph)
-    cyto_fig = html.Div(children=[
+    cyto_fig = html.Div(children=[ html.Br(),
         cyto.Cytoscape(
             id='rel-schema-cytoscape-result',
             layout={'name': 'circle'},
@@ -81,7 +81,7 @@ def schema_nx_grah_to_cytoscape(g):
             'overflowX': 'scroll', 'width': '90%'}),
         html.Pre(id='rel-schema-cytoscape-tapEdgeData-output', style={
             'border': 'thin lightgrey solid', 'margin': '0 auto',
-            'overflowX': 'scroll', 'width': '90%'})])
+            'overflowX': 'scroll', 'width': '90%'}), html.Br()])
     return cyto_fig
 
 
