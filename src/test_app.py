@@ -1,3 +1,4 @@
+from abstract_category.functor.functor import Functor
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.data_transformations.data_transformation import Transformation
@@ -351,7 +352,15 @@ graph_db = Neo4j("testdb")
 #graph_db.transform_tables_into_graph_db(db)
 #graph_db.create_edges(db)
 
-functor = RelToGraphFunctor(["person"], [{"table": "knows", "source": "k_person1id", "target": "k_person2id"}], {
-                            "k_person1id": ("person", "p_personid")}, {"k_person2id": ("person", "p_personid")})
+f = Functor("test", {"objects": ["person", "knows"], "morphisms": [{"source": "knows", "morphism": ("k_person1id", "p_personid"), "target": "person"}, {"source": "knows", "morphism": (
+    "k_person2id", "p_personid"), "target": "person"}]}, {"person": "nodes", "knows": "edges", ("k_person1id", "p_personid"): "source", ("k_person2id", "p_personid"): "target"},
+    {"objects": ["nodes", "edges"], "morphisms": [{"source": "edges", "morphism": "source", "target": "nodes"}, {"source": "edges", "morphism": "target", "target": "nodes"}]})
 
-tr = Transformation(db, graph_db, functor)
+t = {'objects': ['person', 'knows'], 'morphisms': [{'source': 'person', 'morphism': ('k_person2id', 'p_personid'), 'target': 'knows'}, {'source': 'person', 'morphism': ('k_person1id', 'p_personid'), 'target': 'knows'}]} 
+k = {'person': 'nodes', 'knows': 'edges', ('k_person2id', 'p_personid'): 'source', ('k_person1id', 'p_personid'): 'target'} 
+r = {'objects': ['nodes', 'edges'], 'morphisms': [{'source': 'edges', 'morphism': 'source', 'target': 'nodes'}, {'source': 'edges', 'morphism': 'target', 'target': 'nodes'}]}
+
+# functor = RelToGraphFunctor(["person"], [{"table": "knows", "source": "k_person1id", "target": "k_person2id"}], {
+#                             "k_person1id": ("person", "p_personid")}, {"k_person2id": ("person", "p_personid")})
+
+tr = Transformation(db, graph_db, f)

@@ -15,7 +15,7 @@ def construct_postgres_schema(rel_db):
 
 
 def rel_schema_to_nx_graph(rel_db):
-    G = nx.DiGraph()
+    G = nx.MultiDiGraph()
     G.graph["title"] = rel_db.get_name()
     schema = rel_db.get_schema()
     nodes = []
@@ -23,11 +23,9 @@ def rel_schema_to_nx_graph(rel_db):
         nodes.append(
             (key, {"name": key, "attributes": ", ".join(schema[key])}))
     G.add_nodes_from(nodes)
-    print(G)
     default_edges = rel_db.return_all_pk_fk_contrainsts()
     edges = []
     for e in default_edges:
-        print(e, default_edges[e])
         for fk in default_edges[e]:
             if "target_table" in default_edges[e][fk].keys():
                 edges.append((default_edges[e][fk]["target_table"], e, {
@@ -43,7 +41,7 @@ def parse_cytoscape_nodes_edges(G):
             {'data': {'id': node[0], 'label': str(next(iter(node[1].values())))}})
     for edge in G.edges.data():
         edges.append(
-            {'data': {'source': edge[0], 'target': edge[1], 'label': ""}})
+            {'data': {'source': edge[0], 'target': edge[1], 'fk': edge[2]["fk"], 'pk': edge[2]["pk"]}})
     return nodes, edges
 
 
@@ -88,7 +86,6 @@ def schema_nx_grah_to_cytoscape(g):
 @app.callback(Output('rel-schema-cytoscape-tapNodeData-output', 'children'),
               [Input('rel-schema-cytoscape-result', 'tapNodeData')])
 def displayTapNodeData(data):
-    print(data)
     if data != None:
         for node in graph.nodes.data():
             if node[0] == data["id"]:
@@ -100,7 +97,6 @@ def displayTapNodeData(data):
 @app.callback(Output('rel-schema-cytoscape-tapEdgeData-output', 'children'),
               [Input('rel-schema-cytoscape-result', 'tapEdgeData')])
 def displayTapEdgeData(data):
-    print(data)
     if data != None:
         for edge in graph.edges.data():
             if data["source"] == edge[0] and data["target"] == edge[1]:

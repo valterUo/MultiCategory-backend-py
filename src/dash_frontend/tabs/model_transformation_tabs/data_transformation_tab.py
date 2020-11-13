@@ -2,9 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import os
-import glob
 
-from dash_html_components import Pre
 from abstract_category.functor.functor import Functor
 from abstract_category.functor.functor_error import FunctorError
 from dash_frontend.server import app
@@ -13,11 +11,6 @@ from dash.exceptions import PreventUpdate
 from dash_frontend.tabs.model_transformation_tabs.construct_postgres_schema import construct_postgres_schema
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
-from model_transformations.query_language_transformations.SQL.sql import SQL
-from external_database_connections.config.config import config
-dirname = os.path.dirname(__file__)
-example_files_path = os.path.join(
-    dirname, "..\\..\\model_transformations\\ldbc\\ldbc_sql\\*.sql")
 
 rel_db = Postgres("lcdbsf1")
 graph_db = Neo4j("lcdbsf1")
@@ -45,8 +38,8 @@ def build_data_tranformation_tab():
                       html.Button("LOAD SCHEMA FROM POSTGRESQL",
                                   id="load-schema-postgres"),
                       html.Div(id="postgres-schema-container"), html.Br(),
-                      html.Div(id="data-transformation-definition"),
-                      html.Div(id="functoriality-satisfied"),
+                      html.Div(id="functoriality-satisfied"), html.Br(),
+                      html.Div(id="data-transformation-definition"), html.Br(),
                       html.Button("SUBMIT", style={
                           "display": "none"}, id="submit-tables-to-nodes")]
         ), html.Br()
@@ -142,102 +135,98 @@ def load_schema_from_postgres_button(click1):
     else:
         raise PreventUpdate
 
+
 @app.callback([Output("selected-tables-to-edges", "children"),
                Output("selected-tables-to-nodes", "children"),
-               Output("functoriality-satisfied", "children")],
+               Output("selected-edges-to-source", "children"),
+               Output("selected-edges-to-target", "children"),
+               Output("functoriality-satisfied", "children"),
+               Output("submit-tables-to-nodes", "style")],
               [Input("add-selected-elements-edges", "n_clicks"),
-               Input("add-selected-elements-nodes", "n_clicks"), 
-               Input("reset-edges", "n_clicks"), 
-               Input("reset-nodes", "n_clicks")],
-               [State('rel-schema-cytoscape-result', 'selectedNodeData')])
-def displaySelectedNodeData(click1, click2, click3, click4, data_list):
-    if not data_list:
-        raise PreventUpdate
+               Input("add-selected-elements-nodes", "n_clicks"),
+               Input("reset-edges", "n_clicks"),
+               Input("reset-nodes", "n_clicks"),
+               Input("add-selected-elements-source", "n_clicks"),
+               Input("add-selected-elements-target", "n_clicks"),
+               Input("reset-source", "n_clicks"),
+               Input("reset-target", "n_clicks")],
+              [State('rel-schema-cytoscape-result', 'selectedNodeData'),
+               State('rel-schema-cytoscape-result', 'selectedEdgeData')])
+def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, click7, click8, data_list_tables, data_list_rels):
     ctx = dash.callback_context
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         global tables_to_edges
         global tables_to_nodes
+        global source_fun
+        global target_fun
         if prop_id == "add-selected-elements-edges":
-            tables_to_edges += data_list
+            if not data_list_tables:
+                raise PreventUpdate
+            tables_to_edges += data_list_tables
         elif prop_id == "add-selected-elements-nodes":
-            tables_to_nodes += data_list
+            if not data_list_tables:
+                raise PreventUpdate
+            tables_to_nodes += data_list_tables
+        elif prop_id == "add-selected-elements-source":
+            if not data_list_rels:
+                raise PreventUpdate
+            source_fun += data_list_rels
+        elif prop_id == "add-selected-elements-target":
+            if not data_list_rels:
+                raise PreventUpdate
+            target_fun += data_list_rels
         elif prop_id == "reset-edges":
             tables_to_edges = []
         elif prop_id == "reset-nodes":
             tables_to_nodes = []
-        else:
-            raise PreventUpdate
-        print(tables_to_edges)
-        edge_names = [elem["id"] + "\n" for elem in tables_to_edges]
-        node_names = [elem["id"] + "\n" for elem in tables_to_nodes]
-        return ", ".join(edge_names), ", ".join(node_names), ""
-    else:
-        raise PreventUpdate
-
-
-@app.callback([Output("selected-edges-to-source", "children"),
-                Output("selected-edges-to-target", "children"),
-               Output("functoriality-satisfied", "children")],
-              [Input("add-selected-elements-source", "n_clicks"),
-               Input("add-selected-elements-target", "n_clicks"), 
-               Input("reset-source", "n_clicks"),
-                Input("reset-target", "n_clicks")],
-               [State('rel-schema-cytoscape-result', 'selectedEdgeData')])
-def displaySelectedNodeData(click1, click2, click3, click4, data_list):
-    if not data_list:
-        raise PreventUpdate
-    ctx = dash.callback_context
-    if ctx.triggered:
-        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        global source_fun
-        global target_fun
-        if prop_id == "add-selected-elements-source":
-            source_fun += data_list
-        elif prop_id == "add-selected-elements-target":
-            target_fun += data_list
         elif prop_id == "reset-source":
             source_fun = []
         elif prop_id == "reset-target":
             target_fun = []
         else:
             raise PreventUpdate
+        edge_names = [elem["id"] + "\n" for elem in tables_to_edges]
+        node_names = [elem["id"] + "\n" for elem in tables_to_nodes]
         source_fun_names = [elem["source"] + " --> " +
                             elem["target"] + "\n" for elem in source_fun]
         target_fun_names = [elem["source"] + " --> " +
                             elem["target"] + "\n" for elem in target_fun]
-        return ", ".join(source_fun_names), ", ".join(target_fun_names), ""
+        functor_valid, submit_button = construct_functor_component()
+        return ", ".join(edge_names), ", ".join(node_names), ", ".join(source_fun_names), ", ".join(target_fun_names), functor_valid, submit_button
     else:
         raise PreventUpdate
 
 
-@app.callback(
-    [Output("functoriality-satisfied", "children"),
-     Output("submit-tables-to-nodes", "style")],
-    [Input("start-transformation-building", "n_clicks")],
-)
-def construct_functor_component(n_clicks):
+def construct_functor_component():
     try:
-        domain, fun, target = construct_functor(
-            tables_to_nodes, tables_to_edges, source_fun, target_fun)
+        domain, fun, target = construct_functor()
         global functor
         functor = Functor("transformation", domain, fun, target)
         return html.P("Transformation satisfies functoriality and is valid. Transformation can be executed."), {"display": "block"}
-    except FunctorError:
+    except FunctorError as e:
+        print(e)
         return html.P("The transformation does not satify functoriality. Select or deselect tables and relationships."), {"display": "none"}
 
 
 def construct_functor():
-    target = {"objects": ["nodes", "edges"], "morphisms": [{"source": "edges", "morphism": "source", "target": "nodes"}, {"source": "edges", "morphism": "target", "target": "nodes"}]}
-    domain, fun, target = dict(), dict(), dict()
-    for table1 in tables_to_nodes:
-        domain["objects"].append(table1)
-    for table2 in tables_to_edges:
-        domain["objects"].append(table2)
-    for rel1 in source_fun:
-        domain["morphisms"].append({"source": rel1["source"], "morphism": "source", "target": rel1["target"]})
-    for rel2 in target_fun:
-        domain["morphisms"].append({"source": rel2["source"], "morphism": "target", "target": rel2["target"]})
-    fun["target"] = "target"
-    fun["source"] = "source"
+    target = {"objects": ["nodes", "edges"], "morphisms": [{"source": "edges", "morphism": "source",
+                                                            "target": "nodes"}, {"source": "edges", "morphism": "target", "target": "nodes"}]}
+    domain, fun = dict(), dict()
+    domain["objects"] = []
+    domain["morphisms"] = []
+    for table in tables_to_nodes:
+        domain["objects"].append(table["id"])
+        fun[table["id"]] = "nodes"
+    for table in tables_to_edges:
+        domain["objects"].append(table["id"])
+        fun[table["id"]] = "edges"
+    for rel in source_fun:
+        domain["morphisms"].append(
+            {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
+        fun[(rel["fk"], rel["pk"])] = "source"
+    for rel in target_fun:
+        domain["morphisms"].append(
+            {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
+        fun[(rel["fk"], rel["pk"])] = "target"
     return domain, fun, target
