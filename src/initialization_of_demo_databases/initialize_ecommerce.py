@@ -71,7 +71,7 @@ class ECommerceMultiModelDatabase():
         objects = create_collection_constructors(ecommerce_config)
         morphisms = initialize_ecommerce_morphisms(objects)
 
-        self.ecommerce_multi_model_db = MultiModelDB("ecommerce multi-model database", objects, morphisms)
+        self.ecommerce_multi_model_db = MultiModelDB("E-commerce multi-model database", objects, morphisms, True)
         
 
     def get_multi_model_db(self):

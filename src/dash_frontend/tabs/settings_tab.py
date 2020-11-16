@@ -5,19 +5,10 @@ from dash.dependencies import Input, Output, State
 import os
 from dash_frontend.server import app
 from dash.exceptions import PreventUpdate
-import time
+from multicategory.initialize_multicategory import multicategory
 dirname = os.path.dirname(__file__)
-full_config_file_path = os.path.join(dirname, "..\\..\\external_database_connections\\config\\databases.ini")
-
-datasets = [
-    {'label': 'E-commerce dataset', 'value': 'ecommerce'},
-    {'label': 'Patent dataset', 'value': 'patent'},
-    {'label': 'Online market place', 'value': 'market_place'},
-    {'label': 'Unibench small dataset', 'value': 'unibench_small'},
-    {'label': 'University dataset', 'value': 'university'},
-    {'label': 'Person dataset', 'value': 'person'},
-    {'label': 'Film dataset', 'value': 'film'}
-]
+full_config_file_path = os.path.join(
+    dirname, "..\\..\\external_database_connections\\config\\databases.ini")
 
 
 def define_settings_tab():
@@ -30,8 +21,9 @@ def define_settings_tab():
     )
 
 
-def build_settings_tab(state):
-    current_state = state.get_current_state()
+def build_settings_tab():
+    dbs = multicategory.get_multi_model_db_names_for_dropdown()
+    selected_db = multicategory.get_selected_multi_model_database().get_name()
     return [
         html.Div(
             id="set-specs-intro-container",
@@ -39,33 +31,51 @@ def build_settings_tab(state):
                 "Select the demo dataset. The default dataset is the e-commerce dataset."
             ),
                 dcc.Dropdown(
-                id="metric-select-dropdown",
-                options=datasets,
-                value=current_state["value"]
+                id="select-multi-model-database",
+                options=dbs,
+                value=selected_db
             ),
-            html.Br(),
-            build_external_database_textarea_connection()
+                html.Br(),
+                build_external_database_textarea_connection()
             ]
         ),
     ]
+
+
+@app.callback(
+    Output("selected-dataset-banner-parent", "children"),
+    [Input("select-multi-model-database", "value")],
+)
+def handle_dataset_selection(db_name):
+    print(db_name)
+    db = multicategory.get_multi_model_db(db_name)
+    if db.is_available():
+        multicategory.change_to_multi_model_db(db_name)
+        return html.P("Selected database: " + db_name)
+    else:
+        return html.P("The selected database " + db_name + " is not currently available.")
+
 
 def build_external_database_textarea_connection():
     content = ""
     with open(full_config_file_path, 'r') as file:
         content = file.read()
-    return html.Div([ html.H5("External database connection information"),
-        dcc.Textarea(
-            id='textarea-state-config',
-            value = content,
-            style={'width': '100%', 'height': 300, "fontFamily": "monospace"},
-        ),
-        html.Button('Update config file', id='config-textarea-state-button', n_clicks=0),
+    return html.Div([html.H5("External database connection information"),
+                     dcc.Textarea(
+        id='textarea-state-config',
+        value=content,
+        style={'width': '100%', 'height': 300, "fontFamily": "monospace"},
+    ),
+        html.Button('Update config file',
+                    id='config-textarea-state-button', n_clicks=0),
         html.Br(),
         html.Div(id="config-file-update-notification")
     ])
 
+
 @app.callback(
-    [Output('textarea-state-config', 'value'), Output("config-file-update-notification", "children")],
+    [Output('textarea-state-config', 'value'),
+     Output("config-file-update-notification", "children")],
     [Input('config-textarea-state-button', 'n_clicks')],
     [State('textarea-state-config', 'value')]
 )

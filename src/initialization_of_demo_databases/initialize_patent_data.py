@@ -224,7 +224,7 @@ class PatentMultiModelDatabase():
         ## Eventually multi-model database is similarly a functor pointing from the instance to the schema
         ## We do not need to define the schema because it is extracted automatically from the instance
 
-        self.patent_multi_model_database = MultiModelDB("patent multi-model database", objects, morphisms)
+        self.patent_multi_model_database = MultiModelDB("Patent multi-model database", objects, morphisms, True)
 
     def get_multi_model_db(self):
         return self.patent_multi_model_database

@@ -14,10 +14,11 @@ mapped is coded into the class.
 
 class MultiModelDB:
 
-    def __init__(self, name, objects, morphisms, schema_category = None, instance_category = None):
+    def __init__(self, name, objects, morphisms, available = False, schema_category = None, instance_category = None):
         self.name = name
         self.objects = objects
         self.morphisms = morphisms
+        self.available = available
         self.schema_category = schema_category
         self.instance_category = instance_category
         if self.schema_category == None:
@@ -52,6 +53,9 @@ class MultiModelDB:
 
     def get_morphisms(self):
         return self.morphisms
+
+    def is_available(self):
+        return self.available
 
     def add_object(self, new_object):
         self.schema_category.add_object(new_object.get_model_category())

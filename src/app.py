@@ -12,6 +12,8 @@ from dash_frontend.tabs.model_transformation_tabs.model_transformation_tab impor
 from dash_frontend.tabs.result_tab import result_tab, build_result_tab
 from dash_frontend.modal.modal import generate_modal
 from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
+
 
 
 def build_banner():
@@ -28,7 +30,7 @@ def build_banner():
                 ],
             ),
             html.Div(id="selected-dataset-banner-parent", children=html.P(
-                "Selected database: " + state.get_current_state()["label"])),
+                "Selected database: " + multicategory.get_selected_multi_model_database().get_name())),
             html.Div(
                 id="banner-logo",
                 children=[
@@ -44,7 +46,6 @@ def build_banner():
 
 
 def build_tabs():
-    print("Building tabs")
     return html.Div(
         id="tabs",
         className="tabs",
@@ -93,7 +94,7 @@ app.layout = html.Div(
 )
 def render_tab_content(tab_switch):
     if tab_switch == "tab1":
-        return build_settings_tab(state)
+        return build_settings_tab()
     elif tab_switch == "tab3":
         return build_query_tabs()
     elif tab_switch == "tab4":
@@ -103,21 +104,6 @@ def render_tab_content(tab_switch):
     elif tab_switch == "tab6":
         return build_result_tab()
     return build_instance_functor_tab()
-
-
-# ===== Callbacks to update values based on store data and dropdown selection =====
-@app.callback(
-    Output("selected-dataset-banner-parent", "children"),
-    [Input("metric-select-dropdown", "value")],
-)
-def handle_dataset_selection(ds_select):
-    if ds_select != None:
-        database = state.get_possible_states()[ds_select]
-        if database["available"]:
-            state.change_state(ds_select)
-            return html.P("Selected database: " + database["label"])
-        else:
-            return html.P("The selected database " + database["label"] + " is not currently available.")
 
 
 # ======= Callbacks for modal popup =======
