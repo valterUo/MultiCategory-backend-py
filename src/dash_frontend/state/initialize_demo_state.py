@@ -7,9 +7,12 @@ dirname = os.path.dirname(__file__)
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
 from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
 
+ecommer_db = ECommerceMultiModelDatabase().get_multi_model_db()
+patent_db = PatentMultiModelDatabase().get_multi_model_db()
+
 possible_states = {
-    "ecommerce": {'label': 'E-commerce dataset', 'value': 'ecommerce', 'available': True, 'db': ECommerceMultiModelDatabase().get_multi_model_db()},
-    "patent": {'label': 'Patent dataset', 'value': 'patent', 'available': True, 'db': PatentMultiModelDatabase().get_multi_model_db()},
+    "ecommerce": {'label': 'E-commerce dataset', 'value': 'ecommerce', 'available': True, 'db': ecommer_db},
+    "patent": {'label': 'Patent dataset', 'value': 'patent', 'available': True, 'db': patent_db},
     "market_place": {'label': 'Online market place', 'value': 'market_place', 'available': False, 'db': None},
     "unibench_small": {'label': 'Unibench small dataset', 'value': 'unibench_small', 'available': False, 'db': None},
     "university": {'label': 'University dataset', 'value': 'university', 'available': False, 'db': None},

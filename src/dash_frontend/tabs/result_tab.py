@@ -7,6 +7,10 @@ from dash_frontend.state.initialize_demo_state import state
 from dash.exceptions import PreventUpdate
 from dash_frontend.server import app
 from dash_frontend.visualizations.visualize import visualize
+from external_database_connections.neo4j.neo4j import Neo4j
+from external_database_connections.postgresql.postgres import Postgres
+rel_db = Postgres("lcdbsf1")
+graph_db = Neo4j("lcdbsf1")
 
 
 def result_tab():
@@ -21,6 +25,10 @@ def result_tab():
 
 def build_result_tab():
     objects = state.get_current_state()["db"].get_objects()
+    if rel_db.connected():
+        objects[str(rel_db)] = rel_db
+    if graph_db.connected():
+        objects[str(graph_db)] = graph_db
     initial_options = []
     for obj in objects:
         initial_options.append({'label': str(obj), 'value': str(obj)})

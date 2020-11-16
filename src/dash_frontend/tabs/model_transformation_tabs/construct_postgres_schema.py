@@ -1,10 +1,7 @@
-import dash
-from dash.exceptions import PreventUpdate
-from dash_html_components.Button import Button
 import networkx as nx
 import dash_cytoscape as cyto
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
 graph = None

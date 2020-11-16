@@ -76,6 +76,8 @@ app.layout = html.Div(
                 build_tabs(),
                 # Main app
                 html.Div(id="app-content"),
+                html.Div(id="custom-footer", children=[html.P("", style = {"textAlign": "center", "margin": "auto", "width": "100%", "float": "left"})], style={
+                         "height": "100px"})
             ],
         ),
         generate_modal()

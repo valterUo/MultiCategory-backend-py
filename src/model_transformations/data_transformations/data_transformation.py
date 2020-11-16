@@ -11,7 +11,6 @@ class Transformation:
         self.graph_db = graph_db
         self.rel_to_graph_functor = rel_to_graph_functor
         self.labels = []
-        self.transform()
 
     def get_rel_db(self):
         return self.rel_db
@@ -23,12 +22,13 @@ class Transformation:
         return self.rel_to_graph_functor
 
     def transform(self):
-        if len(self.rel_to_graph_functor.get_tables_to_nodes()) == 0:
+        if len(self.rel_to_graph_functor.get_tables_to_nodes()) == 0 and len(self.rel_to_graph_functor.get_tables_to_edges()) == 0:
             self.graph_db.transform_tables_into_graph_db(self.rel_db)
             self.graph_db.create_edges(self.rel_db)
         else:
             self.transform_tables_into_graph_db()
             self.create_edges()
+        return True
 
     def transform_table_into_collection_of_nodes(self, table_name):
         self.graph_db.create_index(self.rel_db, table_name, True)
@@ -39,6 +39,7 @@ class Transformation:
 
     def transform_tables_into_graph_db(self):
         tables = self.rel_to_graph_functor.get_tables_to_nodes()
+        print(tables)
         for table in tables:
             self.transform_table_into_collection_of_nodes(table)
         result = self.graph_db.execute_read(
@@ -63,7 +64,7 @@ class Transformation:
             WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
             AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
             CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
-        #res = self.graph_db.execute_write(query)
+        res = self.graph_db.execute_write(query)
         return res
 
     def query_relationships(self, table):
@@ -83,14 +84,12 @@ class Transformation:
                 if len(key) != 2:
                     raise DataTransformationError(
                         "Source map is in wrong format ", key)
-                fk_source = key[0]
-                pk_source = key[1]
+                fk_source, pk_source = key[0], key[1]
             for key in target_map:
                 if len(key) != 2:
                     raise DataTransformationError(
                         "Target map is in wrong format ", key)
-                fk_target = key[0]
-                pk_target = key[1]
+                fk_target, pk_target = key[0], key[1]
             relationships = self.query_relationships(fk_table)
             if fk_source is not None and pk_source is not None:
                 for mor in domain_morphisms:
@@ -104,15 +103,6 @@ class Transformation:
             if None in [fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target]:
                 raise DataTransformationError("Some of the variables are not defined ", [
                                               fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target])
-            print()
-            print("fk_table: ", fk_table)
-            print("fk_source: ", fk_source)
-            print("fk_target: ", fk_target)
-            print("pk_source: ", pk_source)
-            print("pk_target: ", pk_target)
-            print("pk_table_source: ", pk_table_source)
-            print("pk_table_target: ", pk_table_target)
-            print()
             for relationship in relationships:
                 self.create_edges_between_two_collections_of_nodes(
                     pk_table_source, pk_source, pk_target, pk_table_target, fk_source, fk_target, relationship)

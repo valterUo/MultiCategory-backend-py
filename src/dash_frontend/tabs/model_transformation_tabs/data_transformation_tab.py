@@ -1,16 +1,16 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import os
 
 from abstract_category.functor.functor import Functor
-from abstract_category.functor.functor_error import FunctorError
+from abstract_category.functor.functor_error import Error, FunctorError
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_frontend.tabs.model_transformation_tabs.construct_postgres_schema import construct_postgres_schema
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
+from model_transformations.data_transformations.data_transformation import Transformation
 
 rel_db = Postgres("lcdbsf1")
 graph_db = Neo4j("lcdbsf1")
@@ -38,10 +38,17 @@ def build_data_tranformation_tab():
                       html.Button("LOAD SCHEMA FROM POSTGRESQL",
                                   id="load-schema-postgres"),
                       html.Div(id="postgres-schema-container"), html.Br(),
-                      html.Div(id="functoriality-satisfied"), html.Br(),
-                      html.Div(id="data-transformation-definition"), html.Br(),
-                      html.Button("SUBMIT", style={
-                          "display": "none"}, id="submit-tables-to-nodes")]
+                      html.Div(id="data-transformation-definition", style = {"float" : "left", "width":"100%"}),
+                      html.Hr(style = {"float" : "left", "width":"100%"}),
+                      html.Div(id="functoriality-satisfied", style = {"float" : "left", "width":"100%"}),
+                      html.Div(style={"width": "100%", "height": "40px"}),
+                      html.Div(id="submit-processing-buttons", children=[
+                          html.Button("SUBMIT", style={
+                              "display": "none"}, id="submit-tables-to-nodes"),
+                          html.Div(id="processing-transformation")
+                      ]),
+                      html.Div(id="transformation-success"), html.Br()],
+
         ), html.Br()
     ]
 
@@ -136,6 +143,20 @@ def load_schema_from_postgres_button(click1):
         raise PreventUpdate
 
 
+def construct_functor_component():
+    try:
+        domain, fun, target = construct_functor()
+        global functor
+        functor = Functor("transformation", domain, fun, target)
+        if len(functor.get_tables_to_nodes()) == 0 and len(functor.get_tables_to_edges()) != 0:
+            return html.P("The transformation satisfies functoriality but Neo4j does not support the transformation. Select or deselect tables and relationships."), {
+                "display": "none"}
+        return html.P("Transformation satisfies functoriality and can be executed."), {"display": "block"}
+    except FunctorError as e:
+        print(e)
+        return html.P("The transformation does not satify functoriality. Select or deselect tables and relationships."), {"display": "none"}
+
+
 @app.callback([Output("selected-tables-to-edges", "children"),
                Output("selected-tables-to-nodes", "children"),
                Output("selected-edges-to-source", "children"),
@@ -198,15 +219,37 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
         raise PreventUpdate
 
 
-def construct_functor_component():
-    try:
-        domain, fun, target = construct_functor()
-        global functor
-        functor = Functor("transformation", domain, fun, target)
-        return html.P("Transformation satisfies functoriality and is valid. Transformation can be executed."), {"display": "block"}
-    except FunctorError as e:
-        print(e)
-        return html.P("The transformation does not satify functoriality. Select or deselect tables and relationships."), {"display": "none"}
+@app.callback(
+    Output("processing-transformation", "children"),
+    [Input("submit-tables-to-nodes", "n_clicks")],
+)
+def execute_transformation(click1):
+    ctx = dash.callback_context
+    if ctx.triggered:
+        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if prop_id == "submit-tables-to-nodes":
+            try:
+                return html.I(className="fa fa-refresh fa-spin")
+            except Error as e:
+                return html.Div(id="transformation-error-message", children=[html.P("Error: " + str(e))])
+        else:
+            raise PreventUpdate
+    else:
+        raise PreventUpdate
+
+
+@app.callback(
+    [Output("transformation-success", "children"),
+     Output("submit-processing-buttons", "children")],
+    [Input("processing-transformation", "children")],
+)
+def update_progress(children):
+    if len(children) > 0:
+        tr = Transformation(rel_db, graph_db, functor)
+        tr.transform()
+        return html.Div(id="transformation-success", children=[html.P("Relational instance transformed into graph successfully!")]), []
+    else:
+        return html.Div()
 
 
 def construct_functor():

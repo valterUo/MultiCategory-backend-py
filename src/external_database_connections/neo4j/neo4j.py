@@ -25,6 +25,12 @@ class Neo4j:
     def get_name(self):
         return self.name
 
+    def __str__(self):
+        return "Neo4j " + self.name
+
+    def connected(self):
+        return self.driver != None
+
     def close(self):
         self.driver.close()
 

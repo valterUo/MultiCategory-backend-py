@@ -26,6 +26,12 @@ class Postgres():
     def get_name(self):
         return self.name
 
+    def __str__(self):
+        return "PostgreSQL " + self.name
+
+    def connected(self):
+        return self.conn != None
+
     def contains_table(self, table):
         return table in self.table_names
 
