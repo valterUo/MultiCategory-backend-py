@@ -8,7 +8,6 @@ class Functor:
         self.functor = fun
         self.domain = dom
         self.target = tar
-        print(dom, fun, tar)
         if len(self.domain) == 0:
             raise FunctorError("Domain category is empty.")
         if len(self.target) == 0:
@@ -56,6 +55,7 @@ class Functor:
     def preimage(self, element):
         result = []
         for key in self.functor.keys():
+            print("Preimage: ", key, element)
             if self.functor[key] == element:
                 result.append(key)
         return result

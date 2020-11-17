@@ -10,7 +10,6 @@ class Transformation:
         self.rel_db = rel_db
         self.graph_db = graph_db
         self.rel_to_graph_functor = rel_to_graph_functor
-        self.labels = []
 
     def get_rel_db(self):
         return self.rel_db
@@ -23,9 +22,11 @@ class Transformation:
 
     def transform(self):
         if len(self.rel_to_graph_functor.get_tables_to_nodes()) == 0 and len(self.rel_to_graph_functor.get_tables_to_edges()) == 0:
+            print("defaul transformation")
             self.graph_db.transform_tables_into_graph_db(self.rel_db)
             self.graph_db.create_edges(self.rel_db)
         else:
+            print("user defined transformation")
             self.transform_tables_into_graph_db()
             self.create_edges()
         return True
@@ -35,17 +36,14 @@ class Transformation:
         result = self.rel_db.query("SELECT * FROM " + table_name + ";")
         for result_dict in result:
             d = dict(result_dict)
-            self.graph_db.create_and_return_node(table_name, d)
+            n = self.graph_db.create_and_return_node(table_name, d)
+            #print(n)
 
     def transform_tables_into_graph_db(self):
         tables = self.rel_to_graph_functor.get_tables_to_nodes()
         print(tables)
         for table in tables:
             self.transform_table_into_collection_of_nodes(table)
-        result = self.graph_db.execute_read(
-            "MATCH (n) RETURN distinct labels(n)")
-        for record in result:
-            self.labels.append(record["labels(n)"])
 
     def collect_edge_data(self, rel1, rel2, relationship):
         res = "{ "
@@ -56,6 +54,7 @@ class Transformation:
         return res
 
     def create_edges_between_two_collections_of_nodes(self, label1, rel1, rel2, label2, edge_label1, edge_label2, relationship):
+        print("create_edges_between_two_collections_of_nodes: ", label1, rel1, rel2, label2, edge_label1, edge_label2, relationship)
         edge_data = self.collect_edge_data(
             edge_label1, edge_label2, relationship)
         query = """
@@ -68,6 +67,7 @@ class Transformation:
         return res
 
     def query_relationships(self, table):
+        print(table)
         query = "SELECT * FROM " + table + ";"
         result = self.rel_db.query(query, "dict")
         return result
@@ -77,7 +77,9 @@ class Transformation:
         source_map = self.rel_to_graph_functor.get_edge_source()
         target_map = self.rel_to_graph_functor.get_edge_target()
         domain_morphisms = self.rel_to_graph_functor.get_morphisms_of_domain_category()
+        print("values in the beginning of edge transformation: ", edges, source_map, target_map, domain_morphisms)
         for fk_table in edges:
+            print("fk_table: ", fk_table)
             fk_source, fk_target, pk_source, pk_target = None, None, None, None
             pk_table_source, pk_table_target = None, None
             for key in source_map:
@@ -90,7 +92,6 @@ class Transformation:
                     raise DataTransformationError(
                         "Target map is in wrong format ", key)
                 fk_target, pk_target = key[0], key[1]
-            relationships = self.query_relationships(fk_table)
             if fk_source is not None and pk_source is not None:
                 for mor in domain_morphisms:
                     print(mor)
@@ -103,6 +104,7 @@ class Transformation:
             if None in [fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target]:
                 raise DataTransformationError("Some of the variables are not defined ", [
                                               fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target])
+            relationships = self.query_relationships(fk_table)
             for relationship in relationships:
                 self.create_edges_between_two_collections_of_nodes(
                     pk_table_source, pk_source, pk_target, pk_table_target, fk_source, fk_target, relationship)

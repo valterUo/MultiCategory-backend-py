@@ -1,6 +1,6 @@
 import dash
 
-external_scripts = ["https://rawgit.com/neo4j-contrib/neovis.js/master/dist/neovis.js"]
+external_scripts = ["https://cdn.neo4jlabs.com/neovis.js/v1.4.0/neovis.js", "https://rawgit.com/neo4j-contrib/neovis.js/master/dist/neovis.js"]
 external_stylesheets = ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css']
 
 app = dash.Dash(

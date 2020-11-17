@@ -146,9 +146,12 @@ def load_schema_from_postgres_button(click1):
 def construct_functor_component():
     try:
         domain, fun, target = construct_functor()
+        # if domain and fun and target:
+        #     return html.P("The transformation does not define function from the schema to graph model. Select or deselect tables and relationships."), {
+        #         "display": "none"}
         global functor
         functor = Functor("transformation", domain, fun, target)
-        if len(functor.get_tables_to_nodes()) == 0 and len(functor.get_tables_to_edges()) != 0:
+        if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
             return html.P("The transformation satisfies functoriality but Neo4j does not support the transformation. Select or deselect tables and relationships."), {
                 "display": "none"}
         return html.P("Transformation satisfies functoriality and can be executed."), {"display": "block"}
@@ -267,9 +270,17 @@ def construct_functor():
     for rel in source_fun:
         domain["morphisms"].append(
             {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
-        fun[(rel["fk"], rel["pk"])] = "source"
+        if (rel["fk"], rel["pk"]) not in fun.keys():
+            fun[(rel["fk"], rel["pk"])] = "source"
+        else:
+            print("The morphism " + str((rel["fk"], rel["pk"])) + " is already mapped to source function!")
+            #return False, False, False
     for rel in target_fun:
         domain["morphisms"].append(
             {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
-        fun[(rel["fk"], rel["pk"])] = "target"
+        if (rel["fk"], rel["pk"]) not in fun.keys():
+            fun[(rel["fk"], rel["pk"])] = "target"
+        else:
+            print("The morphism " + str((rel["fk"], rel["pk"])) + " is already mapped to target function!")
+            #return False, False, False
     return domain, fun, target

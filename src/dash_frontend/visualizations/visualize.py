@@ -10,19 +10,17 @@ from external_database_connections.postgresql.create_postgres_query_tool import 
 from external_database_connections.postgresql.postgres import Postgres
 
 def visualize(selected_dataset):
-    objects = multicategory.get_selected_multi_model_database().get_objects()
     try:
-        if type(selected_dataset) == str:
-            visualized_object = objects[selected_dataset]
-            if visualized_object.get_model() == "relational":
-                return main_pytable_visualization(visualized_object)
-            elif visualized_object.get_model() == "graph":
-                return general_nx_grah_to_cytoscape(visualized_object)
-            elif visualized_object.get_model() == "tree":
-                return tree_to_cytoscape(visualized_object)
-        elif type(selected_dataset) == Postgres:
+        if type(selected_dataset) == Postgres:
             return create_postgres_query_tool()
         elif type(selected_dataset) == Neo4j:
             return create_neo4j_query_tool()
+        else:
+            if selected_dataset.get_model() == "relational":
+                return main_pytable_visualization(selected_dataset)
+            elif selected_dataset.get_model() == "graph":
+                return general_nx_grah_to_cytoscape(selected_dataset)
+            elif selected_dataset.get_model() == "tree":
+                return tree_to_cytoscape(selected_dataset)
     except Error as e:
         return html.Div("Error in visualization: " + str(e))

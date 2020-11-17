@@ -226,6 +226,13 @@ body {
   margin-left: 3px;
 }
 
+#viz {
+  width: 900px;
+  height: 700px;
+  border: 1px solid lightgray;
+  font: 22pt arial;
+}
+
 .section-banner {
   color: darkgray;
   font-size: 1.5rem;

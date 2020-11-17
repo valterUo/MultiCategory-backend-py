@@ -11,7 +11,7 @@ from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
 rel_db = Postgres("lcdbsf1")
 graph_db = Neo4j("lcdbsf1")
-
+objects = []
 
 def result_tab():
     return dcc.Tab(
@@ -24,6 +24,7 @@ def result_tab():
 
 
 def build_result_tab():
+    global objects
     objects = multicategory.get_selected_multi_model_database().get_objects()
     if rel_db.connected():
         objects[str(rel_db)] = rel_db
@@ -67,6 +68,6 @@ def update_click_output(button_click, selected_dataset):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "show-result-button":
-            return html.Div(visualize(selected_dataset))
+            return html.Div(visualize(objects[selected_dataset]))
     else:
         raise PreventUpdate

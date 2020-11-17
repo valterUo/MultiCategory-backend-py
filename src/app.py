@@ -79,7 +79,13 @@ app.layout = html.Div(
                          "height": "100px"})
             ],
         ),
-        generate_modal()
+        generate_modal(),
+        html.Div([
+            dcc.Store(id='storage')
+        ],
+            id="hiddendata",
+            style={"display": "none"},
+        ),
     ],
 )
 
