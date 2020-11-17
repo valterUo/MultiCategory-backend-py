@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 from dash_frontend.server import app
 from dash.exceptions import PreventUpdate
 import json
-from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
 from constructing_multi_model_db.collection_constructor.construct_converged_collection_constructor_functor import construct_converged_collection_constructor_functor
 nodes, edges, model_categories, added_connections = [], [], [], []
 domain, target = None, None
@@ -150,7 +150,7 @@ def update_click_output(n_clicks, name):
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "submit-final-model-category" and len(model_categories) > 0 and name != "":
             new_object = construct_converged_collection_constructor_functor(name, model_categories, added_connections)
-            state.get_current_state()["db"].add_object(new_object)
+            multicategory.get_selected_multi_model_database().add_object(new_object)
             return [html.P("New collection constructor created with the given model category. The constructor is part of the multi-model database. You can insert data into the collection in the insert tab.")]
     else:
         raise PreventUpdate

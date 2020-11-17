@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
 from dash_frontend.server import app
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
@@ -19,7 +19,7 @@ def insert_query_subtab():
 
 
 def build_insert_query_subtab():
-    objects = state.get_current_state()["db"].get_objects()
+    objects = multicategory.get_selected_multi_model_database().get_objects()
     options = []
     for obj in objects:
         options.append({'label': str(obj), 'value': str(obj)})
@@ -28,16 +28,17 @@ def build_insert_query_subtab():
         html.Div(
             id="set-specs-intro-container",
             children=[
-        html.Label([
-            "Select collection to insert",
-            dcc.Dropdown(
-                id="select-insert-dataset",
-                style={'width': '90%',
-                                "display": "block"},
-                options=options
-            )]),
-            html.Div(id = "insert-tool")
-    ])])]
+                html.Label([
+                    "Select collection to insert",
+                    dcc.Dropdown(
+                        id="select-insert-dataset",
+                        style={'width': '90%',
+                               "display": "block"},
+                        options=options
+                    )]),
+                html.Div(id="insert-tool")
+            ])])]
+
 
 @app.callback(
     Output("insert-tool", "children"),
@@ -45,7 +46,7 @@ def build_insert_query_subtab():
 )
 def update_click_output(dataset):
     if dataset != "" and dataset != None:
-        objects = state.get_current_state()["db"].get_objects()
+        objects = multicategory.get_selected_multi_model_database().get_objects()
         return build_insert_tool(objects[dataset])
     else:
         raise PreventUpdate

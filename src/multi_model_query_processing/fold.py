@@ -14,9 +14,9 @@ from category_of_collection_constructor_functors.collection_constructor_morphism
 import os
 from shelve import DbfilenameShelf
 from tables import StringCol, tableextension
+from multicategory.initialize_multicategory import multicategory
 from supportive_functions.row_manipulations import row_to_dictionary_with_selection
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
-from dash_frontend.state.initialize_demo_state import state
 from multi_model_query_processing.selection_functions import select, select_from_tuple
 import re
 
@@ -32,7 +32,7 @@ class Fold:
 
     def __init__(self, name, source_dataset_name, filtering_condition, return_info, target_model):
         self.name = name
-        self.source_dataset = state.get_current_state()["db"].get_objects()[
+        self.source_dataset = multicategory.get_selected_multi_model_database().get_objects()[
             source_dataset_name]
         self.filtering_condition = filtering_condition
         self.return_info = return_info
@@ -78,13 +78,13 @@ class Fold:
         self.result = CollectionConstructor(self.name, model_category, collection)
 
     def commit_to_multi_model_database(self):
-        state.get_current_state()["db"].add_object(self.result)
+        multicategory.get_selected_multi_model_database().add_object(self.result)
         model_relation = self.construct_model_relation()
         model_rel = ModelRelationship(self.name, self.source_dataset.get_model_category(), model_relation, self.result.get_model_category())
         lambda_function = self.construct_lambda_function()
         collection_rel = CollectionRelationship(self.name, self.source_dataset.get_collection(), lambda_function, self.result.get_collection())
         mor = CollectionConstructorMorphism(self.name, self.source_dataset, model_rel, collection_rel, self.result)
-        state.get_current_state()["db"].add_morphism(mor)
+        multicategory.get_selected_multi_model_database().add_morphism(mor)
 
     def filter(self, elem, objects=None):
         if type(elem) == tableextension.Row:

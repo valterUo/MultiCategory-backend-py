@@ -1,6 +1,6 @@
 import dash_cytoscape as cyto
-from dash_frontend.state.initialize_demo_state import multi_model_join_results
 import dash_html_components as html
+
 
 def parse_cytoscape_nodes_edges(G):
     nodes, edges = [], []
@@ -13,8 +13,7 @@ def parse_cytoscape_nodes_edges(G):
     return nodes, edges
 
 
-def model_category_nx_grah_to_cytoscape():
-    join_result = multi_model_join_results.get_current_state()
+def model_category_nx_grah_to_cytoscape(join_result):
     model_category_join = join_result.get_model_category_join()
     G = model_category_join.get_commutative_triangle()
     nodes, edges = parse_cytoscape_nodes_edges(G)
@@ -43,12 +42,6 @@ def model_category_nx_grah_to_cytoscape():
                 }
             }
         ]
-    ), 
-    # html.Pre(id='cytoscape-tapNodeData-output', style={
-    #     'border': 'thin lightgrey solid',
-    #     'overflowX': 'scroll', 'width': '90%'}),
-    #     html.Pre(id='cytoscape-tapEdgeData-output', style={
-    #         'border': 'thin lightgrey solid',
-    #         'overflowX': 'scroll', 'width': '90%'})
+    ),
     ])
     return cyto_fig

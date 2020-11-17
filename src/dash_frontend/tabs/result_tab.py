@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
-from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
 from dash.exceptions import PreventUpdate
 from dash_frontend.server import app
 from dash_frontend.visualizations.visualize import visualize
@@ -24,7 +24,7 @@ def result_tab():
 
 
 def build_result_tab():
-    objects = state.get_current_state()["db"].get_objects()
+    objects = multicategory.get_selected_multi_model_database().get_objects()
     if rel_db.connected():
         objects[str(rel_db)] = rel_db
     if graph_db.connected():

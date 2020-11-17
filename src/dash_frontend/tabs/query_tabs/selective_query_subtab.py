@@ -1,14 +1,18 @@
+import json
+import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash_frontend.state.initialize_demo_state import state
 from dash_frontend.server import app
 from dash_frontend.modal.fold_query_modal import generate_fold_query_modal
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_frontend.fold_query_processing_frontend.execute_query import execute_query
 from dash_frontend.fold_query_processing_frontend.render_return_attribute_input import render_return_attribute_input
+from multicategory.initialize_multicategory import multicategory
 fold_query_state = []
+dirname = os.path.dirname(__file__)
+examples_path = os.path.join(dirname, "filtering_examples.json")
 
 
 def selective_query_subtab():
@@ -22,11 +26,14 @@ def selective_query_subtab():
 
 
 def build_selective_query_subtab():
-    objects = state.get_current_state()["db"].get_objects()
+    objects = multicategory.get_selected_multi_model_database().get_objects()
     initial_options = []
+    examples = dict()
     for obj in objects:
         initial_options.append({'label': str(obj), 'value': str(obj)})
-    examples = state.get_current_state()["filtering_examples"]
+    with open(examples_path) as f:
+        examples = json.load(
+            f)[multicategory.get_selected_multi_model_database().get_name()]
 
     return [html.Div(id="query-tab-main-container", children=[
         html.Div(
@@ -283,11 +290,11 @@ def select_filtering_example(selected_example):
 )
 def update_return_attributes(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[
+        data_object = multicategory.get_selected_multi_model_database().get_objects()[
             selected_domain]
         domain_model = data_object.get_model()
+        attributes = data_object.get_attributes_from_model_category()
         if domain_model != None and domain_model != "graph":
-            attributes = data_object.get_attributes_from_model_category()
             options = [{'label': str(value), 'value': str(value)}
                        for value in attributes]
             return options
@@ -304,11 +311,12 @@ def update_return_attributes(selected_domain):
 )
 def update_return_attributes_graph(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[
+        data_object = multicategory.get_selected_multi_model_database().get_objects()[
             selected_domain]
         domain_model = data_object.get_model()
+        attributes = data_object.get_attributes_from_model_category()
         if domain_model == "graph":
-            attributes = data_object.get_attributes_from_model_category()
+
             vertices = [{'label': str(value), 'value': str(value)}
                         for value in attributes["vertices"]]
             edges = [{'label': str(value), 'value': str(value)}
@@ -326,7 +334,7 @@ def update_return_attributes_graph(selected_domain):
 )
 def update_return_attributes(selected_domain):
     if selected_domain != None:
-        data_object = state.get_current_state()["db"].get_objects()[
+        data_object = multicategory.get_selected_multi_model_database().get_objects()[
             selected_domain]
         domain_model = data_object.get_model()
         return render_return_attribute_input(domain_model, fold_query_state)

@@ -1,6 +1,6 @@
 import dash_html_components as html
 from abstract_category.functor.functor_error import Error
-from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
 from dash_frontend.visualizations.pytables_visualization import main_pytable_visualization
 from dash_frontend.visualizations.tree_visualization import tree_to_cytoscape
 from dash_frontend.visualizations.nx_graph_visualization import general_nx_grah_to_cytoscape
@@ -10,7 +10,7 @@ from external_database_connections.postgresql.create_postgres_query_tool import 
 from external_database_connections.postgresql.postgres import Postgres
 
 def visualize(selected_dataset):
-    objects = state.get_current_state()["db"].get_objects()
+    objects = multicategory.get_selected_multi_model_database().get_objects()
     try:
         if type(selected_dataset) == str:
             visualized_object = objects[selected_dataset]

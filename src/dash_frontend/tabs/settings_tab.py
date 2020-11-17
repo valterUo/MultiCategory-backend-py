@@ -28,7 +28,7 @@ def build_settings_tab():
         html.Div(
             id="set-specs-intro-container",
             children=[html.H5(
-                "Select the demo dataset. The default dataset is the e-commerce dataset."
+                "Select the preinstalled multi-model database. The default database is the e-commerce database."
             ),
                 dcc.Dropdown(
                 id="select-multi-model-database",

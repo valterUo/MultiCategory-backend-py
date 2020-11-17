@@ -1,7 +1,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash_frontend.state.initialize_demo_state import state
 from dash_frontend.visualizations.nx_graph_visualization import nx_grah_to_cytoscape
+from multicategory.initialize_multicategory import multicategory
 
 
 def define_instance_functor_tab():
@@ -15,7 +15,7 @@ def define_instance_functor_tab():
 
 
 def build_instance_functor_tab():
-    database = state.get_current_state()["db"]
+    database = multicategory.get_selected_multi_model_database()
     G = database.get_instance_category_nx_graph()
     F = database.get_schema_category_nx_graph()
     instance_fig = nx_grah_to_cytoscape(G)

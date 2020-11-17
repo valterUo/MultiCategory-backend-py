@@ -1,27 +1,27 @@
 {
-    "ecommerce": [
+    "E-commerce multi-model database": [
         {"label": "lambda x : x", "value": "lambda x : x"},
         {"label": "lambda x : x['location_id'] == 10", "value": "lambda x : x['location_id'] == 10"},
         {"label": "lambda x : True", "value": "lambda x : True"},
         {"label": "lambda x : x['address'] == b'Pietari Kalmin katu 5'", "value": "lambda x : x['address'] == b'Pietari Kalmin katu 5'"},
         {"label": "lambda x : x['address'] == b'Pietari Kalmin katu 5' or x['country'] == b'USA'", "value": "lambda x : x['address'] == b'Pietari Kalmin katu 5' or x['country'] == b'USA"}
     ],
-    "patent": [
+    "Patent multi-model database": [
         {"label": "example 1", "value": "example1"}
     ],
-    "market_place": [
+    "Online market place multi-model database": [
         {"label": "example 1", "value": "example1"}
     ],
-    "unibench_small": [
+    "Small Unibench multi-model database": [
         {"label": "example 1", "value": "example1"}
     ],
-    "university": [
+    "University multi-model database": [
         {"label": "example 1", "value": "example1"}
     ],
-    "person": [
+    "Person multi-model database": [
         {"label": "example 1", "value": "example1"}
     ],
-    "film": [
+    "Film multi-model database": [
         {"label": "example 1", "value": "example1"}
     ]
 }

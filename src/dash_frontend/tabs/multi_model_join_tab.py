@@ -4,14 +4,14 @@ import dash_daq as daq
 import dash_html_components as html
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
-from dash_frontend.state.initialize_demo_state import state, parameter_state
 from dash.exceptions import PreventUpdate
 import inspect
-import dash_dangerously_set_inner_html
 from dash_frontend.multi_model_join_frontend.multi_model_join import execute_multi_model_join
 from dash_frontend.multi_model_join_frontend.second_description_input_builder import second_description_input_builder
 from dash_frontend.multi_model_join_frontend.tree_attributes_input_builder import tree_attributes_input_builder
 from dash_frontend.server import app
+from multicategory.initialize_multicategory import multicategory
+from dash_frontend.state.parameter_state import parameter_state
 
 
 def multi_model_join_tab():
@@ -25,8 +25,7 @@ def multi_model_join_tab():
 
 
 def build_multi_model_join_tab():
-    current_state = state.get_current_state()
-    objects = current_state["db"].get_str_list_of_objects()
+    objects = multicategory.get_selected_multi_model_database().get_str_list_of_objects()
     return [html.Div(
             id="set-specs-intro-container",
             children=[
@@ -60,8 +59,8 @@ def build_multi_model_join_tab():
                                 ]
                             ),
                             html.Br(),
-                            html.Button(id='submit-domain-target', type="primary",
-                                        n_clicks=0, children='Search morphisms'),
+                            html.Button(id='submit-domain-target',
+                                        children='Search morphisms'),
                             html.Div(id="hiding-element", style={"display": "none"}, children=[
                                 html.Br(),
                                 html.Div(
@@ -104,7 +103,7 @@ def build_multi_model_join_tab():
                                     "The following multi-model join will be executed: "),
                                 html.Div(id="overall-join"),
                                 html.Br(),
-                                html.Button(id='execute-button', n_clicks=0,
+                                html.Button(id='execute-button',
                                             children='Perform multi-model join'),
                             ]
                             ),
@@ -123,22 +122,23 @@ def build_multi_model_join_tab():
      State('multi-model-join-target', 'value')]
 )
 def render_object_selection(n_clicks, domain, target):
-    state_dict = parameter_state.get_current_state()
-    state_dict["domain"] = domain
-    state_dict["target"] = target
+    global parameter_state
+    parameter_state["domain"] = domain
+    parameter_state["target"] = target
     ctx = dash.callback_context
     prop_id = ""
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-    if prop_id == "submit-domain-target":
-        if domain != None and target != None:
-            current_state = state.get_current_state()
-            database = current_state["db"]
-            result = database.get_morphisms_for_pair_of_objects(domain, target)
-            return [o for o in result], {"display": "block"}
+        if prop_id == "submit-domain-target":
+            if domain != None and target != None:
+                database = multicategory.get_selected_multi_model_database()
+                result = database.get_morphisms_for_pair_of_objects(
+                    domain, target)
+                return [o for o in result], {"display": "block"}
+            else:
+                raise PreventUpdate
         else:
-           raise PreventUpdate
+            raise PreventUpdate
     else:
         raise PreventUpdate
 
@@ -149,16 +149,16 @@ def render_object_selection(n_clicks, domain, target):
     [Input("multi-model-join-morphisms", "value")]
 )
 def execute_multi_model_join_first_phase(value):
+    global parameter_state
     if value != None:
-        state_dict = parameter_state.get_current_state()
-        state_dict["morphism"] = value
-        result_model = state.get_current_state()["db"].get_objects()[
-            state_dict["domain"]].get_model()
-        state_dict["result_model"] = result_model
-        lambda_function = state.get_current_state()["db"].get_morphisms(
+        db = multicategory.get_selected_multi_model_database()
+        parameter_state["morphism"] = value
+        result_model = db.get_objects()[parameter_state["domain"]].get_model()
+        parameter_state["result_model"] = result_model
+        lambda_function = db.get_morphisms(
         )[value].get_collection_relationship().get_lambda_function()
         code_lines = inspect.getsource(lambda_function)
-        return [html.P(state_dict["domain"] + " -- " + value + " --> " + state_dict["target"]),
+        return [html.P(parameter_state["domain"] + " -- " + value + " --> " + parameter_state["target"]),
                 html.P("The result will be in " + result_model + " model."),
                 html.P("The morphism is defined with the following lambda function: "),
                 html.P(str(code_lines))], {'display': 'block'}
@@ -169,8 +169,8 @@ def execute_multi_model_join_first_phase(value):
     dash.dependencies.Output('left-boolean-switch-output', 'children'),
     [dash.dependencies.Input('left-boolean-switch', 'on')])
 def update_output(on):
-    state_dict = parameter_state.get_current_state()
-    state_dict["left"] = on
+    global parameter_state
+    parameter_state["left"] = on
     if on:
         return 'The left join is ON'
     else:
@@ -181,8 +181,8 @@ def update_output(on):
     dash.dependencies.Output('right-boolean-switch-output', 'children'),
     [dash.dependencies.Input('right-boolean-switch', 'on')])
 def update_output(on):
-    state_dict = parameter_state.get_current_state()
-    state_dict["right"] = on
+    global parameter_state
+    parameter_state["right"] = on
     if on:
         return 'The right join is ON'
     else:
@@ -200,8 +200,7 @@ def execute_multi_model_join_second_phase(n_clicks):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
     if prop_id == "execute-button":
-        state_dict = parameter_state.get_current_state()
-        result_element = execute_multi_model_join(state_dict)
+        result_element = execute_multi_model_join(parameter_state)
         return html.Div(result_element), {"display": "none"}
         #return html.Div(dash_dangerously_set_inner_html.DangerouslySetInnerHTML('''<div id = "multi-model-join-loader" class="loader"></div>''')), {"display": "none"}
     else:
@@ -213,14 +212,12 @@ def execute_multi_model_join_second_phase(n_clicks):
     [Input("multi-model-join-morphisms", "value")]
 )
 def second_description_input_toggle(value):
-    state_dict = parameter_state.get_current_state()
-    if state_dict["domain"] != None and state_dict["target"] != None:
-        domain = state.get_current_state()["db"].get_objects()[
-            state_dict["domain"]].get_model()
-        target = state.get_current_state()["db"].get_objects()[
-            state_dict["target"]].get_model()
+    objects = multicategory.get_selected_multi_model_database()
+    if parameter_state["domain"] != None and parameter_state["target"] != None:
+        domain = objects[parameter_state["domain"]].get_model()
+        target = objects[parameter_state["target"]].get_model()
         if domain == "relational" and (target == "graph" or target == "tree"):
-            return second_description_input_builder()
+            return second_description_input_builder(parameter_state)
     return []
 
 
@@ -229,27 +226,9 @@ def second_description_input_toggle(value):
     [Input("multi-model-join-morphisms", "value")]
 )
 def tree_attributes_input_toggle(value):
-    state_dict = parameter_state.get_current_state()
-    if state_dict["domain"] != None and state_dict["target"] != None:
-        domain = state.get_current_state()["db"].get_objects()[
-            state_dict["domain"]].get_model()
+    if parameter_state["domain"] != None and parameter_state["target"] != None:
+        domain = multicategory.get_selected_multi_model_database().get_objects()[
+            parameter_state["domain"]].get_model()
         if domain == "tree":
-            return tree_attributes_input_builder()
+            return tree_attributes_input_builder(parameter_state)
     return []
-
-
-# @app.callback(
-#     [Output("multi-model-result-container", "children"), Output("multi-model-join-loader", "style")],
-#     [Input("execute-button", "n_clicks")]
-# )
-# def execute_multi_model_join_third_phase(n_clicks):
-#     ctx = dash.callback_context
-#     prop_id = ""
-#     if ctx.triggered:
-#         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-#     if prop_id == "execute-button":
-#         result_element = execute_multi_model_join(state, state_dict)
-#         return html.Div(result_element), {"display": "none"}
-#     else:
-#         raise PreventUpdate

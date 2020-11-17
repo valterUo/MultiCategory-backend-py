@@ -11,9 +11,7 @@ from dash_frontend.tabs.multi_model_join_tab import multi_model_join_tab, build_
 from dash_frontend.tabs.model_transformation_tabs.model_transformation_tab import transformation_tabs, build_transformation_tabs
 from dash_frontend.tabs.result_tab import result_tab, build_result_tab
 from dash_frontend.modal.modal import generate_modal
-from dash_frontend.state.initialize_demo_state import state
 from multicategory.initialize_multicategory import multicategory
-
 
 
 def build_banner():
@@ -77,7 +75,7 @@ app.layout = html.Div(
                 build_tabs(),
                 # Main app
                 html.Div(id="app-content"),
-                html.Div(id="custom-footer", children=[html.P("", style = {"textAlign": "center", "margin": "auto", "width": "100%", "float": "left"})], style={
+                html.Div(id="custom-footer", children=[html.P("", style={"textAlign": "center", "margin": "auto", "width": "100%", "float": "left"})], style={
                          "height": "100px"})
             ],
         ),

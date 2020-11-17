@@ -2,9 +2,9 @@ import dash_cytoscape as cyto
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import json
-from dash_frontend.server import app
 import uuid
 import dash
+from dash_frontend.server import app
 from supportive_functions.xml_to_dict import XmlDictConfig, XmlListConfig
 from supportive_functions.json_manipulations import decode_shelve_to_json
 from dash.exceptions import PreventUpdate

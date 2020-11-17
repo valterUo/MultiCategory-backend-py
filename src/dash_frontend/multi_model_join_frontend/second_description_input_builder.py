@@ -1,13 +1,14 @@
 import dash
 import dash_core_components as dcc
-import dash_daq as daq
 import dash_html_components as html
 from tables import *
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
-from dash_frontend.state.initialize_demo_state import parameter_state, automatic_example_settings
+from dash_frontend.state.parameter_state import parameter_state
+from dash_frontend.state.automatic_table_settings import automatic_example_settings_dict
 from dash.exceptions import PreventUpdate
 attributes = dict()
+
 
 def second_description_input_builder():
     return html.Div([
@@ -26,8 +27,8 @@ def second_description_input_builder():
                     'label': 'Int', 'value': "Int64Col(dflt = 0)"}, {'label': 'Float', 'value': "Float32Col(dflt = 0)"}],
                 value="StringCol(64, dflt='NULL')",
             )]),
-            html.Button(id='add_description_input', type="primary", style={"margin": "5px"},
-                        n_clicks=0, children='Add attribute'),
+            html.Button(id='add_description_input', style={
+                        "margin": "5px"}, children='Add attribute'),
             html.Div(id="added_descriptions", children=[]),
             html.Div(id="second_description_input_notification"),
             html.Div(id="automatic-example-added_descriptions", children=[]),
@@ -36,10 +37,10 @@ def second_description_input_builder():
         ),
         html.Div([
             html.Br(),
-            html.Button(id='submit_description_input', type="primary",
-                        n_clicks=0, children='Submit attributes'),
-            html.Button(id='apply-automatic-example-settings', type="primary",
-                        n_clicks=0, children='Apply automatic example settings', style={'display': "inline-block", "margin": "10px"})
+            html.Button(id='submit_description_input',
+                        children='Submit attributes'),
+            html.Button(id='apply-automatic-example-settings', children='Apply automatic example settings',
+                        style={'display': "inline-block", "margin": "10px"})
         ]),
     ]
     )
@@ -54,7 +55,8 @@ def second_description_input_builder():
 )
 def add_input(n_clicks, value, datatype, current_children):
     global attributes
-    datatypes = {"StringCol(64, dflt='NULL')": StringCol(64, dflt='NULL'), "Int64Col(dflt = 0)": Int64Col(dflt=0), "Float32Col(dflt = 0)": Float32Col(dflt=0)}
+    datatypes = {"StringCol(64, dflt='NULL')": StringCol(64, dflt='NULL'), "Int64Col(dflt = 0)": Int64Col(
+        dflt=0), "Float32Col(dflt = 0)": Float32Col(dflt=0)}
     ctx = dash.callback_context
     prop_id = ""
     if ctx.triggered:
@@ -82,14 +84,15 @@ def submit_input(n_clicks, children):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "submit_description_input":
-           parameter_state.get_current_state()["second_description"] = attributes
-           return html.P("Attributes added! The attributes input field is closed now."), True
+            global parameter_state
+            parameter_state["second_description"] = attributes
+            return html.P("Attributes added! The attributes input field is closed now."), True
     return [], False
 
 
 @app.callback(
     [Output("automatic-example-added_descriptions", "children"),
-     Output("automatic-example-second_description_input_notification", "children"), 
+     Output("automatic-example-second_description_input_notification", "children"),
      Output('add_description_input', "disabled")],
     [Input("apply-automatic-example-settings", "n_clicks")]
 )
@@ -98,13 +101,14 @@ def submit_input(n_clicks):
     prop_id = ""
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        content = []
         if prop_id == "apply-automatic-example-settings":
-            domain = parameter_state.get_current_state()["domain"]
-            target = parameter_state.get_current_state()["target"]
-            parameter_state.get_current_state()["second_description"] = automatic_example_settings.get_current_state()[domain][target]
-            description = parameter_state.get_current_state()["second_description"]
-            content = []
-            for elem in parameter_state.get_current_state()["second_description"]:
+            global parameter_state
+            domain = parameter_state["domain"]
+            target = parameter_state["target"]
+            parameter_state["second_description"] = automatic_example_settings_dict[domain][target]
+            description = parameter_state["second_description"]
+            for elem in description:
                 content.append(html.P("Attribute: " + elem +
                                       ". Datatype in table: " + str(description[elem])))
         return content, html.P("Attributes added! The attributes adding tool is closed now."), True

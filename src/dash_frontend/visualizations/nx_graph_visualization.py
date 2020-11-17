@@ -1,7 +1,6 @@
 import dash_cytoscape as cyto
 import dash_html_components as html
 from dash.dependencies import Input, Output
-from networkx.generators import expanders
 from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
 from networkx import DiGraph

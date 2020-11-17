@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from dash_frontend.state.initialize_demo_state import state
+from multicategory.initialize_multicategory import multicategory
 from dash_frontend.server import app
 from category_of_collection_constructor_functors.collections.graph_collection import GraphCollection
 from category_of_collection_constructor_functors.model_categories.category_of_graph_model import GraphModelCategory
@@ -46,7 +46,7 @@ def name_input(n_clicks, name):
             model_category = GraphModelCategory(name)
             collection = GraphCollection(name, target_folder_path=target_folder_path)
             constructor = CollectionConstructor(name, model_category, collection)
-            state.get_current_state()["db"].add_object(constructor)
+            multicategory.get_selected_multi_model_database().add_object(constructor)
             return html.P("New graph collection constructor added to the multi-model database."), ""
         else:
             raise PreventUpdate
