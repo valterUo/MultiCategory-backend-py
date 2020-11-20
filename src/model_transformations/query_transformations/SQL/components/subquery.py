@@ -1,4 +1,4 @@
-from model_transformations.query_language_transformations.SQL.sql import SQL
+from model_transformations.query_transformations.SQL.sql import SQL
 
 
 class SUBQUERY:

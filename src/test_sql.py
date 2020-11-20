@@ -4,7 +4,7 @@ import os
 from difflib import SequenceMatcher
 
 from external_database_connections.postgresql.postgres import Postgres
-from model_transformations.query_language_transformations.SQL.sql import SQL
+from model_transformations.query_transformations.SQL.sql import SQL
 
 db = Postgres("ldbcsf1")
 dirname = os.path.dirname(__file__)

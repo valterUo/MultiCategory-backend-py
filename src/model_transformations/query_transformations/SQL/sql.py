@@ -1,14 +1,14 @@
 import re
 import itertools
 from collections import OrderedDict
-from model_transformations.query_language_transformations.SQL.components.select import SELECT
-from model_transformations.query_language_transformations.SQL.components.from_part import FROM
-from model_transformations.query_language_transformations.SQL.components.where import WHERE
-from model_transformations.query_language_transformations.SQL.components.group_by import GROUPBY
-from model_transformations.query_language_transformations.SQL.components.order_by import ORDERBY
-from model_transformations.query_language_transformations.SQL.components.join import JOIN
-from model_transformations.query_language_transformations.SQL.global_variables import CYPHER_AGGREGATING_FUNCTIONS
-from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import *
+from model_transformations.query_transformations.SQL.components.select import SELECT
+from model_transformations.query_transformations.SQL.components.from_part import FROM
+from model_transformations.query_transformations.SQL.components.where import WHERE
+from model_transformations.query_transformations.SQL.components.group_by import GROUPBY
+from model_transformations.query_transformations.SQL.components.order_by import ORDERBY
+from model_transformations.query_transformations.SQL.components.join import JOIN
+from model_transformations.query_transformations.SQL.global_variables import CYPHER_AGGREGATING_FUNCTIONS
+from model_transformations.query_transformations.SQL.independent_sql_parsing_tools import *
 
 ## Instance of SQL class contain 0 or multiple common table expressions, 0 or multiple subqueries and exactly one so called main query
 

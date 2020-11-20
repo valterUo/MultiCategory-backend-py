@@ -1,20 +1,21 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
 from abstract_category.functor.functor import Functor
 from abstract_category.functor.functor_error import Error, FunctorError
+from abstract_category.functor.functor_supportive_functions import construct_functor_to_graph_model
 from dash_frontend.server import app
-from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
 from dash_frontend.tabs.model_transformation_tabs.construct_postgres_schema import construct_postgres_schema
 from external_database_connections.neo4j.neo4j import Neo4j
 from external_database_connections.postgresql.postgres import Postgres
-from model_transformations.data_transformations.data_transformation import Transformation
+from model_transformations.data_transformations.rel_to_graph_data_transformation import RelToGraphDataTransformation
 
 rel_db = Postgres("lcdbsf1")
 graph_db = Neo4j("lcdbsf1")
-tables_to_nodes, tables_to_edges, source_fun, target_fun = [], [], [], []
+tables_to_nodes, tables_to_edges, rels_to_edges, source_fun, target_fun = [], [], [], []
 functor = None
 
 
@@ -54,13 +55,16 @@ def build_data_tranformation_tab():
 
 
 def notify_db_not_empty():
-    if not graph_db.is_empty():
-        return html.Div(id="proceed-with-nonempty-db", style={"margin": "10px", "border": "1px solid white"}, children=[
-            html.P("The graph database is not empty. How do you want to proceed?"),
-            html.Button("Empty the graph database", id="empty-graph-db"),
-            html.Button("Append to the graph database", id="append-graph-db")])
+    if graph_db.connected():
+        if not graph_db.is_empty():
+            return html.Div(id="proceed-with-nonempty-db", style={"margin": "10px", "border": "1px solid white"}, children=[
+                html.P("The graph database is not empty. How do you want to proceed?"),
+                html.Button("Empty the graph database", id="empty-graph-db"),
+                html.Button("Append to the graph database", id="append-graph-db")])
+        else:
+            return html.Div(html.P("The graph database " + graph_db.get_name() + " is empty."))
     else:
-        return html.Div(html.P("The graph database " + graph_db.get_name() + " is empty."))
+            return html.Div(html.P("The graph database is not connected and running."))
 
 
 @app.callback(
@@ -145,10 +149,7 @@ def load_schema_from_postgres_button(click1):
 
 def construct_functor_component():
     try:
-        domain, fun, target = construct_functor()
-        # if domain and fun and target:
-        #     return html.P("The transformation does not define function from the schema to graph model. Select or deselect tables and relationships."), {
-        #         "display": "none"}
+        domain, fun, target = construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fun, target_fun)
         global functor
         functor = Functor("transformation", domain, fun, target)
         if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
@@ -157,7 +158,8 @@ def construct_functor_component():
         return html.P("Transformation satisfies functoriality and can be executed."), {"display": "block"}
     except FunctorError as e:
         print(e)
-        return html.P("The transformation does not satify functoriality. Select or deselect tables and relationships."), {"display": "none"}
+        return html.P("""The transformation does not satify functoriality. Select or deselect tables and relationships.
+            The error is '""" + str(e) + "'"), {"display": "none"}
 
 
 @app.callback([Output("selected-tables-to-edges", "children"),
@@ -181,13 +183,17 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         global tables_to_edges
+        global rels_to_edges
         global tables_to_nodes
         global source_fun
         global target_fun
         if prop_id == "add-selected-elements-edges":
-            if not data_list_tables:
+            if data_list_tables:
+                tables_to_edges += data_list_tables
+            elif data_list_rels:
+                rels_to_edges += data_list_rels
+            else:
                 raise PreventUpdate
-            tables_to_edges += data_list_tables
         elif prop_id == "add-selected-elements-nodes":
             if not data_list_tables:
                 raise PreventUpdate
@@ -202,6 +208,7 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
             target_fun += data_list_rels
         elif prop_id == "reset-edges":
             tables_to_edges = []
+            rels_to_edges = []
         elif prop_id == "reset-nodes":
             tables_to_nodes = []
         elif prop_id == "reset-source":
@@ -248,39 +255,8 @@ def execute_transformation(click1):
 )
 def update_progress(children):
     if len(children) > 0:
-        tr = Transformation(rel_db, graph_db, functor)
+        tr = RelToGraphDataTransformation(rel_db, graph_db, functor)
         tr.transform()
         return html.Div(id="transformation-success", children=[html.P("Relational instance transformed into graph successfully!")]), []
     else:
         return html.Div()
-
-
-def construct_functor():
-    target = {"objects": ["nodes", "edges"], "morphisms": [{"source": "edges", "morphism": "source",
-                                                            "target": "nodes"}, {"source": "edges", "morphism": "target", "target": "nodes"}]}
-    domain, fun = dict(), dict()
-    domain["objects"] = []
-    domain["morphisms"] = []
-    for table in tables_to_nodes:
-        domain["objects"].append(table["id"])
-        fun[table["id"]] = "nodes"
-    for table in tables_to_edges:
-        domain["objects"].append(table["id"])
-        fun[table["id"]] = "edges"
-    for rel in source_fun:
-        domain["morphisms"].append(
-            {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
-        if (rel["fk"], rel["pk"]) not in fun.keys():
-            fun[(rel["fk"], rel["pk"])] = "source"
-        else:
-            print("The morphism " + str((rel["fk"], rel["pk"])) + " is already mapped to source function!")
-            #return False, False, False
-    for rel in target_fun:
-        domain["morphisms"].append(
-            {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
-        if (rel["fk"], rel["pk"]) not in fun.keys():
-            fun[(rel["fk"], rel["pk"])] = "target"
-        else:
-            print("The morphism " + str((rel["fk"], rel["pk"])) + " is already mapped to target function!")
-            #return False, False, False
-    return domain, fun, target

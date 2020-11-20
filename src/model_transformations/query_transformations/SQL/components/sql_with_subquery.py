@@ -1,8 +1,8 @@
 import re
 from collections import OrderedDict
 
-from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import *
-from model_transformations.query_language_transformations.SQL.sql import SQL
+from model_transformations.query_transformations.SQL.independent_sql_parsing_tools import *
+from model_transformations.query_transformations.SQL.sql import SQL
 
 
 ## SQL query that contains subqueries but no ctes

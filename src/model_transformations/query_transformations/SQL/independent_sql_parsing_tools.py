@@ -1,7 +1,7 @@
 import string
 import re
 import random
-from model_transformations.query_language_transformations.SQL.global_variables import KEYWORDS
+from model_transformations.query_transformations.SQL.global_variables import KEYWORDS
 
 
 def remove_comments(query):

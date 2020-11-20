@@ -32,7 +32,10 @@ class Neo4j:
         return self.driver != None
 
     def close(self):
-        self.driver.close()
+        try:
+            self.driver.close()
+        except:
+            print("The driver is already closed.")
 
     def is_empty(self):
         query = "MATCH (n) RETURN count(n)"
@@ -40,24 +43,34 @@ class Neo4j:
         return res[0]["count(n)"] == 0
 
     def execute_write(self, query):
-        with self.driver.session() as session:
-            node = session.write_transaction(self._execute_query, query)
-            return node
+        try:
+            with self.driver.session() as session:
+                node = session.write_transaction(self._execute_query, query)
+                return node
+        except Exception as error:
+            print(error)
 
     def execute_read(self, query):
-        with self.driver.session() as session:
-            node = session.read_transaction(self._execute_query, query)
-            return node
+        try:
+            with self.driver.session() as session:
+                node = session.read_transaction(self._execute_query, query)
+                return node
+        except Exception as error:
+            print(error)
 
     def empty_database(self):
         query = "MATCH (n) DETACH DELETE n"
         result = self.execute_write(query)
-        #print(result)
+        return result
 
     def create_and_return_node(self, property_name, attributes):
-        with self.driver.session() as session:
-            node = session.write_transaction(
-                self._create_and_return_node, property_name, attributes)
+        try:
+            with self.driver.session() as session:
+                node = session.write_transaction(
+                    self._create_and_return_node, property_name, attributes)
+                return node
+        except Exception as error:
+            print(error)
 
     def create_index(self, rel_db, table_name, recalculate=False):
         primary_key = rel_db.get_primary_key(table_name)

@@ -1,8 +1,8 @@
-from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import clean, get_random_string
-from model_transformations.query_language_transformations.SQL.sql import SQL
+from model_transformations.query_transformations.SQL.independent_sql_parsing_tools import clean, get_random_string
+from model_transformations.query_transformations.SQL.sql import SQL
 import re
 from collections import OrderedDict
-from model_transformations.query_language_transformations.SQL.global_variables import KEYWORDS
+from model_transformations.query_transformations.SQL.global_variables import KEYWORDS
 
 # with recursive cposts(m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid) AS (
 # 	  select m_messageid, m_content, m_ps_imagefile, m_creationdate, m_c_replyof, m_creatorid

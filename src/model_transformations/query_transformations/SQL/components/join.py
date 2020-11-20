@@ -1,6 +1,6 @@
 import re
 
-from model_transformations.query_language_transformations.SQL.independent_sql_parsing_tools import get_random_string
+from model_transformations.query_transformations.SQL.independent_sql_parsing_tools import get_random_string
 
 
 class JOIN:
