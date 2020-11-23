@@ -15,7 +15,7 @@ from model_transformations.data_transformations.rel_to_graph_data_transformation
 
 rel_db = Postgres("lcdbsf1")
 graph_db = Neo4j("lcdbsf1")
-tables_to_nodes, tables_to_edges, rels_to_edges, source_fun, target_fun = [], [], [], []
+tables_to_nodes, tables_to_edges, rels_to_edges, source_fun, target_fun = [], [], [], [], []
 functor = None
 
 

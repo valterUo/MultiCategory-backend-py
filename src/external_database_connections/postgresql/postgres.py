@@ -2,7 +2,9 @@ import psycopg2
 import psycopg2.extras
 from external_database_connections.config.config import config
 import json
-
+import os
+dirname = os.path.dirname(__file__)
+examples_path = os.path.join(dirname, "schemaQueries.json")
 
 class Postgres():
 
@@ -10,7 +12,7 @@ class Postgres():
         self.name = name
         self.conn = None
         self.primary_keys = None
-        with open("external_database_connections\\postgresql\\schemaQueries.json") as queries:
+        with open(examples_path) as queries:
             self.schema_queries = json.load(queries)
         try:
             params = config(section=section)

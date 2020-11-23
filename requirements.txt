@@ -1,0 +1,14 @@
+dash
+dash-bootstrap-components
+dash-colorscales
+dash-core-components
+dash-cytoscape
+dash-dangerously-set-inner-html
+dash-daq
+dash-html-components
+dash-renderer
+dash-table
+tables
+networkx
+psycopg2
+neo4j
