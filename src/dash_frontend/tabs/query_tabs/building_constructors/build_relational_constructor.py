@@ -130,10 +130,10 @@ def submit_input(n_clicks):
 
 
 def return_attibutes_to_build_relational_constructor(attributes_datatypes):
-    target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+    target_folder_path = os.path.join(dirname, "..//..//db_files")
     model_category = TableModelCategory(
         name, list(attributes_datatypes.keys()))
     collection = TableCollection(
-        name, attributes_datatypes, h5file_path=target_folder_path + "\\" + name + ".h5")
+        name, attributes_datatypes, h5file_path=target_folder_path + "//" + name + ".h5")
     constructor = CollectionConstructor(name, model_category, collection)
     multicategory.get_selected_multi_model_database().add_object(constructor)

@@ -25,7 +25,7 @@ def rel_schema_to_nx_graph(rel_db):
     for e in default_edges:
         for fk in default_edges[e]:
             if "target_table" in default_edges[e][fk].keys():
-                edges.append((default_edges[e][fk]["target_table"], e, {
+                edges.append((e, default_edges[e][fk]["target_table"], {
                              "fk": fk, "pk": default_edges[e][fk]["primary_key_in_target_table"]}))
     G.add_edges_from(edges)
     return G

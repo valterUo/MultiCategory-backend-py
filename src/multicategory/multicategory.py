@@ -1,9 +1,10 @@
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
-from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
+#from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
 from multi_model_db.multi_model_db import MultiModelDB
 
 ecommer_db = ECommerceMultiModelDatabase().get_multi_model_db()
-patent_db = PatentMultiModelDatabase().get_multi_model_db()
+#patent_db = PatentMultiModelDatabase().get_multi_model_db()
+patent_db = MultiModelDB("Patent multi-model database", [], [])
 
 predefined_multi_model_dbs = [
     ecommer_db, patent_db, MultiModelDB("Online market place multi-model database", [], []), MultiModelDB("Small Unibench multi-model database", [], []), MultiModelDB(

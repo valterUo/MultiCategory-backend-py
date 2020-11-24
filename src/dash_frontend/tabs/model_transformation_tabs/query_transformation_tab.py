@@ -10,7 +10,7 @@ from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_transformations.SQL.sql import SQL
 from external_database_connections.config.config import config
 dirname = os.path.dirname(__file__)
-example_files_path = os.path.join(dirname, "..\\..\\model_transformations\\ldbc\\ldbc_sql\\*.sql")
+example_files_path = os.path.join(dirname, "..//..//model_transformations//ldbc//ldbc_sql//*.sql")
 
 
 def query_tranformation_tab():

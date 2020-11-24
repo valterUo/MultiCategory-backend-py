@@ -45,7 +45,7 @@ def name_input(n_clicks, name):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "submit-tree-constructor" and name.strip() != "":
-            target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+            target_folder_path = os.path.join(dirname, "..//..//db_files")
             model_category = TreeModelCategory(name)
             collection = TreeCollection(
                 name, target_file_path=target_folder_path)

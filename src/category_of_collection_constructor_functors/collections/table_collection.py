@@ -42,8 +42,8 @@ class TableCollection:
                 print("The database file in path " + self.h5file_path +
                       " does not exists. The file will be created.")
                 self.create_h5_file(file_extension, delimiter)
-            else:
-                print("The database file for " + self.name + " exsists.")
+            # else:
+            #     print("The database file for " + self.name + " exsists.")
             self.h5file = open_file(
                 self.h5file_path, mode="r+", title=self.name + " file")
             self.table = self.h5file.get_node("/" + self.name, self.name)

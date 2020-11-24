@@ -1,5 +1,6 @@
 # Build with: docker build -t multicategory .
-# Run with: docker run -it --publish 8050:8080 --detach --rm --name multicategory-running multicategory
+# Run with: docker run -it --publish 8050:8080 --detach --rm --net=multicategory --name multicategory-running multicategory
+# docker exec -it <container id> bash
 FROM python:3
 
 #WORKDIR src

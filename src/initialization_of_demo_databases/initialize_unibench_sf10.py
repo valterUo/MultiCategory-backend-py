@@ -9,31 +9,31 @@ class UnibenchMultiModelDatabase():
 
         unibench_config = []
 
-        base_path = "E:\\MultiCategory\\original_files\\Unibench_SF10"
+        base_path = "E://MultiCategory//original_files//Unibench_SF10"
 
-        customer_data_path = base_path + "\\Customer\\person_0_0.csv"
-        feedback_data_path = base_path + "\\Feedback\\feedback.csv"
-        order_data_path = base_path + "\\Order\\order.json"
-        product_data_path = base_path + "\\Product\\Product.csv"
-        post_data_path = base_path + "\\SocialNetwork\\post_0_0.csv"
-        vendor_data_path = base_path + "\\Vendor\\vendor.csv"
-        person_knows_person_data_path = base_path + "\\SocialNetwork\\person_knows_person_0_0.csv"
-        post_hasCreator_person_data_path = base_path + "\\SocialNetwork\\post_hasCreator_person_0_0.csv"
-        post_hasTag_tag_data_path = base_path + "\\SocialNetwork\\post_hasTag_tag_0_0.csv"
-        target_folder = "E:\\MultiCategory\\db_files\\Unibench_SF10"
+        customer_data_path = base_path + "//Customer//person_0_0.csv"
+        feedback_data_path = base_path + "//Feedback//feedback.csv"
+        order_data_path = base_path + "//Order//order.json"
+        product_data_path = base_path + "//Product//Product.csv"
+        post_data_path = base_path + "//SocialNetwork//post_0_0.csv"
+        vendor_data_path = base_path + "//Vendor//vendor.csv"
+        person_knows_person_data_path = base_path + "//SocialNetwork//person_knows_person_0_0.csv"
+        post_hasCreator_person_data_path = base_path + "//SocialNetwork//post_hasCreator_person_0_0.csv"
+        post_hasTag_tag_data_path = base_path + "//SocialNetwork//post_hasTag_tag_0_0.csv"
+        target_folder = "E://MultiCategory//db_files//Unibench_SF10"
 
         if version == "SF30":
-            base_path = "E:\\MultiCategory\\original_files\\Unibench_SF30"
-            customer_data_path = base_path + "\\Customer\\person_0_0.csv"
-            feedback_data_path = base_path + "\\Feedback\\feedback.csv"
-            order_data_path = base_path + "\\Order\\order.json"
-            product_data_path = base_path + "\\Product\\Product.csv"
-            post_data_path = base_path + "\\SocialNetwork\\post_0_0.csv"
-            vendor_data_path = base_path + "\\Vendor\\vendor.csv"
-            person_knows_person_data_path = base_path + "\\SocialNetwork\\person_knows_person_0_0.csv"
-            post_hasCreator_person_data_path = base_path + "\\SocialNetwork\\post_hasCreator_person_0_0.csv"
-            post_hasTag_tag_data_path = base_path + "\\SocialNetwork\\post_hasTag_tag_0_0.csv"
-            target_folder = "E:\\MultiCategory\\db_files\\Unibench_SF30"
+            base_path = "E://MultiCategory//original_files//Unibench_SF30"
+            customer_data_path = base_path + "//Customer//person_0_0.csv"
+            feedback_data_path = base_path + "//Feedback//feedback.csv"
+            order_data_path = base_path + "//Order//order.json"
+            product_data_path = base_path + "//Product//Product.csv"
+            post_data_path = base_path + "//SocialNetwork//post_0_0.csv"
+            vendor_data_path = base_path + "//Vendor//vendor.csv"
+            person_knows_person_data_path = base_path + "//SocialNetwork//person_knows_person_0_0.csv"
+            post_hasCreator_person_data_path = base_path + "//SocialNetwork//post_hasCreator_person_0_0.csv"
+            post_hasTag_tag_data_path = base_path + "//SocialNetwork//post_hasTag_tag_0_0.csv"
+            target_folder = "E://MultiCategory//db_files//Unibench_SF30"
 
 
         ## ===== Customer graph =====

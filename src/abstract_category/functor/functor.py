@@ -21,9 +21,9 @@ class Functor:
         self.functor = fun
         self.domain = dom
         self.target = tar
-
+        print()
         print(dom, fun, tar)
-
+        print()
         # The first requirement
         if len(self.domain) == 0:
             raise FunctorError("Domain category is empty.")
@@ -31,21 +31,24 @@ class Functor:
             raise FunctorError("Target category is empty.")
         if len(self.functor) == 0:
             raise FunctorError("The mapping is not properly defined.")
-        try:
-            for obj in self.domain["objects"]:
-                if self.functor[obj] not in self.target["objects"]:
-                    raise FunctorError(
-                        "Functor does not map every object in the domain category to the target category")
-                    
-            for mor in self.domain["morphisms"]:
-                image = {"source": self.functor[mor["source"]],
-                         "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
-                if image not in self.target["morphisms"]:
-                    raise FunctorError(
-                        "Functor does not map every morphism in the domain category to the correct morphism in the target category")
-        except:
-            raise FunctorError(
-                "Domain category, target category or functor definition are invalid.")
+        #try:
+        for obj in self.domain["objects"]:
+            if self.functor[obj] not in self.target["objects"]:
+                raise FunctorError(
+                    "Functor does not map every object in the domain category to the target category")
+                
+        for mor in self.domain["morphisms"]:
+            #print("Mapped: ", mor["source"])
+            image = {"source": self.functor[mor["source"]],
+                        "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
+            #print("image: ", image)
+            #print("morphisms: ", self.target["morphisms"])
+            if image not in self.target["morphisms"]:
+                raise FunctorError(
+                    "Functor does not map every morphism in the domain category to the correct morphism in the target category")
+        # except:
+        #     raise FunctorError(
+        #         "Domain category, target category or functor definition are invalid.")
 
         # The second requirement
         try:

@@ -25,9 +25,8 @@ echo
 echo "============================="
 echo "===== Running containers====="
 echo "============================="
-docker run -d -h multicategory-postgres --net=multicategory -p 5400:5400 -p 8080:8080 -e "PGPORT=5400" -e "BDHOST=multicategory-postgres" --name multicategory-postgres postgres
-docker run -d -h multicategory-neo4j --net=multicategory -p 5401:5401 -e "PGPORT=5401" -e "BDHOST=multicategory-neo4j" --name multicategory-neo4j neo4j
-
+docker run -d -h multicategory-postgres --net=multicategory -p5400:5400 -p8080:8080 -e "PGPORT=5400" -e "BDHOST=multicategory-postgres" --name multicategory-postgres postgres
+docker run --net=multicategory -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/0000 --name multicategory-neo4j neo4j
 
 echo
 echo "========================"

@@ -27,7 +27,7 @@ class RelToGraphDataTransformation:
         return True
 
     def transform_table_into_collection_of_nodes(self, table_name):
-        self.graph_db.create_index(self.rel_db, table_name, True)
+        self.graph_db.create_index(self.rel_db, table_name)
         result = self.rel_db.query("SELECT * FROM " + table_name + ";")
         for result_dict in result:
             d = dict(result_dict)
@@ -39,6 +39,8 @@ class RelToGraphDataTransformation:
             self.transform_table_into_collection_of_nodes(table)
 
     def collect_edge_data(self, rel1, rel2, relationship):
+        if len(relationship) < 3:
+            return ""
         res = "{ "
         for key in relationship:
             if key != rel1 and key != rel2:
@@ -55,11 +57,17 @@ class RelToGraphDataTransformation:
             WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
             AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
             CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
+        print(query)
         res = self.graph_db.execute_write(query)
         return res
 
     def query_relationships(self, table):
         query = "SELECT * FROM " + table + ";"
+        result = self.rel_db.query(query, "dict")
+        return result
+
+    def query_relationships_from_virtual_edge_table(self, table, edge_label1, edge_label2):
+        query = "SELECT " + edge_label1 + " AS " + edge_label1 + ", " + edge_label1 + " AS " + edge_label2 + " FROM " + table + ";"
         result = self.rel_db.query(query, "dict")
         return result
 
@@ -69,37 +77,61 @@ class RelToGraphDataTransformation:
         target_map = self.rel_to_graph_functor.get_edge_target()
         domain_morphisms = self.rel_to_graph_functor.get_morphisms_of_domain_category()
 
-        for fk_table in edges:
-            fk_source, fk_target, pk_source, pk_target = None, None, None, None
-            pk_table_source, pk_table_target = None, None
+        fk_source, fk_target, pk_source, pk_target = None, None, None, None
+        pk_table_source, pk_table_target = None, None
 
-            for key in source_map:
-                if len(key) != 2:
-                    raise DataTransformationError(
-                        "Source map is in wrong format ", key)
+        for key in source_map:
+            print(key)
+            if type(key) == tuple and len(key) == 2:
                 fk_source, pk_source = key[0], key[1]
-
-            for key in target_map:
-                if len(key) != 2:
-                    raise DataTransformationError(
-                        "Target map is in wrong format ", key)
+            elif type(key) == str:
+                fk_source, fk_target = key, key
+            else:
+                raise DataTransformationError(
+                    "Source map is in wrong format ", key)
+            
+        for key in target_map:
+            print(key)
+            if type(key) == tuple and len(key) == 2:
                 fk_target, pk_target = key[0], key[1]
+            elif type(key) == str:
+                pk_target, pk_source = key, key
+            else:
+                raise DataTransformationError(
+                    "Target map is in wrong format ", key)
+            
+        if fk_source is not None and pk_source is not None:
+            for mor in domain_morphisms:
+                if fk_source in mor.values():
+                    pk_table_source = mor["target"]
+                    break
+                elif (fk_source, pk_source) in mor.values():
+                    pk_table_source = mor["target"]
 
-            if fk_source is not None and pk_source is not None:
-                for mor in domain_morphisms:
-                    if (fk_source, pk_source) in mor.values():
-                        pk_table_source = mor["target"]
+        if fk_target is not None and pk_target is not None:
+            for mor in domain_morphisms:
+                if pk_target in mor.values():
+                    pk_table_target = mor["target"]
+                    break
+                elif (fk_target, pk_target) in mor.values():
+                    pk_table_target = mor["target"]
 
-            if fk_target is not None and pk_target is not None:
-                for mor in domain_morphisms:
-                    if (fk_target, pk_target) in mor.values():
-                        pk_table_target = mor["target"]
+        if None in [fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target]:
+            raise DataTransformationError("Some of the variables are not defined ", [
+                fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target])
 
-            if None in [fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target]:
-                raise DataTransformationError("Some of the variables are not defined ", [
-                    fk_source, fk_target, pk_source, pk_target, pk_table_source, pk_table_target])
+        for fk_table in edges:
+            if type(fk_table) == str:
+                relationships = self.query_relationships(fk_table)
+                for relationship in relationships:
+                    self.create_edges_between_two_collections_of_nodes(
+                        pk_table_source, pk_source, pk_target, pk_table_target, fk_source, fk_target, relationship)
+            elif type(fk_table) == tuple:
+                # The case when we have virtual edge table
+                # There does not exit any other information except the information about the connections
+                relationships = self.query_relationships_from_virtual_edge_table(pk_table_target, fk_source, pk_target)
+                for relationship in relationships:
+                    self.create_edges_between_two_collections_of_nodes(
+                        pk_table_source, pk_source, fk_source , pk_table_target, pk_target, fk_target, relationship)
 
-            relationships = self.query_relationships(fk_table)
-            for relationship in relationships:
-                self.create_edges_between_two_collections_of_nodes(
-                    pk_table_source, pk_source, pk_target, pk_table_target, fk_source, fk_target, relationship)
+

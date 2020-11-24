@@ -8,7 +8,6 @@ from multi_model_db.multi_model_db import MultiModelDB
 from category_of_collection_constructor_functors.model_categories.model_relationship import ModelRelationship
 from category_of_collection_constructor_functors.collections.collection_relationship import CollectionRelationship
 from category_of_collection_constructor_functors.collection_constructor_morphism import CollectionConstructorMorphism
-from multi_model_join.multi_model_join import MultiModelJoin
 from supportive_functions.row_manipulations import row_to_dictionary
 import os
 dirname = os.path.dirname(__file__)
@@ -20,21 +19,21 @@ class PatentMultiModelDatabase():
         morphisms = dict()
 
         # target_folder = os.path.join(
-        #     dirname, "..\\..\\db_files\\patent")
+        #     dirname, "..//..//db_files//patent")
 
         assignee_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\assignee.table")
+            dirname, "..//..//original_data//patent//assignee.table")
         category_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\category.table")
+            dirname, "..//..//original_data//patent//category.table")
         citation_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\citation.graph")
+            dirname, "..//..//original_data//patent//citation.graph")
         class_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\class.table")
+            dirname, "..//..//original_data//patent//class.table")
         inventor_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\inventor.table")
+            dirname, "..//..//original_data//patent//inventor.table")
         patent_data_path = os.path.join(
-            dirname, "..\\..\\original_data\\patent\\patent.table")
-        target_folder = "E:\\MultiCategory\\db_files\\patent"
+            dirname, "..//..//original_data//patent//patent.table")
+        target_folder = "E://MultiCategory//db_files//patent"
 
         ## Constructing objects
         ## Patent table

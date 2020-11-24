@@ -33,7 +33,7 @@ def construct_converged_collection_constructor_functor(name, model_categories, a
                 break
         else:
             root = model_category
-    target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+    target_folder_path = os.path.join(dirname, "..//..//db_files")
     root_collection = construct_root_collection(name, root, target_folder_path)
     result = CollectionConstructor(name, root, root_collection)
     return result
@@ -42,7 +42,7 @@ def construct_root_collection(name, root, target_folder_path):
     model = root.get_model()
     root_collection = None
     if model == "relational":
-        root_collection = TableCollection(name, h5file_path=target_folder_path + "\\" + name + ".h5")
+        root_collection = TableCollection(name, h5file_path=target_folder_path + "//" + name + ".h5")
     elif model == "graph":
         root_collection = GraphCollection(name, target_folder_path=target_folder_path)
     elif model == "tree":
@@ -55,7 +55,7 @@ def add_converged_collection(root_collection, name, model_category_connections_f
         model = connection.get_target_model_category().get_model()
         target_collection = None
         if model == "relational":
-            target_collection = TableCollection(name, h5file_path= target_folder_path + "\\" + name + ".h5")
+            target_collection = TableCollection(name, h5file_path= target_folder_path + "//" + name + ".h5")
         elif model == "graph":
             target_collection = GraphCollection(name, target_folder_path=target_folder_path)
         elif model == "tree":

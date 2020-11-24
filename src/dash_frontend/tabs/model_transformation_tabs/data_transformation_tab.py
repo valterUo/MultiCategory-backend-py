@@ -149,7 +149,7 @@ def load_schema_from_postgres_button(click1):
 
 def construct_functor_component():
     try:
-        domain, fun, target = construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fun, target_fun)
+        domain, fun, target = construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fun, target_fun, rels_to_edges)
         global functor
         functor = Functor("transformation", domain, fun, target)
         if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
@@ -192,6 +192,9 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
                 tables_to_edges += data_list_tables
             elif data_list_rels:
                 rels_to_edges += data_list_rels
+                source_fun += data_list_rels
+                target_fun += data_list_rels
+                print(rels_to_edges)
             else:
                 raise PreventUpdate
         elif prop_id == "add-selected-elements-nodes":
@@ -217,7 +220,11 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
             target_fun = []
         else:
             raise PreventUpdate
-        edge_names = [elem["id"] + "\n" for elem in tables_to_edges]
+        if rels_to_edges:
+            edge_names = [elem["source"] + " --> " +
+                            elem["target"] + "\n" for elem in rels_to_edges]
+        else:
+            edge_names = [elem["id"] + "\n" for elem in tables_to_edges]
         node_names = [elem["id"] + "\n" for elem in tables_to_nodes]
         source_fun_names = [elem["source"] + " --> " +
                             elem["target"] + "\n" for elem in source_fun]

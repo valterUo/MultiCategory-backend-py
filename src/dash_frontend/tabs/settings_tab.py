@@ -8,7 +8,7 @@ from dash.exceptions import PreventUpdate
 from multicategory.initialize_multicategory import multicategory
 dirname = os.path.dirname(__file__)
 full_config_file_path = os.path.join(
-    dirname, "..\\..\\external_database_connections\\config\\databases.ini")
+    dirname, "..//..//external_database_connections//config//databases.ini")
 
 
 def define_settings_tab():

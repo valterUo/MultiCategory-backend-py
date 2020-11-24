@@ -42,7 +42,7 @@ def name_input(n_clicks, name):
     if ctx.triggered:
         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if prop_id == "submit-graph-constructor" and name.strip() != "":
-            target_folder_path = os.path.join(dirname, "..\\..\\db_files")
+            target_folder_path = os.path.join(dirname, "..//..//db_files")
             model_category = GraphModelCategory(name)
             collection = GraphCollection(name, target_folder_path=target_folder_path)
             constructor = CollectionConstructor(name, model_category, collection)
