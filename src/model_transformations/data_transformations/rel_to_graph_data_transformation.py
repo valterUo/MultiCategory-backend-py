@@ -67,7 +67,8 @@ class RelToGraphDataTransformation:
         return result
 
     def query_relationships_from_virtual_edge_table(self, table, edge_label1, edge_label2):
-        query = "SELECT " + edge_label1 + " AS " + edge_label1 + ", " + edge_label1 + " AS " + edge_label2 + " FROM " + table + ";"
+        query = "SELECT " + edge_label1 + " AS " + edge_label1 + ", " + \
+            edge_label1 + " AS " + edge_label2 + " FROM " + table + ";"
         result = self.rel_db.query(query, "dict")
         return result
 
@@ -89,7 +90,7 @@ class RelToGraphDataTransformation:
             else:
                 raise DataTransformationError(
                     "Source map is in wrong format ", key)
-            
+
         for key in target_map:
             print(key)
             if type(key) == tuple and len(key) == 2:
@@ -99,7 +100,7 @@ class RelToGraphDataTransformation:
             else:
                 raise DataTransformationError(
                     "Target map is in wrong format ", key)
-            
+
         if fk_source is not None and pk_source is not None:
             for mor in domain_morphisms:
                 if fk_source in mor.values():
@@ -129,9 +130,8 @@ class RelToGraphDataTransformation:
             elif type(fk_table) == tuple:
                 # The case when we have virtual edge table
                 # There does not exit any other information except the information about the connections
-                relationships = self.query_relationships_from_virtual_edge_table(pk_table_target, fk_source, pk_target)
+                relationships = self.query_relationships_from_virtual_edge_table(
+                    pk_table_target, fk_source, pk_target)
                 for relationship in relationships:
                     self.create_edges_between_two_collections_of_nodes(
-                        pk_table_source, pk_source, fk_source , pk_table_target, pk_target, fk_target, relationship)
-
-
+                        pk_table_source, pk_source, fk_source, pk_table_target, pk_target, fk_target, relationship)

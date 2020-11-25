@@ -13,21 +13,21 @@ class ECommerceMultiModelDatabase():
         ecommerce_config = []
 
         customers_vertex_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//customerVertex.csv")
+            dirname, "..//..//resources//ecommerce//customerVertex.csv")
         customers_edge_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//customerEdge.csv")
+            dirname, "..//..//resources//ecommerce//customerEdge.csv")
         interest_vertex_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//interestVertex.csv")
+            dirname, "..//..//resources//ecommerce//interestVertex.csv")
         interest_edge_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//interestEdge.csv")
+            dirname, "..//..//resources//ecommerce//interestEdge.csv")
         locations_table_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//locationsTable.csv")
+            dirname, "..//..//resources//ecommerce//locationsTable.csv")
         orders_xml_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//orders.xml")
+            dirname, "..//..//resources//ecommerce//orders.xml")
         sites_table_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//sites.csv")
+            dirname, "..//..//resources//ecommerce//sites.csv")
         key_value_pairs_path = os.path.join(
-            dirname, "..//..//original_data//eCommerce//keyValuePairs.json")
+            dirname, "..//..//resources//ecommerce//keyValuePairs.json")
         target_folder = os.path.join(
             dirname, "..//..//db_files//ecommerce")
 

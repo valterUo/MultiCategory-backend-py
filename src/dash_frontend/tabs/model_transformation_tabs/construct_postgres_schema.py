@@ -6,6 +6,7 @@ from dash_frontend.server import app
 from supportive_functions.json_manipulations import decode_to_json
 graph = None
 
+
 def construct_postgres_schema(rel_db):
     res = rel_schema_to_nx_graph(rel_db)
     return schema_nx_grah_to_cytoscape(res)
@@ -46,31 +47,31 @@ def schema_nx_grah_to_cytoscape(g):
     global graph
     graph = g
     nodes, edges = parse_cytoscape_nodes_edges(graph)
-    cyto_fig = html.Div(children=[ html.Br(),
-        cyto.Cytoscape(
-            id='rel-schema-cytoscape-result',
-            layout={'name': 'circle'},
-            style={'width': '90%', 'margin': '0 auto',
-                   'height': '800px', 'backgroundColor': '#f8f7ed'},
-            elements=nodes + edges,
-            stylesheet=[
-                {
-                    'selector': 'node',
-                    'style': {
-                        'content': 'data(label)',
-                        'color': 'black'
-                    }
-                },
-                {
-                    'selector': 'edge',
-                    'style': {
-                        'color': 'black',
-                        'curve-style': 'bezier',
-                        'target-arrow-shape': 'triangle'
-                    }
+    cyto_fig = html.Div(children=[html.Br(),
+                                  cyto.Cytoscape(
+        id='rel-schema-cytoscape-result',
+        layout={'name': 'circle'},
+        style={'width': '90%', 'margin': '0 auto',
+               'height': '800px', 'backgroundColor': '#f8f7ed'},
+        elements=nodes + edges,
+        stylesheet=[
+            {
+                'selector': 'node',
+                'style': {
+                    'content': 'data(label)',
+                    'color': 'black'
                 }
-            ]
-        ),
+            },
+            {
+                'selector': 'edge',
+                'style': {
+                    'color': 'black',
+                    'curve-style': 'bezier',
+                    'target-arrow-shape': 'triangle'
+                }
+            }
+        ]
+    ),
         html.Pre(id='rel-schema-cytoscape-tapNodeData-output', style={
             'border': 'thin lightgrey solid', 'margin': '0 auto',
             'overflowX': 'scroll', 'width': '90%'}),

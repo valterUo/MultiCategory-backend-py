@@ -39,9 +39,11 @@ def build_data_tranformation_tab():
                       html.Button("LOAD SCHEMA FROM POSTGRESQL",
                                   id="load-schema-postgres"),
                       html.Div(id="postgres-schema-container"), html.Br(),
-                      html.Div(id="data-transformation-definition", style = {"float" : "left", "width":"100%"}),
-                      html.Hr(style = {"float" : "left", "width":"100%"}),
-                      html.Div(id="functoriality-satisfied", style = {"float" : "left", "width":"100%"}),
+                      html.Div(id="data-transformation-definition",
+                               style={"float": "left", "width": "100%"}),
+                      html.Hr(style={"float": "left", "width": "100%"}),
+                      html.Div(id="functoriality-satisfied",
+                               style={"float": "left", "width": "100%"}),
                       html.Div(style={"width": "100%", "height": "40px"}),
                       html.Div(id="submit-processing-buttons", children=[
                           html.Button("SUBMIT", style={
@@ -64,7 +66,7 @@ def notify_db_not_empty():
         else:
             return html.Div(html.P("The graph database " + graph_db.get_name() + " is empty."))
     else:
-            return html.Div(html.P("The graph database is not connected and running."))
+        return html.Div(html.P("The graph database is not connected and running."))
 
 
 @app.callback(
@@ -149,7 +151,8 @@ def load_schema_from_postgres_button(click1):
 
 def construct_functor_component():
     try:
-        domain, fun, target = construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fun, target_fun, rels_to_edges)
+        domain, fun, target = construct_functor_to_graph_model(
+            tables_to_nodes, tables_to_edges, source_fun, target_fun, rels_to_edges)
         global functor
         functor = Functor("transformation", domain, fun, target)
         if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
@@ -222,7 +225,7 @@ def displaySelectedNodeData(click1, click2, click3, click4, click5, click6, clic
             raise PreventUpdate
         if rels_to_edges:
             edge_names = [elem["source"] + " --> " +
-                            elem["target"] + "\n" for elem in rels_to_edges]
+                          elem["target"] + "\n" for elem in rels_to_edges]
         else:
             edge_names = [elem["id"] + "\n" for elem in tables_to_edges]
         node_names = [elem["id"] + "\n" for elem in tables_to_nodes]

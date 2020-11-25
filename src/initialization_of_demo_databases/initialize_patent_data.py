@@ -22,17 +22,17 @@ class PatentMultiModelDatabase():
         #     dirname, "..//..//db_files//patent")
 
         assignee_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//assignee.table")
+            dirname, "..//..//resources//patent//assignee.table")
         category_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//category.table")
+            dirname, "..//..//resources//patent//category.table")
         citation_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//citation.graph")
+            dirname, "..//..//resources//patent//citation.graph")
         class_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//class.table")
+            dirname, "..//..//resources//patent//class.table")
         inventor_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//inventor.table")
+            dirname, "..//..//resources//patent//inventor.table")
         patent_data_path = os.path.join(
-            dirname, "..//..//original_data//patent//patent.table")
+            dirname, "..//..//resources//patent//patent.table")
         target_folder = "E://MultiCategory//db_files//patent"
 
         ## Constructing objects

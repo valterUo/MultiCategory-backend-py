@@ -9,15 +9,15 @@ def construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fu
 
     if len(rels_to_edges) == len(tables_to_edges) == 0:
         for table in tables_to_nodes:
-                domain["objects"].append(table["id"])
-                fun[table["id"]] = "nodes"
+            domain["objects"].append(table["id"])
+            fun[table["id"]] = "nodes"
 
     elif len(rels_to_edges) > 0 and len(tables_to_edges) == 0:
 
         for table in tables_to_nodes:
-                domain["objects"].append(table["id"])
-                fun[table["id"]] = "nodes"
-        
+            domain["objects"].append(table["id"])
+            fun[table["id"]] = "nodes"
+
         # Virtual edge table considered consisting of the foreign key and the primary key
         for rel in rels_to_edges:
             domain["objects"].append((rel["fk"], rel["pk"]))
@@ -46,8 +46,8 @@ def construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fu
     elif len(rels_to_edges) == 0 and len(tables_to_edges) > 0:
 
         for table in tables_to_nodes:
-                domain["objects"].append(table["id"])
-                fun[table["id"]] = "nodes"
+            domain["objects"].append(table["id"])
+            fun[table["id"]] = "nodes"
 
         for table in tables_to_edges:
             domain["objects"].append(table["id"])

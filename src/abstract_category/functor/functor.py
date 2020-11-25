@@ -21,9 +21,7 @@ class Functor:
         self.functor = fun
         self.domain = dom
         self.target = tar
-        print()
-        print(dom, fun, tar)
-        print()
+
         # The first requirement
         if len(self.domain) == 0:
             raise FunctorError("Domain category is empty.")
@@ -36,11 +34,11 @@ class Functor:
             if self.functor[obj] not in self.target["objects"]:
                 raise FunctorError(
                     "Functor does not map every object in the domain category to the target category")
-                
+
         for mor in self.domain["morphisms"]:
             #print("Mapped: ", mor["source"])
             image = {"source": self.functor[mor["source"]],
-                        "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
+                     "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
             #print("image: ", image)
             #print("morphisms: ", self.target["morphisms"])
             if image not in self.target["morphisms"]:
@@ -56,11 +54,11 @@ class Functor:
                 for tar_mor in self.target["morphisms"]:
                     if tar_mor["source"] == self.functor[dom_obj]:
                         if len(self.preimage(tar_mor["target"])) == 0:
-                            raise FunctorError("The functor does not satisfy the second requirement.")
+                            raise FunctorError(
+                                "The functor does not satisfy the second requirement.")
         except:
             raise FunctorError(
                 "The functor does not satisfy the second requirement.")
-
 
     def get_name(self):
         return self.name
