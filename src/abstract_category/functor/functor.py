@@ -16,11 +16,11 @@ class Functor:
         to C and f : Fc -> d is a morphism in D, then there exists such object c' in C that Fc' = d.
       """
 
-    def __init__(self, name, dom, fun, tar):
+    def __init__(self, name, functor_info):
         self.name = name
-        self.functor = fun
-        self.domain = dom
-        self.target = tar
+        self.functor = functor_info["functor"]
+        self.domain = functor_info["domain"]
+        self.target = functor_info["target"]
 
         # The first requirement
         if len(self.domain) == 0:
@@ -29,7 +29,7 @@ class Functor:
             raise FunctorError("Target category is empty.")
         if len(self.functor) == 0:
             raise FunctorError("The mapping is not properly defined.")
-        #try:
+
         for obj in self.domain["objects"]:
             if self.functor[obj] not in self.target["objects"]:
                 raise FunctorError(
@@ -39,14 +39,11 @@ class Functor:
             #print("Mapped: ", mor["source"])
             image = {"source": self.functor[mor["source"]],
                      "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
-            #print("image: ", image)
-            #print("morphisms: ", self.target["morphisms"])
+            print("image: ", image)
+            print("morphisms: ", self.target["morphisms"])
             if image not in self.target["morphisms"]:
                 raise FunctorError(
                     "Functor does not map every morphism in the domain category to the correct morphism in the target category")
-        # except:
-        #     raise FunctorError(
-        #         "Domain category, target category or functor definition are invalid.")
 
         # The second requirement
         try:

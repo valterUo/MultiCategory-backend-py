@@ -124,8 +124,10 @@ def update_click_output(button_click, close_click):
             return {"display": "block"}
     return {"display": "none"}
 
+PORT = 8050
+ADDRESS = "0.0.0.0"
 
 # Running the server
 if __name__ == "__main__":
-    app.run_server(port=8050, debug=True, dev_tools_ui=True,
+    app.run_server(port=PORT, host=ADDRESS, debug=True, dev_tools_ui=True,
                    dev_tools_props_check=True)

@@ -1,4 +1,5 @@
 import glob
+import os
 import unittest
 import os
 from difflib import SequenceMatcher
@@ -64,8 +65,6 @@ class TestSQLtoCypher(unittest.TestCase):
         result = clean(res)
         real = clean(result_cases['interactive-short-3.cypher'])
         r = SequenceMatcher(a=result,b=real).ratio()
-        #print(r)
-        #print(SequenceMatcher(a=result,b=real).ratio())
         self.assertGreaterEqual(r, 0.98)
 
     def test_short_4(self):

@@ -55,7 +55,7 @@ def construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fu
 
         for rel in source_fun:
             domain["morphisms"].append(
-                {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
+                {"source": rel["source"], "morphism": (rel["fk"], rel["pk"]), "target": rel["target"]})
 
             if (rel["fk"], rel["pk"]) not in fun.keys():
                 fun[(rel["fk"], rel["pk"])] = "source"
@@ -65,7 +65,7 @@ def construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fu
 
         for rel in target_fun:
             domain["morphisms"].append(
-                {"source": rel["target"], "morphism": (rel["fk"], rel["pk"]), "target": rel["source"]})
+                {"source": rel["source"], "morphism": (rel["fk"], rel["pk"]), "target": rel["target"]})
 
             if (rel["fk"], rel["pk"]) not in fun.keys():
                 fun[(rel["fk"], rel["pk"])] = "target"
@@ -80,4 +80,4 @@ def construct_functor_to_graph_model(tables_to_nodes, tables_to_edges, source_fu
 
                             """)
 
-    return domain, fun, target
+    return { "domain": domain, "functor": fun, "target": target }

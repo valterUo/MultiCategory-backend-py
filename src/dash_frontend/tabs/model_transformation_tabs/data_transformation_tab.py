@@ -151,10 +151,14 @@ def load_schema_from_postgres_button(click1):
 
 def construct_functor_component():
     try:
-        domain, fun, target = construct_functor_to_graph_model(
+        parsed_functor = construct_functor_to_graph_model(
             tables_to_nodes, tables_to_edges, source_fun, target_fun, rels_to_edges)
+        print()
+        print("parsed functor: ")
+        print(parsed_functor)
+        print()
         global functor
-        functor = Functor("transformation", domain, fun, target)
+        functor = Functor("transformation", parsed_functor)
         if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
             return html.P("The transformation satisfies functoriality but Neo4j does not support the transformation. Select or deselect tables and relationships."), {
                 "display": "none"}

@@ -57,7 +57,6 @@ class RelToGraphDataTransformation:
             WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
             AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
             CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
-        print(query)
         res = self.graph_db.execute_write(query)
         return res
 
@@ -82,7 +81,6 @@ class RelToGraphDataTransformation:
         pk_table_source, pk_table_target = None, None
 
         for key in source_map:
-            print(key)
             if type(key) == tuple and len(key) == 2:
                 fk_source, pk_source = key[0], key[1]
             elif type(key) == str:
@@ -92,7 +90,6 @@ class RelToGraphDataTransformation:
                     "Source map is in wrong format ", key)
 
         for key in target_map:
-            print(key)
             if type(key) == tuple and len(key) == 2:
                 fk_target, pk_target = key[0], key[1]
             elif type(key) == str:

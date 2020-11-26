@@ -15,6 +15,13 @@ echo "================================================================"
 docker rm -f multicategory-neo4j
 
 echo
+echo "=================================================================="
+echo "===== multicategory-running: Stopping and removing container ====="
+echo "=================================================================="
+
+docker rm -f multicategory-running
+
+echo
 echo "=========================================================================="
 echo "===== Done. Final container status (both running and stopped state): ====="
 echo "=========================================================================="
