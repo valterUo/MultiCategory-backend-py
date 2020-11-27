@@ -4,14 +4,15 @@ import unittest
 import os
 from difflib import SequenceMatcher
 
-from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_transformations.SQL.sql import SQL
+from external_database_connections.postgresql.postgres import Postgres
+
 
 db = Postgres("ldbcsf1")
 dirname = os.path.dirname(__file__)
 
 test_cases = dict()
-test_files_path = os.path.join(dirname, "model_transformations//ldbc//ldbc_sql//*.sql")
+test_files_path = os.path.join(dirname, "..//..//model_transformations//ldbc//ldbc_sql//*.sql")
 filenames = glob.glob(test_files_path)
 for i, file_name in enumerate(filenames):
     with open(file_name, 'r') as reader:
@@ -19,7 +20,7 @@ for i, file_name in enumerate(filenames):
         test_cases[os.path.basename(file_name)] = lines
 
 result_cases = dict()
-result_files_path = os.path.join(dirname, "test_results//sql_to_cypher_automatic//*.cypher")
+result_files_path = os.path.join(dirname, "..//..//test_results//sql_to_cypher_automatic//*.cypher")
 filenames = glob.glob(result_files_path)
 for i, file_name in enumerate(filenames):
     with open(file_name, 'r') as reader:

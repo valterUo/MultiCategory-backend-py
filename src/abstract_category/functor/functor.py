@@ -1,3 +1,4 @@
+from logging import error
 from abstract_category.functor.functor_error import FunctorError
 
 
@@ -36,11 +37,11 @@ class Functor:
                     "Functor does not map every object in the domain category to the target category")
 
         for mor in self.domain["morphisms"]:
-            #print("Mapped: ", mor["source"])
-            image = {"source": self.functor[mor["source"]],
-                     "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
-            print("image: ", image)
-            print("morphisms: ", self.target["morphisms"])
+            try:
+                image = {"source": self.functor[mor["source"]],
+                        "morphism": self.functor[mor["morphism"]], "target": self.functor[mor["target"]]}
+            except KeyError:
+                raise FunctorError("The image of the functor is not defined")
             if image not in self.target["morphisms"]:
                 raise FunctorError(
                     "Functor does not map every morphism in the domain category to the correct morphism in the target category")
