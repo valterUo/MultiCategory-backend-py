@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo
 echo "========================================="
 echo "===== Creating empty Neo4j database ====="

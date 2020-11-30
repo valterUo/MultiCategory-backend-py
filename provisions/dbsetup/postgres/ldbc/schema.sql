@@ -6,21 +6,24 @@ create table message (
      * Note: to distinguish between "post" and "comment" records:
      *   - m_c_replyof IS NULL for all "post" records
      *   - m_c_replyof IS NOT NULL for all "comment" records
+     * Combined version of comment and post: common part .. comment part .. post part
+     * creationDate|deletionDate|id|locationIP|browserUsed|content|length|creator|place| .. replyOfPost|replyOfComment| .. imageFile|language|ForumID
      */
 
-    m_creationdate timestamp without time zone not null,
-    m_deletiondate timestamp without time zone not null,
-    m_messageid bigint not null,
-    m_ps_imagefile varchar,
-    m_locationip varchar not null,
-    m_browserused varchar not null,
-    m_ps_language varchar,
-    m_content text not null,
-    m_length int not null,
-    m_creatorid bigint,
-    m_locationid bigint,
-    m_ps_forumid bigint,
-    m_c_replyof bigint
+   m_creationdate timestamp without time zone not null,
+   m_deletiondate timestamp without time zone not null,
+   m_messageid bigint not null,
+   m_locationip varchar not null,
+   m_browserused varchar not null,
+   m_content text not null,
+   m_length int not null,
+   m_creatorid bigint,
+   m_locationid bigint,
+   m_ps_replyof bigint,
+   m_c_replyof bigint,
+   m_ps_imagefile varchar,
+   m_ps_language varchar,
+   m_ps_forumid bigint
 );
 
 create table forum (

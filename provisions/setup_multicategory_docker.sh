@@ -19,12 +19,15 @@ echo
 echo "========================================="
 echo "===== Pulling images from Dockerhub ====="
 echo "========================================="
+
 ./setup_postgres.sh
 ./setup_neo4j.sh
 ./setup_multicategory.sh
 
-
 echo
-echo "================="
-echo "===== Done. ====="
-echo "================="
+echo "===================================="
+echo "==== The installation is done ====="
+echo "===================================="
+echo
+echo "Use stop_multicategory.sh to stop the system safely"
+echo "Use start_multicategory_docker.sh to start the system without repeating the installation"

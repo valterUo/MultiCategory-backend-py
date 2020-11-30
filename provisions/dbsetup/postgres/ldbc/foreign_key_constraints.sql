@@ -1,4 +1,6 @@
 -- We need to input fk pk constraints implicitly
+-- This file is not part of the original LDBC benchmark
+
 ALTER TABLE forum ADD FOREIGN KEY (f_moderatorid) REFERENCES person (p_personid);
 ALTER TABLE forum_person ADD FOREIGN KEY (fp_forumid) REFERENCES forum (f_forumid);
 ALTER TABLE forum_person ADD FOREIGN KEY (fp_personid) REFERENCES person (p_personid);

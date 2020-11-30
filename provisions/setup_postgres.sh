@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo
 echo "======================================================="
 echo "===== Creating PostgreSQL database with LDBC data ====="

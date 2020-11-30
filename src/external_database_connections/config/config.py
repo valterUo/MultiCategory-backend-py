@@ -2,7 +2,7 @@ from configparser import ConfigParser
 import os
 current_dir = os.path.dirname(__file__)
 
-def config(filename=os.path.join(current_dir, 'databases.ini'), section='postgresql'):
+def config(filename=os.path.join(current_dir, 'databases_docker.ini'), section='postgresql'):
     # create a parser
     parser = ConfigParser()
     # read config file
