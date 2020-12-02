@@ -1,5 +1,5 @@
 from initialization_of_demo_databases.initialize_ecommerce import ECommerceMultiModelDatabase
-#from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
+from initialization_of_demo_databases.initialize_patent_data import PatentMultiModelDatabase
 from multi_model_db.multi_model_db import MultiModelDB
 
 
@@ -17,11 +17,11 @@ class MultiCategory():
                 "E-commerce multi-model database", [], [])
 
         # ======= Patent data multi-model database =======
-        # try:
-        #     patent_db = PatentMultiModelDatabase().get_multi_model_db()
-        # except FileNotFoundError as e:
-        #     print(e)
-        patent_db = MultiModelDB("Patent multi-model database", [], [])
+        try:
+            patent_db = PatentMultiModelDatabase().get_multi_model_db()
+        except FileNotFoundError as e:
+            print(e)
+            patent_db = MultiModelDB("Patent multi-model database", [], [])
 
         predefined_multi_model_dbs = [
             ecommer_db,

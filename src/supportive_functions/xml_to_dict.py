@@ -1,5 +1,3 @@
-from xml.etree import cElementTree as ElementTree
-
 class XmlListConfig(list):
     def __init__(self, aList):
         for element in aList:
@@ -33,7 +31,7 @@ class XmlDictConfig(dict):
     '''
     def __init__(self, parent_element):
         childrenNames = []
-        for child in parent_element.getchildren():
+        for child in parent_element:
             childrenNames.append(child.tag)
 
         if parent_element.items():
