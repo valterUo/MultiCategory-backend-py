@@ -212,12 +212,12 @@ def execute_multi_model_join_second_phase(n_clicks):
     [Input("multi-model-join-morphisms", "value")]
 )
 def second_description_input_toggle(value):
-    objects = multicategory.get_selected_multi_model_database()
+    objects = multicategory.get_selected_multi_model_database().get_objects()
     if parameter_state["domain"] != None and parameter_state["target"] != None:
         domain = objects[parameter_state["domain"]].get_model()
         target = objects[parameter_state["target"]].get_model()
         if domain == "relational" and (target == "graph" or target == "tree"):
-            return second_description_input_builder(parameter_state)
+            return second_description_input_builder()
     return []
 
 
@@ -230,5 +230,5 @@ def tree_attributes_input_toggle(value):
         domain = multicategory.get_selected_multi_model_database().get_objects()[
             parameter_state["domain"]].get_model()
         if domain == "tree":
-            return tree_attributes_input_builder(parameter_state)
+            return tree_attributes_input_builder()
     return []

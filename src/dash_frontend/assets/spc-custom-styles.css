@@ -213,17 +213,12 @@ body {
   border-bottom: #91dfd2 solid 4px !important;
 }
 
-#Settings-tab.custom-tab, #Selective-query-tab.custom-tab {
+#Settings-tab.custom-tab, #Instance-tab.custom-tab, #Query-tab.custom-tab, #Join-tab.custom-tab, #Transformation-tab.custom-tab, #Data-transformation-tab.custom-tab {
   margin-right: 3px;
 }
 
-#Instance-tab.custom-tab, #Query-tab.custom-tab, #Create-morphism-subtab.custom-tab, #Create-object-subtab.custom-tab {
+#Create-morphism-subtab.custom-tab, #Create-object-subtab.custom-tab, #Selective-query-tab.custom-tab {
   margin-right: 3px;
-  margin-left: 3px;
-}
-
-#Join-tab.custom-tab, #Insert-query-subtab.custom-tab {
-  margin-left: 3px;
 }
 
 #viz {

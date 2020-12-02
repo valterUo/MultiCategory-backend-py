@@ -19,4 +19,4 @@ def execute_multi_model_join(join_parameters):
     database.add_object(result)
     database.add_morphism(join_result.get_left_leg())
     database.add_morphism(join_result.get_right_leg())
-    return html.Div( children = [visualize(result.get_name()), html.Br(), model_category_nx_grah_to_cytoscape(join_result)] )
+    return html.Div( children = [visualize(result), html.Br(), model_category_nx_grah_to_cytoscape(join_result)] )

@@ -1,4 +1,3 @@
 from multicategory.multicategory import MultiCategory
 
-
-multicategory = MultiCategory("E-commerce multi-model database")
+multicategory = MultiCategory(initial_db = "E-commerce multi-model database")

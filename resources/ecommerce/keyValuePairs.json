@@ -1,0 +1,35 @@
+{
+    "orders_to_customers": [{
+            "order_id": "34e5e79",
+            "customer_id": 1
+        },
+        {
+            "order_id": "0cbdf508",
+            "customer_id": 2
+        },
+        {
+            "order_id": "4dwtfuu",
+            "customer_id": 1
+        },
+        {
+            "order_id": "3qqqeq9",
+            "customer_id": 0
+        },
+        {
+            "order_id": "77idy65",
+            "customer_id": 3
+        },
+        {
+            "order_id": "ery63rg",
+            "customer_id": 5
+        },
+        {
+            "order_id": "4839fh",
+            "customer_id": 6
+        },
+        {
+            "order_id": "reuihf54",
+            "customer_id": 7
+        }
+    ]
+}

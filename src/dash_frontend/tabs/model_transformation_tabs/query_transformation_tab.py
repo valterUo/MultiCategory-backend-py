@@ -10,7 +10,7 @@ from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_transformations.SQL.sql import SQL
 from external_database_connections.config.config import config
 dirname = os.path.dirname(__file__)
-example_files_path = os.path.join(dirname, "..//..//model_transformations//ldbc//ldbc_sql//*.sql")
+example_files_path = os.path.join(dirname, "..//..//..//model_transformations//ldbc//ldbc_sql//*.sql")
 
 
 def query_tranformation_tab():
@@ -96,7 +96,7 @@ def execute_query_transformation(button_click, query):
 def parse_sql_query_examples():
     examples = []
     example_filenames = glob.glob(example_files_path)
-    for i, file_name in enumerate(example_filenames):
+    for file_name in example_filenames:
         with open(file_name, 'r') as reader:
             lines = reader.read()
             examples.append({'label': 'example ' + os.path.basename(file_name), 'value': lines})

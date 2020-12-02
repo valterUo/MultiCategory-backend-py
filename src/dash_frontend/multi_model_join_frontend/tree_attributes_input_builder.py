@@ -4,13 +4,11 @@ import dash_html_components as html
 from dash_frontend.server import app
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from dash_frontend.state.parameter_state import parameter_state
 attributes = []
-parameter_state = None
 
 
-def tree_attributes_input_builder(params):
-    global parameter_state
-    parameter_state = params
+def tree_attributes_input_builder():
     return html.Div(children=[
         html.P("Input for tree attributes"),
         dcc.Input(
