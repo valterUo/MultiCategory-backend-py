@@ -46,9 +46,9 @@ class PatentMultiModelDatabase():
         if not os.path.exists(patent_data_path):
             raise FileNotFoundError("Patent file not found")
 
-        # target_folder = os.path.join(
-        #     dirname, "..//..//db_files//patent")
-        target_folder = "E://MultiCategory//db_files//patent"
+        target_folder = os.path.join(
+             dirname, "..//..//db_files//patent")
+        #target_folder = "E://MultiCategory//db_files//patent"
         if not os.path.exists(target_folder):
             print("Path " + target_folder + " does not exist. Trying to create.")
             try:

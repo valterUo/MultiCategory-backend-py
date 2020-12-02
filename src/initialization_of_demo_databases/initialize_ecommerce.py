@@ -24,37 +24,37 @@ class ECommerceMultiModelDatabase():
 
         interest_vertex_path = os.path.join(
             dirname, "..//..//resources//ecommerce//interestVertex.csv")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(interest_vertex_path):
             raise FileNotFoundError("Interest vertex file not found")
 
         interest_edge_path = os.path.join(
             dirname, "..//..//resources//ecommerce//interestEdge.csv")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(interest_edge_path):
             raise FileNotFoundError("Interest edge file not found")
 
         locations_table_path = os.path.join(
             dirname, "..//..//resources//ecommerce//locationsTable.csv")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(locations_table_path):
             raise FileNotFoundError("Locations file not found")
 
         orders_xml_path = os.path.join(
             dirname, "..//..//resources//ecommerce//orders.xml")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(orders_xml_path):
             raise FileNotFoundError("Orders file not found")
 
         sites_table_path = os.path.join(
             dirname, "..//..//resources//ecommerce//sites.csv")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(sites_table_path):
             raise FileNotFoundError("Sites file not found")
 
         key_value_pairs_path = os.path.join(
             dirname, "..//..//resources//ecommerce//keyValuePairs.json")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(key_value_pairs_path):
             raise FileNotFoundError("Key-value pairs file not found")
 
         target_folder = os.path.join(
             dirname, "..//..//db_files//ecommerce")
-        if not os.path.exists(customers_edge_path):
+        if not os.path.exists(target_folder):
             print("Path " + target_folder + " does not exist. Trying to create.")
             try:
                 os.mkdir(target_folder)
