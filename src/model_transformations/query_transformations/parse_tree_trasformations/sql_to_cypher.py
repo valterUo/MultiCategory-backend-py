@@ -1,4 +1,4 @@
-from model_transformations.query_transformations.parse_tree_trasformations.select_stmt_transformation import SelectStmt
+from model_transformations.query_transformations.parse_tree_trasformations.select_stmt_upper import SelectStmtUpper
 
 
 class SqlToCypher:
@@ -16,23 +16,15 @@ class SqlToCypher:
 
     def __init__(self, sql_parse_tree):
         self.sql_parse_tree = sql_parse_tree
-        self.cypher_parse_tree = None
         self.transformed_stmt = []
         for elem in sql_parse_tree:
             if "RawStmt" in elem:
-                self.transformed_stmt += self.transform_rawstmt(elem["RawStmt"])
+                if "stmt" in elem["RawStmt"]:
+                    for substmt in elem["RawStmt"]["stmt"]:
+                        if substmt == "SelectStmt":
+                            self.transformed_stmt.append(SelectStmtUpper(
+                                elem["RawStmt"]["stmt"]["SelectStmt"]))
 
-    def transform_rawstmt(self, rawstmt):
-        if "stmt" in rawstmt:
-            return self.transform_stmt(rawstmt["stmt"])
-    
-    def transform_stmt(self, stmt):
-        res = []
-        for substmt in stmt:
-            if substmt == "SelectStmt":
-                res.append(SelectStmt(stmt["SelectStmt"]))
-        return res
-    
     def transform_into_cypher(self):
         res = ""
         for elem in self.transformed_stmt:

@@ -7,12 +7,13 @@ class Target:
         self.res_target = target_list
         self.from_clause = from_clause
         self.columns = []
-        
+
         for elem in target_list:
             if "ResTarget" in elem:
                 if "val" in elem["ResTarget"]:
                     if "ColumnRef" in elem["ResTarget"]["val"]:
-                        self.columns.append(Column(elem["ResTarget"]["val"]["ColumnRef"], self.from_clause))
+                        self.columns.append(
+                            Column(elem["ResTarget"]["val"]["ColumnRef"], self.from_clause))
 
     def transform_into_cypher(self):
         res = ""
@@ -20,6 +21,3 @@ class Target:
             res += elem.transform_into_cypher() + ", "
         res = res[0:-2]
         return "RETURN " + res + "\n"
-        
-
-        

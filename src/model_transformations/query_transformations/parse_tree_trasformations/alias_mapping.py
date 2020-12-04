@@ -18,6 +18,7 @@ def alias_mapping(name):
 
     This mapping is 1-1 implementation that holds information about the aliases and table and column names.
     """
+    
     global aliases_to_db_names
     global db_names_to_aliases
 
