@@ -12,6 +12,5 @@ class SelectStmtCte:
         res = ""
         res += self.larg.transform_into_cypher()
         res += self.rarg.transform_into_cypher()
-        print("cte: ", res)
         return res
 

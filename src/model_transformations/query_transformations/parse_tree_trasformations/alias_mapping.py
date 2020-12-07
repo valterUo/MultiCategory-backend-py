@@ -18,7 +18,7 @@ def alias_mapping(name):
 
     This mapping is 1-1 implementation that holds information about the aliases and table and column names.
     """
-    
+
     global aliases_to_db_names
     global db_names_to_aliases
 
@@ -50,7 +50,7 @@ def alias_mapping(name):
 
 
 def get_alias_for_name(name):
-    return db_names_to_aliases[name]
+    return alias_mapping(name)
 
 
 def set_alias_for_db_name(alias, name):

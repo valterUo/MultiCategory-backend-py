@@ -3,9 +3,10 @@ from model_transformations.query_transformations.parse_tree_trasformations.colum
 
 class Target:
 
-    def __init__(self, target_list, from_clause):
+    def __init__(self, target_list, from_clause, cte=False, cte_aliases=[]):
         self.res_target = target_list
         self.from_clause = from_clause
+        self.cte = cte
         self.columns = []
 
         for elem in target_list:
@@ -15,9 +16,22 @@ class Target:
                         self.columns.append(
                             Column(elem["ResTarget"]["val"]["ColumnRef"], self.from_clause))
 
+        if cte_aliases:
+            self.cte_aliases = cte_aliases
+        else:
+            self.cte_aliases = [col.get_alias() for col in self.columns]
+
     def transform_into_cypher(self):
-        res = ""
-        for elem in self.columns:
-            res += elem.transform_into_cypher() + ", "
-        res = res[0:-2]
-        return "RETURN " + res + "\n"
+        if self.cte:
+            res = "WITH collect({"
+            for i, cte_alias in enumerate(self.cte_aliases):
+                res += cte_alias + " : " + \
+                    self.columns[i].transform_into_cypher() + ", "
+            res = res[0:-2] + "})"
+            return res
+        else:
+            res = ""
+            for elem in self.columns:
+                res += elem.transform_into_cypher() + ", "
+            res = res[0:-2]
+            return "RETURN " + res + "\n"

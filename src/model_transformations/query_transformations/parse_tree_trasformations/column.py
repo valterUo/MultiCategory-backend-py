@@ -6,7 +6,7 @@ rel_db = Postgres("ldbcsf1")
 
 class Column:
 
-    def __init__(self, column_ref, from_clause):
+    def __init__(self, column_ref, from_clause = None):
         self.column_ref = column_ref
         self.fields = self.column_ref["fields"]
         self.from_clause = from_clause
@@ -26,14 +26,15 @@ class Column:
             if "String" in raw_field.keys():
                 if "str" in raw_field["String"]:
                     self.field = raw_field["String"]["str"]
-                    print(self.field)
                     table_name = rel_db.get_table_for_attribute(self.field)
                     if table_name == None:
                         table_name = column_names_to_cte_names_mapping(self.field)
-                    print(table_name)
                     self.alias = get_alias_for_name(table_name)
         else:
             print("Too many or none fields or what?")
         
     def transform_into_cypher(self):
         return self.alias + "." + self.field
+
+    def get_alias(self):
+        return self.alias

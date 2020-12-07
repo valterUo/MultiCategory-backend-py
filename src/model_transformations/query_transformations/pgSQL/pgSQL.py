@@ -1,5 +1,4 @@
 import requests
-import json
 
 class pgSQL:
 
@@ -21,7 +20,6 @@ class pgSQL:
             res = requests.post("http://localhost:5000/sql", data = queryload)
             if res.status_code == 200:
                 self.parse_tree = res.json()
-                #print(json.dumps(self.parse_tree, indent= 2))
             elif res.status_code == 400:
                 print(res.content)
             else:
