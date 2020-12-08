@@ -1,5 +1,6 @@
-from model_transformations.query_transformations.parse_tree_trasformations.from_clause_transformation import FromClause
+from model_transformations.query_transformations.parse_tree_trasformations.from_clause import FromClause
 from model_transformations.query_transformations.parse_tree_trasformations.limit import Limit
+from model_transformations.query_transformations.parse_tree_trasformations.recursive import Recursive
 from model_transformations.query_transformations.parse_tree_trasformations.sort import Sort
 from model_transformations.query_transformations.parse_tree_trasformations.target import Target
 from model_transformations.query_transformations.parse_tree_trasformations.where_upper import WhereUpper
@@ -20,15 +21,18 @@ class SelectStmt:
         self.larg = None
         self.cte = cte
         self.cte_aliases = cte_aliases
+        self.recursive_part = None
+
 
         if "larg" in self.select_stmt.keys() or "rarg" in self.select_stmt.keys():
             self.larg = SelectStmt(self.select_stmt["larg"]["SelectStmt"], self.cte, self.cte_aliases)
             self.rarg = SelectStmt(self.select_stmt["rarg"]["SelectStmt"], self.cte, self.cte_aliases)
+            self.recursive_part = Recursive(self.larg, self.rarg)
         else:
 
             for clause in self.select_stmt:
                 if clause == "fromClause":
-                    self.from_clause = FromClause(self.select_stmt[clause], self.cte)
+                    self.from_clause = FromClause(self.select_stmt[clause])
                 elif clause == "targetList":
                     self.target = Target(self.select_stmt[clause], self.from_clause, self.cte, self.cte_aliases)
                 elif clause == "whereClause":
@@ -38,11 +42,19 @@ class SelectStmt:
                 elif clause == "limitCount":
                     self.limit = Limit(self.select_stmt[clause], self.cte)
 
+    def get_from_clause(self):
+        return self.from_clause
+
+    def get_where_clause(self):
+        return self.where_clause
+
+    def get_target_list(self):
+        return self.target
+
     def transform_into_cypher(self):
         res = ""
-        if self.larg and self.rarg:
-            res += self.rarg.transform_into_cypher()
-            res += self.larg.transform_into_cypher()
+        if self.recursive_part:
+            res += self.recursive_part.transform_into_cypher()
         else:
             res += self.from_clause.transform_into_cypher()
             if self.where_clause:

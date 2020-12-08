@@ -13,7 +13,10 @@ class WhereUpper:
         if "BoolExpr" in self.raw_where.keys():
             self.where = BooleanExpression(self.raw_where, self.cte)
         elif "A_Expr" in self.raw_where.keys():
-            self.where = Where(self.raw_where, self.from_clause, self.cte)
+            self.where = Where(self.raw_where, self.from_clause)
 
     def transform_into_cypher(self):
         return self.where.transform_into_cypher()
+
+    def get_where(self):
+        return self.where

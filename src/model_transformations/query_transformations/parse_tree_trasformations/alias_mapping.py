@@ -52,6 +52,9 @@ def alias_mapping(name):
 def get_alias_for_name(name):
     return alias_mapping(name)
 
+def get_name_for_alias(name):
+    return aliases_to_db_names[name]
+
 
 def set_alias_for_db_name(alias, name):
     global aliases_to_db_names

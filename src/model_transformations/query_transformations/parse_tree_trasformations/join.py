@@ -113,6 +113,9 @@ class Join:
 
         self.join_condition = JoinCondition(self.raw_join["quals"], self.cte)
 
+    def get_rel_names(self):
+        return 
+
     def transform_into_cypher(self):
         res = ""
         if self.raw_join["larg"] == "RangeSubselect" and self.raw_join["rarg"] == "RangeSubselect":

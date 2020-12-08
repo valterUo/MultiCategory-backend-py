@@ -21,17 +21,17 @@ class Target:
         else:
             self.cte_aliases = [col.get_alias() for col in self.columns]
 
-    def transform_into_cypher(self):
+    def transform_into_cypher(self, alias_mapping = {}):
         if self.cte:
             res = "WITH collect({"
             for i, cte_alias in enumerate(self.cte_aliases):
                 res += cte_alias + " : " + \
-                    self.columns[i].transform_into_cypher() + ", "
+                    self.columns[i].transform_into_cypher(alias_mapping) + ", "
             res = res[0:-2] + "})"
             return res
         else:
             res = ""
             for elem in self.columns:
-                res += elem.transform_into_cypher() + ", "
+                res += elem.transform_into_cypher(alias_mapping) + ", "
             res = res[0:-2]
             return "RETURN " + res + "\n"

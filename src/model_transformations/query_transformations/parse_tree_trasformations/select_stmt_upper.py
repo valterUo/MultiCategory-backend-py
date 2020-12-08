@@ -1,4 +1,4 @@
-from model_transformations.query_transformations.parse_tree_trasformations.join import Join
+#from model_transformations.query_transformations.parse_tree_trasformations.join import Join
 from model_transformations.query_transformations.parse_tree_trasformations.select_stmt import SelectStmt
 from model_transformations.query_transformations.parse_tree_trasformations.with_clause import WithClause
 
@@ -10,13 +10,9 @@ class SelectStmtUpper:
         self.stmt = None
         self.stmt = SelectStmt(select_stmt)
         self.joins = []
+
         if "withClause" in select_stmt.keys():
             self.with_clause = WithClause(select_stmt["withClause"])
-
-        if "fromClause" in select_stmt.keys():
-            for elem in select_stmt["fromClause"]:
-                if "JoinExpr" in elem.keys():
-                    self.joins.append(Join(elem["JoinExpr"]))
 
     def transform_into_cypher(self):
         res = ""

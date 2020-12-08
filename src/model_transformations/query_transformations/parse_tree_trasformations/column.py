@@ -33,8 +33,14 @@ class Column:
         else:
             print("Too many or none fields or what?")
         
-    def transform_into_cypher(self):
+    def transform_into_cypher(self, alias_mapping = {}):
+        if len(alias_mapping) > 0:
+            if self.alias in alias_mapping.keys():
+                return alias_mapping[self.alias] + "." + self.field
         return self.alias + "." + self.field
 
     def get_alias(self):
         return self.alias
+
+    def get_field(self):
+        return self.field

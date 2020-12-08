@@ -9,7 +9,7 @@ class FromClauseSource:
     The instance of this class is uniquely defined by relname attribute.
     """
 
-    def __init__(self, clause, cte=False):
+    def __init__(self, clause):
         self.clause = clause
         self.range_var = None
         self.relname = None

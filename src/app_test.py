@@ -6,7 +6,7 @@ import json
 simple1 = """
 select p_firstname, p_lastname, p_birthday, p_locationip, p_browserused, p_placeid, p_gender,  p_creationdate
 from person p
-where (p_personid = 42374893274938 or p_locationip = "0.0.0.0") and p_lastname = "Anna";
+where (p_personid = 42374893274938 or p_locationip = '0.0.0.0') and p_lastname = 'Anna';
 """
 
 simple2 = """
@@ -38,7 +38,7 @@ from
 """
 
 """
-Recursive part:
+=== additional cte ===
 
 MATCH (m:message)
 WHERE m.m_creatorid = 32985348834100
@@ -51,10 +51,47 @@ WITH collect({m_messageid : m.m_messageid,
               m_c_replyof : m.m_c_replyof, 
               m_creatorid : m.m_creatorid})[..10] as cposts
 
+=== recursive part ===
+
 UNWIND cposts AS c
-MATCH (initial) -[*]-> (m)
+MATCH (initial) -[*:m_c_replyof_m_messageid]-> (m)
 WHERE initial.m_messageid = c.m_messageid
-RETURN m.m_messageid AS postid, m.m_c_replyof AS replyof, c.m_messageid AS orig_postid, m.m_creatorid AS creator
+WITH collect({ postid : m.m_messageid, replyof : m.m_c_replyof, orig_postid : c.m_messageid, creator : m.m_creatorid }) as parent
+
+=== p1 subquery ===
+
+UNWIND cposts AS c
+WITH collect({ m_messageid : c.m_messageid, 
+              m_content : c.m_content, 
+              m_ps_imagefile : c.m_ps_imagefile, 
+              m_creationdate : c.m_creationdate,
+              m_c_replyof : c.m_c_replyof}) AS p1
+
+=== p2 subquery ===
+
+MATCH (pe : person)
+UNWIND parent as pa
+WHERE pa.creator = pe.p_personid 
+AND pa.replyof is null
+WITH collect({ orig_postid : pa.orig_postid, 
+              m_messageid : pa.postid, 
+              p_personid : pe.p_personid, 
+              p_firstname : pe.p_firstname, 
+              p_lastname : pe.p_lastname }) as p2
+
+=== main query ===
+
+UNWIND p1 AS x, UNWIND p2 AS y
+WHERE y.orig_postid = x.m_messageid
+WITH x, y
+ORDER BY x.m_creationdate DESC, y.m_messageid DESC
+RETURN x.m_messageid, 
+      COALESCE(x.m_ps_imagefile,'') + COALESCE(x.m_content,''), 
+      x.m_creationdate,
+      y.m_messageid, 
+      y.p_personid,
+      y.p_firstname, 
+      y.p_lastname
 
 """
 
