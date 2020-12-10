@@ -1,4 +1,3 @@
-import json
 from model_transformations.query_transformations.parse_tree_trasformations.alias_mapping import get_name_for_alias
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
 from external_database_connections.postgresql.postgres import Postgres

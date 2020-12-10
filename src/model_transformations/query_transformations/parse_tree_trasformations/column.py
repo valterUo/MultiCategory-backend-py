@@ -6,7 +6,7 @@ rel_db = Postgres("ldbcsf1")
 
 class Column:
 
-    def __init__(self, column_ref, from_clause=None, cte=False, cte_name="", rename = None):
+    def __init__(self, column_ref, from_clause=None, cte=False, cte_name="", rename=None):
         self.column_ref = column_ref
         self.fields = self.column_ref["fields"]
         self.from_clause = from_clause
@@ -15,15 +15,13 @@ class Column:
         self.cte = cte
         self.cte_name = cte_name
         self.rename = rename
-        
-        if self.from_clause:
-            print(self.from_clause.get_relnames())
 
         if len(self.fields) == 2:
             self.collection_alias = self.fields[0]["String"]["str"]
             # Assure that the collection alias is not refering to cte:
             if is_cte(self.collection_alias):
-                self.collection_alias = get_cte_iterator_for_cte_name(self.collection_alias)
+                self.collection_alias = get_cte_iterator_for_cte_name(
+                    self.collection_alias)
             self.field = self.fields[1]["String"]["str"]
         elif len(self.fields) == 1:
             self.field = self.fields[0]["String"]["str"]
@@ -54,7 +52,6 @@ class Column:
                     table_name)
 
         if not self.collection_alias:
-            #get_iterator_from_cte_name(self.left_alias)
             iterator = get_cte_iterator_for_cte_column_name(self.field)
             if iterator:
                 self.collection_alias = iterator
