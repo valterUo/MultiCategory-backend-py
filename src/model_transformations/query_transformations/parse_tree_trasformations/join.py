@@ -1,3 +1,4 @@
+from model_transformations.query_transformations.parse_tree_trasformations.cte_table_data import set_iterator_variable_to_cte, get_cte_iterator_for_cte_name
 from model_transformations.query_transformations.parse_tree_trasformations.join_condition import JoinCondition
 from model_transformations.query_transformations.parse_tree_trasformations.select_stmt import SelectStmt
 
@@ -101,25 +102,28 @@ class Join:
         elif self.join_type_int == 7:
             self.join_type = "JOIN_UNIQUE_INNER"
 
-        if self.raw_join["larg"] == "RangeSubselect":
-            self.left_alias = self.raw_join["larg"]["alias"]["Alias"]["aliasname"]
+        if "RangeSubselect" in self.raw_join["larg"]:
+            self.left_alias = self.raw_join["larg"]["RangeSubselect"]["alias"]["Alias"]["aliasname"]
+            set_iterator_variable_to_cte(self.left_alias)
             self.left_content = SelectStmt(
-                self.raw_join["larg"]["subquery"]["SelectStmt"], cte=True)
+                self.raw_join["larg"]["RangeSubselect"]["subquery"]["SelectStmt"], self.left_alias, True)
 
-        if self.raw_join["rarg"] == "RangeSubselect":
-            self.right_alias = self.raw_join["rarg"]["alias"]["Alias"]["aliasname"]
+        if "RangeSubselect" in self.raw_join["rarg"]:
+            self.right_alias = self.raw_join["rarg"]["RangeSubselect"]["alias"]["Alias"]["aliasname"]
+            set_iterator_variable_to_cte(self.right_alias)
             self.right_content = SelectStmt(
-                self.raw_join["rarg"]["subquery"]["SelectStmt"], cte=True)
+                self.raw_join["rarg"]["RangeSubselect"]["subquery"]["SelectStmt"], self.right_alias, True)
 
-        self.join_condition = JoinCondition(self.raw_join["quals"], self.cte)
-
-    def get_rel_names(self):
-        return 
+        self.join_condition = JoinCondition(self.raw_join["quals"], self.left_alias, self.right_alias)
 
     def transform_into_cypher(self):
         res = ""
-        if self.raw_join["larg"] == "RangeSubselect" and self.raw_join["rarg"] == "RangeSubselect":
-            res += self.left_content.transform_into_cypher() + " AS " + self.left_alias
-            res += self.right_content.transform_into_cypher() + " AS " + self.right_alias
-            res += self.join_condition.transform_into_cypher()
+        if "RangeSubselect" in self.raw_join["larg"] and "RangeSubselect" in self.raw_join["rarg"]:
+            res += self.left_content.transform_into_cypher(
+            )[0:-1] + "\n\n"
+            res += self.right_content.transform_into_cypher(
+            )[0:-1] + "\n"
+            res += "UNWIND " + self.left_alias + " AS " + get_cte_iterator_for_cte_name(
+                self.left_alias) + ", " + self.right_alias + " AS " + get_cte_iterator_for_cte_name(self.right_alias) + "\n"
+            res += "WHERE " + self.join_condition.transform_into_cypher() + "\n"
         return res + "\n"

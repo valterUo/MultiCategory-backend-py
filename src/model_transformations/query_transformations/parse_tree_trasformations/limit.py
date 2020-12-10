@@ -8,5 +8,5 @@ class Limit:
 
     def transform_into_cypher(self):
         if self.cte:
-            return "[.." + self.limit_value + "]" + "\n"
+            return "[.." + self.limit_value + "]"
         return "LIMIT " + self.limit_value + "\n"

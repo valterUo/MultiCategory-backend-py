@@ -2,13 +2,11 @@ from model_transformations.query_transformations.parse_tree_trasformations.colum
 
 class JoinCondition:
 
-    def __init__(self, raw_join_cond, cte = False):
-        print(raw_join_cond)
+    def __init__(self, raw_join_cond, left, right):
         self.raw_join_cond = raw_join_cond
-        self.cte = cte
         self.location = None
-        self.left = None
-        self.right = None
+        self.left_alias = left
+        self.right_alias = right
         self.operator = None
         if "A_Expr" in self.raw_join_cond.keys():
             self.operator = self.raw_join_cond["A_Expr"]["name"][0]["String"]["str"]
@@ -23,9 +21,8 @@ class JoinCondition:
 
     def transform_into_cypher(self):
         res = ""
-        if self.cte:
-            res += self.left.transform_into_cypher() + " "
-            res += self.operator + " "
-            res += self.right.transform_into_cypher() + "\n"
+        res += self.left.transform_into_cypher() + " "
+        res += self.operator + " "
+        res += self.right.transform_into_cypher()
         return res
 
