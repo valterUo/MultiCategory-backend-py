@@ -12,7 +12,7 @@ class FromClauseSource:
     rel_alias is a sort of variable that Cypher uses so that we can access attributes in the collection
     """
 
-    def __init__(self, clause, cte_name):
+    def __init__(self, clause, cte_name = ""):
         self.clause = clause
         self.cte_name = cte_name
         self.relname = None

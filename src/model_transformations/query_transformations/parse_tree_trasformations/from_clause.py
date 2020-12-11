@@ -7,30 +7,38 @@ class FromClause:
         self.from_clause = from_clause
         self.cte_name = cte_name
         self.sources = []
+        self.joins = []
 
         if type(self.from_clause) == list:
             for elem in self.from_clause:
                 if "RangeVar" in elem.keys():
                     self.sources.append(FromClauseSource(elem, self.cte_name))
+                if "JoinExpr" in elem.keys():
+                    from model_transformations.query_transformations.parse_tree_trasformations.join import Join
+                    self.joins.append(Join(elem["JoinExpr"]))
 
 
     def transform_into_cypher(self):
         res = ""
+        if self.sources:
+            matches = [elem for elem in self.sources if elem.get_if_in_database()]
+            unwinds = [elem for elem in self.sources if not elem.get_if_in_database()]
 
-        matches = [elem for elem in self.sources if elem.get_if_in_database()]
-        unwinds = [elem for elem in self.sources if not elem.get_if_in_database()]
+            if len(matches) > 0:
+                res = "MATCH "
+                for elem in matches:
+                    res += elem.transform_into_cypher() + ", "
+                res = res[0:-2] + "\n"
 
-        if len(matches) > 0:
-            res = "MATCH "
-            for elem in matches:
-                res += elem.transform_into_cypher() + ", "
-            res = res[0:-2] + "\n"
-
-        if len(unwinds) > 0:
-            res += "UNWIND "
-            for elem in unwinds:
-                res += elem.transform_into_cypher() + ", "
-            res = res[0:-2] + "\n"
+            if len(unwinds) > 0:
+                res += "UNWIND "
+                for elem in unwinds:
+                    res += elem.transform_into_cypher() + ", "
+                res = res[0:-2] + "\n"
+            
+            if self.joins:
+                for elem in self.joins:
+                    res += elem.transform_into_cypher()
 
         return res
 

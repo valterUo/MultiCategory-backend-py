@@ -8,7 +8,11 @@ from model_transformations.query_transformations.parse_tree_trasformations.where
 
 class SelectStmt:
 
-    def __init__(self, select_stmt, name="", cte=False, joins=None, with_clause=None):
+    """
+    This select statement class is located in the leaf of the parse tree meaning there are no other select statements inside this
+    """
+
+    def __init__(self, select_stmt, name = "", cte = False, joins = None, with_clause = None):
         self.name = name
         self.select_stmt = select_stmt
         self.from_clause = None
@@ -31,6 +35,10 @@ class SelectStmt:
             self.recursive_part = Recursive(self.larg, self.rarg, self.cte, self.name)
         else:
 
+            if "withClause" in self.select_stmt.keys():
+                from model_transformations.query_transformations.parse_tree_trasformations.with_clause import WithClause
+                self.with_clause = WithClause(self.select_stmt["withClause"]["WithClause"])
+
             for clause in self.select_stmt:
                 if clause == "fromClause":
                     self.from_clause = FromClause(self.select_stmt[clause], self.name)
@@ -44,6 +52,8 @@ class SelectStmt:
                     self.sort_clause = Sort(self.select_stmt[clause], self.cte, self.from_clause, self.name)
                 elif clause == "limitCount":
                     self.limit = Limit(self.select_stmt[clause], self.cte)
+                    
+
 
     def get_from_clause(self):
         return self.from_clause
@@ -56,6 +66,8 @@ class SelectStmt:
 
     def transform_into_cypher(self):
         res = ""
+        if self.with_clause:
+            res += self.with_clause.transform_into_cypher() + "\n"
 
         if self.recursive_part:
 
