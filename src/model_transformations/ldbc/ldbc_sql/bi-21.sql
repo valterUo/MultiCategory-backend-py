@@ -14,7 +14,7 @@ WITH zombies AS (
       LEFT JOIN message m ON (
          p.p_personid = m.m_creatorid
          AND m.m_creationdate BETWEEN p.p_creationdate
-         AND :endDate
+         AND '2013-01-01T00:00:00.000+00:00' :: timestamp
       )
    WHERE
       1 = 1 -- join
@@ -28,11 +28,11 @@ WITH zombies AS (
       count(m_messageid) < 12 * extract(
          YEAR
          FROM
-            :endDate
+            '2013-01-01T00:00:00.000+00:00' :: timestamp
       ) + extract(
          MONTH
          FROM
-            :endDate
+            '2013-01-01T00:00:00.000+00:00' :: timestamp
       ) - (
          12 * extract(
             YEAR
@@ -58,7 +58,7 @@ FROM
    INNER JOIN likes l ON (m.m_messageid = l.l_messageid)
    INNER JOIN person p ON (
       l.l_personid = p.p_personid
-      AND p.p_creationdate < :endDate
+      AND p.p_creationdate < '2013-01-01T00:00:00.000+00:00' :: timestamp
    )
    LEFT JOIN zombies zl ON (p.p_personid = zl.zombieid) -- see if the like was given by a zombie
    RIGHT JOIN zombies z ON (z.zombieid = m.m_creatorid)

@@ -37,7 +37,7 @@ WITH RECURSIVE friends(startPerson, path, friend) AS (
       -- filter
       -- knows edge can't be traversed twice
       AND NOT ARRAY [ROW(k.k_person1id, k.k_person2id), ROW(k.k_person2id, k.k_person1id)] & & f.path -- stop condition
-      AND coalesce(array_length(f.path, 1), 0) < :maxPathDistance
+      AND coalesce(array_length(f.path, 1), 0) < 5
 ),
 friend_list AS (
    SELECT

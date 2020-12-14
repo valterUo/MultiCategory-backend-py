@@ -99,7 +99,7 @@ paths(
       1 AS hopCount,
       max(
          CASE
-            WHEN k_person2id = :person2Id THEN 1
+            WHEN k_person2id = 19791209308983 THEN 1
             ELSE 0
          END
       ) OVER () AS person2Reached
@@ -118,7 +118,7 @@ paths(
       hopCount + 1 AS hopCount,
       max(
          CASE
-            WHEN k_person2id = :person2Id THEN 1
+            WHEN k_person2id = 19791209308983 THEN 1
             ELSE 0
          END
       ) OVER () AS person2Reached

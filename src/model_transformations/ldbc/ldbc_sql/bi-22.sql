@@ -176,7 +176,7 @@ score_ranks AS (
       LEFT JOIN pair_scores s ON (p1l.personid = s.person1id)
    WHERE
       1 = 1 -- filter
-      AND co.pl_name = :country1
+      AND co.pl_name = 'Indonesia'
 )
 SELECT
    s.person1id AS "person1_id",

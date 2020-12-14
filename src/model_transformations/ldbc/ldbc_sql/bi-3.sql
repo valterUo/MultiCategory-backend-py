@@ -34,7 +34,7 @@ WITH detail AS (
       AND m.m_messageid = mt.mt_messageid
       AND mt.mt_tagid = t.t_tagid -- filter
       AND m.m_creationdate >= make_date(2010, 11, 1)
-      AND m.m_creationdate < make_date(2010, 11, 1) + make_interval(months = > 2)
+      AND m.m_creationdate < make_date(2010, 11, 1) + make_interval(months => 2)
    GROUP BY
       t.t_name
 )

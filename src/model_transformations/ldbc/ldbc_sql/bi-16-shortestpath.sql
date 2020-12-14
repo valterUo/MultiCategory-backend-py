@@ -31,7 +31,7 @@ WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
       AND f.friend = k.k_person1id -- note, that knows table have both (p1, p2) and (p2, p1)
       -- filter
       -- stop condition
-      AND f.hopCount < :maxPathDistance
+      AND f.hopCount < 5
 ),
 friends_shortest AS (
    -- if a friend is reachable from startPerson using hopCount 2, 3 and 4, its distance from startPerson is 2
