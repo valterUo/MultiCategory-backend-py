@@ -8,8 +8,11 @@ class CommonTableExpr:
     def __init__(self, raw_cte, index):
         self.raw_cte = raw_cte
 
-        self.cte_column_names = [name["String"]["str"]
+        try:
+            self.cte_column_names = [name["String"]["str"]
                                  for name in self.raw_cte["aliascolnames"]]
+        except KeyError:
+            self.cte_column_names = []
 
         self.ctename = self.raw_cte["ctename"]
 

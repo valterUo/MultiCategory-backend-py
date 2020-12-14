@@ -1,6 +1,7 @@
 from model_transformations.query_transformations.parse_tree_trasformations.alias_mapping import get_name_for_alias
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
 from external_database_connections.postgresql.postgres import Postgres
+from model_transformations.query_transformations.parse_tree_trasformations.typecast import pg_types_to_neo4j_types
 rel_db = Postgres("ldbcsf1")
 
 
@@ -54,7 +55,13 @@ class Where:
                     elif "String" in left_side["A_Const"]["val"].keys():
                         self.left = left_side["A_Const"]["val"]["String"]["str"]
                     elif "Integer" in left_side["A_Const"]["val"].keys():
-                        self.left = left_side["A_Const"]["val"]["String"]["str"]
+                        self.left = left_side["A_Const"]["val"]["Integer"]["ival"]
+                
+                elif "TypeCast" in left_side.keys():
+                    value = left_side["TypeCast"]["arg"]["A_Const"]["val"]["String"]["str"]
+                    type = left_side["TypeCast"]["typeName"]["TypeName"]["names"][1]["String"]["str"]
+                    self.left = pg_types_to_neo4j_types(type, value)
+
 
                 if "ColumnRef" in right_side.keys():
 
@@ -68,7 +75,12 @@ class Where:
                     elif "String" in right_side["A_Const"]["val"].keys():
                         self.right = right_side["A_Const"]["val"]["String"]["str"]
                     elif "Integer" in right_side["A_Const"]["val"].keys():
-                        self.right = right_side["A_Const"]["val"]["String"]["str"]
+                        self.right = right_side["A_Const"]["val"]["Integer"]["ival"]
+
+                elif "TypeCast" in right_side.keys():
+                    value = right_side["TypeCast"]["arg"]["A_Const"]["val"]["String"]["str"]
+                    type = right_side["TypeCast"]["typeName"]["TypeName"]["names"][1]["String"]["str"]
+                    self.right = pg_types_to_neo4j_types(type, value)
 
         elif "NullTest" in self.where_clause.keys():
             self.left = Column(
@@ -80,13 +92,13 @@ class Where:
         res = ""
         if add_where:
             res = "WHERE "
-        if type(self.left) == str:
-            res += self.left
+        if type(self.left) == str or type(self.left) == int:
+            res += str(self.left)
         else:
             res += self.left.transform_into_cypher() + " "
         res += self.operator + " "
-        if type(self.right) == str:
-            res += self.right
+        if type(self.right) == str or type(self.right) == int:
+            res += str(self.right)
         else:
             res += self.right.transform_into_cypher()
         return res + "\n"
