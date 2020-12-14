@@ -1,11 +1,52 @@
 WITH RECURSIVE search_graph(link, depth) AS (
-		SELECT :person1Id::bigint, 0
-      UNION ALL
-      	(WITH sg(link,depth) as (select * from search_graph)
-      	SELECT distinct k_person2id, x.depth+1
-      	FROM knows, sg x
-      	WHERE x.link = k_person1id and not exists(select * from sg y where y.link = :person2Id::bigint) and not exists( select * from sg y where y.link=k_person2id))
+	SELECT
+		28587302322727 :: bigint,
+		0
+	UNION
+	ALL (
+		WITH sg(link, depth) AS (
+			SELECT
+				*
+			FROM
+				search_graph
+		)
+		SELECT
+			DISTINCT k_person2id,
+			x.depth + 1
+		FROM
+			knows,
+			sg x
+		WHERE
+			x.link = k_person1id
+			AND NOT EXISTS(
+				SELECT
+					*
+				FROM
+					sg y
+				WHERE
+					y.link = 933 :: bigint
+			)
+			AND NOT EXISTS(
+				SELECT
+					*
+				FROM
+					sg y
+				WHERE
+					y.link = k_person2id
+			)
+	)
 )
-select max(depth) from (
-select depth from search_graph where link = :person2Id::bigint
-union select -1) tmp;
+SELECT
+	max(depth)
+FROM
+	(
+		SELECT
+			depth
+		FROM
+			search_graph
+		WHERE
+			link = 933 :: bigint
+		UNION
+		SELECT
+			-1
+	) tmp;

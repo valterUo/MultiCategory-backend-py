@@ -1,11 +1,32 @@
-select p2.m_messageid, p2.m_content, p2.m_creationdate, p_personid, p_firstname, p_lastname,
-    (case when exists (
-     	   	       select 1 from knows
-		       where p1.m_creatorid = k_person1id and p2.m_creatorid = k_person2id)
-      then TRUE
-      else FALSE
-      end)
-from message p1, message p2, person
-where
-  p1.m_messageid = :messageId and p2.m_c_replyof = p1.m_messageid and p2.m_creatorid = p_personid
-order by p2.m_creationdate desc, p2.m_creatorid asc;
+SELECT
+  p2.m_messageid,
+  p2.m_content,
+  p2.m_creationdate,
+  p_personid,
+  p_firstname,
+  p_lastname,
+  (
+    CASE
+      WHEN EXISTS (
+        SELECT
+          1
+        FROM
+          knows
+        WHERE
+          p1.m_creatorid = k_person1id
+          AND p2.m_creatorid = k_person2id
+      ) THEN TRUE
+      ELSE FALSE
+    END
+  )
+FROM
+  message p1,
+  message p2,
+  person
+WHERE
+  p1.m_messageid = 618475290635
+  AND p2.m_c_replyof = p1.m_messageid
+  AND p2.m_creatorid = p_personid
+ORDER BY
+  p2.m_creationdate DESC,
+  p2.m_creatorid ASC;

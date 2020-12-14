@@ -1,5 +1,4 @@
 from model_transformations.query_transformations.parse_tree_trasformations.select_stmt import SelectStmt
-from model_transformations.query_transformations.parse_tree_trasformations.select_stmt_upper import SelectStmtUpper
 
 
 class SqlToCypher:

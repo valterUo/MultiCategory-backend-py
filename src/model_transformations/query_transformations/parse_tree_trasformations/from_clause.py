@@ -36,9 +36,9 @@ class FromClause:
                     res += elem.transform_into_cypher() + ", "
                 res = res[0:-2] + "\n"
             
-            if self.joins:
-                for elem in self.joins:
-                    res += elem.transform_into_cypher()
+        if self.joins:
+            for elem in self.joins:
+                res += elem.transform_into_cypher()
 
         return res
 
