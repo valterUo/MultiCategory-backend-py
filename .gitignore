@@ -160,4 +160,4 @@ class.h5
 inventor.h5
 patent.h5
 db_files/ecommerce/
-ldbc_cypher/
+src/model_transformations/ldbc/ldbc_sql/
