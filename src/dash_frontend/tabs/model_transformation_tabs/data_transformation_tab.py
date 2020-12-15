@@ -153,10 +153,6 @@ def construct_functor_component():
     try:
         parsed_functor = construct_functor_to_graph_model(
             tables_to_nodes, tables_to_edges, source_fun, target_fun, rels_to_edges)
-        print()
-        print("parsed functor: ")
-        print(parsed_functor)
-        print()
         global functor
         functor = Functor("transformation", parsed_functor)
         if len(functor.get_edge_source()) == 0 and len(functor.get_edge_target()) == 0 and len(functor.get_tables_to_edges()) != 0:
@@ -164,7 +160,6 @@ def construct_functor_component():
                 "display": "none"}
         return html.P("Transformation satisfies functoriality and can be executed."), {"display": "block"}
     except FunctorError as e:
-        print(e)
         return html.P("""The transformation does not satify functoriality. Select or deselect tables and relationships.
             The error is '""" + str(e) + "'"), {"display": "none"}
 

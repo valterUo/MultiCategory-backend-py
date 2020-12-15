@@ -45,9 +45,11 @@ class SelectStmt:
                 if clause == "fromClause":
                     self.from_clause = FromClause(
                         self.select_stmt[clause], self.name)
+                    #print(self.from_clause.transform_into_cypher())
                 elif clause == "targetList":
                     self.target = Target(
                         self.select_stmt[clause], self.from_clause, self.cte, self.name)
+                    #print(self.target.transform_into_cypher())
                 elif clause == "whereClause":
                     self.where_clause = WhereUpper(
                         self.select_stmt[clause], self.from_clause, self.cte, self.name)
@@ -76,9 +78,11 @@ class SelectStmt:
             res += self.from_clause.transform_into_cypher()
             if self.where_clause:
                 res += self.where_clause.transform_into_cypher()
-            if self.sort_clause:
+            if self.sort_clause and self.cte:
                 res += self.sort_clause.transform_into_cypher()
             res += self.target.transform_into_cypher()
+            if self.sort_clause and not self.cte:
+                res += "\n" + self.sort_clause.transform_into_cypher()
             if self.limit:
                 res += self.limit.transform_into_cypher()
             if self.cte:

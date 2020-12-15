@@ -66,14 +66,14 @@ def set_alias_for_db_name(alias, name):
     if alias in aliases_to_db_names.keys():
         current_name = aliases_to_db_names[alias]
         if current_name != name:
-            raise AliasNameError("Alias" + alias + " is already mapped to name " +
+            raise AliasNameError("Alias " + alias + " is already mapped to name " +
                                  current_name + " and cannot be assigned to " + name)
     else:
         aliases_to_db_names[alias] = name
     if name in db_names_to_aliases.keys():
         current_alias = db_names_to_aliases[name]
         if current_alias != alias:
-            raise AliasNameError("Name " + name + " is already mapped to alias" +
+            print("Name " + name + " is already mapped to alias " +
                                  current_alias + " and cannot be assigned to " + alias)
     else:
         db_names_to_aliases[name] = alias

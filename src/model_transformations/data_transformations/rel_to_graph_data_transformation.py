@@ -58,7 +58,6 @@ class RelToGraphDataTransformation:
                 WHERE a.""" + rel1 + """=""" + str(relationship[edge_label1]) + """ 
                 AND b.""" + rel2 + """=""" + str(relationship[edge_label2]) + """
                 CREATE (a) - [r : """ + edge_label1 + """_""" + edge_label2 + edge_data + """] -> (b)"""
-            print(query)
             self.graph_db.execute_write(query)
 
     def query_relationships(self, table):
@@ -69,7 +68,6 @@ class RelToGraphDataTransformation:
     def query_relationships_from_virtual_edge_table(self, table, edge_label1, edge_label2):
         query = "SELECT DISTINCT " + edge_label1 + " AS " + edge_label1 + ", " + \
             edge_label1 + " AS " + edge_label2 + " FROM " + table + ";"
-        print(query)
         result = self.rel_db.query(query, "dict")
         return result
 

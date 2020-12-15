@@ -43,32 +43,6 @@ def build_relational_insert(root, collection_constructor):
     html.Div(id = "final-success-nofication")
     ])
 
-# @app.callback(
-#     [Output("inserted-rows", "children")], #+ [Output("input_{}".format(_), "value") for _ in attributes],
-#     [Input("submit-row", "n_clicks"), Input("hidden-attribute-element", "children")],
-# )
-# def cb_render(n_clicks, attributes):
-#     ctx = dash.callback_context
-#     if ctx.triggered:
-#         prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-#         if prop_id == "submit-row":
-#             columns = [{"name": i, "id": i} for i in attributes]
-#             data = dict()
-#             #for i in range(len(attributes)):
-#             #    data[attributes[i]] = vals[i]
-#             #global inserted_rows
-#             #inserted_rows.append(data)
-#             #print(vals)
-#             return [str(attributes)] #[dash_table.DataTable(
-#             #         id='inserted-data-table',
-#             #         columns=columns,
-#             #         data=inserted_rows,
-#             #     )] + ["" for i in range(len(vals))]
-#         else:
-#             raise PreventUpdate
-#     else:
-#         raise PreventUpdate
-
 @app.callback(
     Output({'type': 'inserted-rows', 'index': MATCH}, 'children'),
     [Input("submit-row", "n_clicks")],

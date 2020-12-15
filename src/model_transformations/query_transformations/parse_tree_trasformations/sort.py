@@ -16,7 +16,7 @@ class Sort:
     def transform_into_cypher(self):
         res = ""
         if self.cte:
-            res = "WITH "
+            res = "WITH *,"
             for elem in self.order_by:
                 res += elem.get_collection_alias() + ", "
             res = res[0:-2] + "\n"

@@ -24,7 +24,6 @@ def define_settings_tab():
 def build_settings_tab():
     dbs = multicategory.get_multi_model_db_names_for_dropdown()
     selected_db = multicategory.get_selected_multi_model_database().get_name()
-    print("First selection: ", selected_db)
     return [
         html.Div(
             id="set-specs-intro-container",
@@ -49,7 +48,6 @@ def build_settings_tab():
 )
 def handle_dataset_selection(db_name):
     db = multicategory.get_multi_model_db(db_name)
-    print(db_name, db.is_available())
     if db.is_available():
         multicategory.change_to_multi_model_db(db_name)
         return html.P("Selected database: " + db_name)

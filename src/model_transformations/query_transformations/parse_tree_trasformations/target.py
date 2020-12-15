@@ -1,4 +1,5 @@
 from model_transformations.query_transformations.parse_tree_trasformations.aexpression import AExpression
+from model_transformations.query_transformations.parse_tree_trasformations.case_expression import CaseExpression
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
 from model_transformations.query_transformations.parse_tree_trasformations.cte_table_data import get_cte_column_names_for_cte_name
 from model_transformations.query_transformations.parse_tree_trasformations.func_call import FuncCall
@@ -15,7 +16,7 @@ class Target:
         self.functions = []
         self.aexpressions = []
 
-        for elem in target_list:
+        for i, elem in enumerate(target_list):
             if "ResTarget" in elem:
                 rename = None
                 if "name" in elem["ResTarget"]:
@@ -26,7 +27,7 @@ class Target:
                         col = Column(temp_val["ColumnRef"], self.from_clause, self.cte, self.cte_name, rename)
                         self.columns.append(col)
                     elif "FuncCall" in temp_val:
-                        func = FuncCall(temp_val["FuncCall"], self.from_clause, self.cte, self.cte_name, rename)
+                        func = FuncCall(temp_val["FuncCall"], self.from_clause, self.cte, self.cte_name, rename, i)
                         col_refer = func.get_col_refer()
                         self.columns.append(col_refer)
                         self.functions.append(func)
@@ -38,6 +39,9 @@ class Target:
                         col_refer = a_expr.get_col_refer()
                         self.columns.append(col_refer)
                         self.aexpressions.append(a_expr)
+                    elif "CaseExpr" in temp_val:
+                        case_expr = CaseExpression(temp_val["CaseExpr"], self.from_clause, self.cte, self.cte_name, rename)
+                        self.columns.append(case_expr)
 
 
     def transform_into_cypher(self):
@@ -48,18 +52,18 @@ class Target:
             res += elem.transform_into_cypher() + "\n"
 
         if self.cte:
-            try:
-                print(self.cte_name)
-                cte_column_names = get_cte_column_names_for_cte_name(
-                    self.cte_name)
-            except:
-                cte_column_names = [elem.get_name() for elem in self.columns]
-            if cte_column_names == []:
-                cte_column_names = [elem.get_name() for elem in self.columns]
+            # try:
+            #     cte_column_names = get_cte_column_names_for_cte_name(
+            #         self.cte_name)
+            # except:
+            #     cte_column_names = [elem.get_name() for elem in self.columns]
 
-            print(cte_column_names)
+            #if cte_column_names == []:
+            cte_column_names = [elem.get_name() for elem in self.columns]
 
-            res += "WITH collect({"
+            res += "WITH *, collect({"
+
+            #print(cte_column_names)
 
             for i, cte_column_alias in enumerate(cte_column_names):
                 res += cte_column_alias + " : " + \

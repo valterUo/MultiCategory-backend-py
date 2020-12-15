@@ -31,10 +31,9 @@ class FromClause:
                 res = res[0:-2] + "\n"
 
             if len(unwinds) > 0:
-                res += "UNWIND "
                 for elem in unwinds:
-                    res += elem.transform_into_cypher() + ", "
-                res = res[0:-2] + "\n"
+                    res += "UNWIND "
+                    res += elem.transform_into_cypher() + "\n"
             
         if self.joins:
             for elem in self.joins:

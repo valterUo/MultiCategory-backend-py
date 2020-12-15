@@ -14,9 +14,6 @@ Cytoscape edges {'data': {'source': 'one', 'target': 'two', 'label': 'Node 1 to 
 
 
 def parse_cytoscape_nodes_edges(G):
-    print(G)
-    print(nx.number_of_nodes(G))
-    print(nx.number_of_edges(G))
     nodes, edges = [], []
     for node in G.nodes.data():
         try:
@@ -33,17 +30,13 @@ def parse_cytoscape_nodes_edges(G):
 def general_nx_grah_to_cytoscape(visualized_object):
     global graph
     message = ""
-    print(type(visualized_object))
     if type(visualized_object) == DiGraph:
         graph = visualized_object
     else:
         graph = visualized_object.get_collection().get_graph()
-        print("number of nodes in the graph: ", nx.number_of_nodes(graph))
-        print("number of edges in the graph: ", nx.number_of_edges(graph))
         if nx.number_of_nodes(graph) > 30:
             message = "The graph has " + str(nx.number_of_edges(graph)) + " edges and " +  str(nx.number_of_nodes(graph)) + " nodes. The subgraph induced by first 50 nodes is shown."
             selected_nodes = list(itertools.islice(graph.nodes, 0, 30))
-            print(selected_nodes)
             graph = graph.subgraph(selected_nodes)
             
     nodes, edges = parse_cytoscape_nodes_edges(graph)

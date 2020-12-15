@@ -8,7 +8,9 @@ class BooleanExpression:
 
     typedef enum BoolExprType
     {
-        AND_EXPR, OR_EXPR, NOT_EXPR
+        AND_EXPR, 
+        OR_EXPR, 
+        NOT_EXPR
     } BoolExprType;
 
     Which means that boolop 0 -> AND, boolop 1 -> OR and boolop 2 -> NOT

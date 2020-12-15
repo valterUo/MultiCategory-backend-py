@@ -21,7 +21,7 @@ class FromClauseSource:
 
         self.range_var = self.clause["RangeVar"]
         self.relname = self.range_var["relname"] #message, cposts
-
+        
         if rel_db.contains_table(self.relname):
             self.in_database = True
 
@@ -32,7 +32,12 @@ class FromClauseSource:
             else:
                 self.rel_alias = alias_mapping(self.relname)
         else:
-            self.rel_alias = get_cte_iterator_for_cte_name(self.relname)
+            if "alias" in self.range_var.keys():
+                self.rel_alias = self.range_var["alias"]["Alias"]["aliasname"]
+                #print(self.rel_alias)
+                #set_alias_for_db_name(self.rel_alias, self.relname)
+            else:
+                self.rel_alias = get_cte_iterator_for_cte_name(self.relname)
 
     def get_relname(self):
         return self.relname

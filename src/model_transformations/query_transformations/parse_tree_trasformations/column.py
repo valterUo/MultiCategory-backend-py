@@ -1,4 +1,3 @@
-import json
 from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_transformations.parse_tree_trasformations.cte_table_data import get_cte_iterator_for_cte_column_name, get_cte_iterator_for_cte_name, is_cte
 
@@ -7,8 +6,7 @@ rel_db = Postgres("ldbcsf1")
 
 class Column:
 
-    def __init__(self, column_ref = None, from_clause=None, cte=False, cte_name="", rename=None, func = None, accept_collection_alias = True):
-        #print(json.dumps(column_ref, indent = 2))
+    def __init__(self, column_ref=None, from_clause=None, cte=False, cte_name="", rename=None, func=None, accept_collection_alias=True):
         self.column_ref = column_ref
         self.fields = self.column_ref["fields"]
         self.from_clause = from_clause
@@ -30,7 +28,7 @@ class Column:
             elif len(self.fields) == 1:
                 self.find_correct_collection_alias()
 
-    def transform_into_cypher(self):
+    def transform_into_cypher(self, with_with=True):
         if not self.cte:
             if self.rename:
                 if self.collection_alias:
@@ -47,7 +45,7 @@ class Column:
 
     def get_field(self):
         return self.field
-    
+
     def get_name(self):
         if self.rename:
             return self.rename
