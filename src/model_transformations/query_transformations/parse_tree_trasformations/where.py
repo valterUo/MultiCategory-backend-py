@@ -46,6 +46,7 @@ class Where:
         self.type = None
         self.left_side_typecasted = False
         self.right_side_typecasted = False
+        self.kind = None
 
         if "A_Expr" in self.where_clause.keys():
 
@@ -129,6 +130,7 @@ class Where:
                             self.right_side_typecasted = True
 
         elif "NullTest" in self.where_clause.keys():
+            self.kind = "nulltest"
             self.left = Column(
                 self.where_clause["NullTest"]["arg"]["ColumnRef"], self.from_clause, self.cte, self.cte_name)
             self.operator = "IS"
@@ -183,7 +185,7 @@ class Where:
                         res += self.right.transform_into_cypher()
                 return res + "\n"
 
-        return res
+        return res + "\n"
 
     def get_left(self):
         return self.left

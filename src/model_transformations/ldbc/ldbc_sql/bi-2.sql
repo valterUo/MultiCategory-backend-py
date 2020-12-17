@@ -12,6 +12,7 @@ SELECT
          p.m_creationdate
    ) AS messageMonth,
    cr.p_gender AS "person_gender",
+   ) AS ageGroup,
    t.t_name AS "tag_name",
    count(*) AS messageCount
 FROM
@@ -37,5 +38,7 @@ GROUP BY
    cr.p_gender,
    t.t_name,
    ageGroup
+HAVING
+   count(*) > 100
 LIMIT
    100;

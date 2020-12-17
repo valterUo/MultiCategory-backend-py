@@ -1,6 +1,8 @@
 from model_transformations.query_transformations.parse_tree_trasformations.aexpression import AExpression
 import json
 
+from model_transformations.query_transformations.parse_tree_trasformations.column import Column
+
 
 class CaseWhen:
 
@@ -23,7 +25,6 @@ class CaseWhen:
             self.expr = AExpression(
                 left, operator, right, self.from_clause, self.cte, self.cte_name, self.rename)
 
-
         if "A_Const" in self.case_when["result"]:
             temp_case = self.case_when["result"]["A_Const"]["val"]
             if "Integer" in temp_case:
@@ -32,6 +33,12 @@ class CaseWhen:
                 self.result = temp_case["String"]["str"]
             elif "Float" in temp_case:
                 self.result = temp_case["Float"]["str"]
+            elif "Null" in temp_case:
+                self.result = "NULL"
+        elif "ColumnRef" in self.case_when["result"]:
+            col = Column(self.case_when["result"]["ColumnRef"],
+                         self.from_clause, self.cte, self.cte_name, self.rename)
+            self.result = col.transform_into_cypher()
 
     def transform_into_cypher(self):
         return "WHEN " + self.expr.transform_into_cypher(with_with=False) + " THEN " + str(self.result)
@@ -42,13 +49,24 @@ class CaseExpression:
     def __init__(self, case_expr, from_clause, cte, cte_name, rename):
         self.initial_case_expr = case_expr
         self.expressions = []
+        self.default = None
 
         self.rename = rename
         self.from_clause = from_clause
         self.cte = cte
         self.cte_name = cte_name
 
-        self.default = self.initial_case_expr["defresult"]["A_Const"]["val"]["Integer"]["ival"]
+        temp_initial = self.initial_case_expr["defresult"]["A_Const"]["val"]
+
+        if "Integer" in temp_initial.keys():
+            self.default = temp_initial["Integer"]["ival"]
+        elif "String" in temp_initial.keys():
+            self.default = temp_initial["String"]["str"]
+        elif "Float" in temp_initial.keys():
+            self.default = temp_initial["Float"]["str"]
+        elif "Null" in temp_initial.keys():
+            self.default = "NULL"
+
         for elem in self.initial_case_expr["args"]:
             self.expressions.append(CaseWhen(
                 elem["CaseWhen"], self.from_clause, self.cte, self.cte_name, self.rename))

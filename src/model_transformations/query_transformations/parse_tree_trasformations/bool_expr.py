@@ -116,4 +116,4 @@ class BooleanExpression:
                 res += elem.transform_into_cypher(False)
             else:
                 res += elem.transform_into_cypher(False) + self.mapped_boolop + " "
-        return res[0:-1]
+        return res

@@ -1,7 +1,6 @@
 from model_transformations.query_transformations.parse_tree_trasformations.aexpression import AExpression
 from model_transformations.query_transformations.parse_tree_trasformations.case_expression import CaseExpression
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
-from model_transformations.query_transformations.parse_tree_trasformations.cte_table_data import get_cte_column_names_for_cte_name
 from model_transformations.query_transformations.parse_tree_trasformations.func_call import FuncCall
 
 
@@ -24,10 +23,12 @@ class Target:
                 if "val" in elem["ResTarget"]:
                     temp_val = elem["ResTarget"]["val"]
                     if "ColumnRef" in temp_val:
-                        col = Column(temp_val["ColumnRef"], self.from_clause, self.cte, self.cte_name, rename)
+                        col = Column(
+                            temp_val["ColumnRef"], self.from_clause, self.cte, self.cte_name, rename)
                         self.columns.append(col)
                     elif "FuncCall" in temp_val:
-                        func = FuncCall(temp_val["FuncCall"], self.from_clause, self.cte, self.cte_name, rename, i)
+                        func = FuncCall(
+                            temp_val["FuncCall"], self.from_clause, self.cte, self.cte_name, rename, i)
                         col_refer = func.get_col_refer()
                         self.columns.append(col_refer)
                         self.functions.append(func)
@@ -35,14 +36,15 @@ class Target:
                         left = temp_val["A_Expr"]["lexpr"]
                         right = temp_val["A_Expr"]["rexpr"]
                         operator = temp_val["A_Expr"]["name"][0]["String"]["str"]
-                        a_expr = AExpression(left, operator, right, self.from_clause, self.cte, self.cte_name, rename)
+                        a_expr = AExpression(
+                            left, operator, right, self.from_clause, self.cte, self.cte_name, rename)
                         col_refer = a_expr.get_col_refer()
                         self.columns.append(col_refer)
                         self.aexpressions.append(a_expr)
                     elif "CaseExpr" in temp_val:
-                        case_expr = CaseExpression(temp_val["CaseExpr"], self.from_clause, self.cte, self.cte_name, rename)
+                        case_expr = CaseExpression(
+                            temp_val["CaseExpr"], self.from_clause, self.cte, self.cte_name, rename)
                         self.columns.append(case_expr)
-
 
     def transform_into_cypher(self):
         res = ""

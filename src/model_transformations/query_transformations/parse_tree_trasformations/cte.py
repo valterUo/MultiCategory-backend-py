@@ -17,6 +17,7 @@ class CommonTableExpr:
             # If there are no explicit cte column names, then they need to be parsed from the targetlist
             self.cte_column_names = self.search_cte_column_names()
 
+        print(self.ctename)
         append_cte_table_data(self.ctename, alias_mapping(
             self.ctename), self.cte_column_names, self.aliasname)
 

@@ -13,6 +13,10 @@ class FuncCall:
         self.col_refer = None
         self.func = None
         self.index = index
+        self.distinct = False
+
+        if "agg_distinct" in self.func_call:
+            self.distinct = self.func_call["agg_distinct"]
 
         func_name = self.func_call["funcname"][-1]["String"]["str"]
 
@@ -25,29 +29,51 @@ class FuncCall:
                 self. col_refer = Column({"fields": [
                                          {"String": {"str": "c" + str(self.index)}}]},  self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
             else:
-                print("Not implemented yet")
-        elif func_name == "avg":
-            call = pg_functions_to_neo4j_functions(self.func_call)
-            func_column = Column(
-                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
-            self.func = "avg(" + \
-                func_column.transform_into_cypher() + ")"
-            self.col_refer = Column(
-                {"fields": [{"String": {"str": "a" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
-        elif func_name == "sum":
-            call = pg_functions_to_neo4j_functions(
-                self.func_call)
-            func_column = Column(
-                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
-            self.func = "sum(" + \
-                func_column.transform_into_cypher() + ")"
-            self.col_refer = Column(
-                {"fields": [{"String": {"str": "s" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
+                for elem in self.func_call["args"]:
+                    if "CaseExpr" in elem:
+                        from model_transformations.query_transformations.parse_tree_trasformations.case_expression import CaseExpression
+                        case_expr = CaseExpression(
+                            elem["CaseExpr"], self.from_clause, self.cte, self.cte_name, self.rename)
+                        if self.distinct:
+                            self.func = "count(distinct " + \
+                                case_expr.transform_into_cypher() + ")"
+                        else:
+                            self.func = "count( " + \
+                                case_expr.transform_into_cypher() + ")"
+                        self. col_refer = Column({"fields": [
+                            {"String": {"str": "c" + str(self.index)}}]},  self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
+
+        # elif func_name == "avg":
+        #     call = pg_functions_to_neo4j_functions(self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
+        #     func_column = Column(
+        #         {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
+        #     self.func = "avg(" + \
+        #         func_column.transform_into_cypher() + ")"
+        #     self.col_refer = Column(
+        #         {"fields": [{"String": {"str": "a" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, self.rename, accept_collection_alias=False)
+        # elif func_name == "sum":
+        #     call = pg_functions_to_neo4j_functions(
+        #         self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
+        #     func_column = Column(
+        #         {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
+        #     self.func = "sum(" + \
+        #         func_column.transform_into_cypher() + ")"
+        #     self.col_refer = Column(
+        #         {"fields": [{"String": {"str": "s" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
         else:
             call = pg_functions_to_neo4j_functions(
-                self.func_call)
+                self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
+            # print(call["fields"])
+            # print(call["func"])
+            for elem in call["fields"]:
+                self.func = call["func"]["pre"] + elem.transform_into_cypher(False) + call["func"]["post"]
             self.col_refer = Column(
-                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
+                {"fields": [{"String": {"str": "func" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, self.rename, accept_collection_alias=False)
+            # func = Column(
+            #     {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
+            # self.func = func.transform_into_cypher()
+            # self.col_refer = Column(
+            #     {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
 
     def transform_into_cypher(self, with_with=True):
         res = ""
@@ -55,7 +81,7 @@ class FuncCall:
             if with_with:
                 res += "WITH *, "
             res += self.func
-            if with_with:
+            if with_with and self.col_refer:
                 res += " AS " + self.col_refer.get_field()
         return res
 

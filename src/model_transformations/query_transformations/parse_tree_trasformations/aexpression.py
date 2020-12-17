@@ -66,7 +66,7 @@ class AExpression:
                 res += str(self.right)
             else:
                 res += self.right.transform_into_cypher(with_with=False)
-            if with_with:
+            if with_with and self.col_refer:
                 res += " AS " + self.col_refer.get_field()
         return res
 
