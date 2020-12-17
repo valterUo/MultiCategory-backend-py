@@ -52,18 +52,9 @@ class Target:
             res += elem.transform_into_cypher() + "\n"
 
         if self.cte:
-            # try:
-            #     cte_column_names = get_cte_column_names_for_cte_name(
-            #         self.cte_name)
-            # except:
-            #     cte_column_names = [elem.get_name() for elem in self.columns]
-
-            #if cte_column_names == []:
             cte_column_names = [elem.get_name() for elem in self.columns]
 
             res += "WITH *, collect({"
-
-            #print(cte_column_names)
 
             for i, cte_column_alias in enumerate(cte_column_names):
                 res += cte_column_alias + " : " + \

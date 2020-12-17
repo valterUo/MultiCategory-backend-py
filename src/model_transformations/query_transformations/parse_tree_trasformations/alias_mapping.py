@@ -52,6 +52,7 @@ def alias_mapping(name):
 def get_alias_for_name(name):
     return alias_mapping(name)
 
+
 def get_name_for_alias(name):
     try:
         return aliases_to_db_names[name]
@@ -73,8 +74,9 @@ def set_alias_for_db_name(alias, name):
     if name in db_names_to_aliases.keys():
         current_alias = db_names_to_aliases[name]
         if current_alias != alias:
-            print("Name " + name + " is already mapped to alias " +
-                                 current_alias + " and cannot be assigned to " + alias)
+            print("INFO: Name '" + name + "' is already mapped to alias '" +
+                  current_alias + "' and cannot be assigned to '" + alias + "'." 
+                  + "This might result to ambiguous variable references.\n")
     else:
         db_names_to_aliases[name] = alias
 

@@ -66,8 +66,7 @@ class Neo4j:
     def get_edge_types(self):
         query = "CALL db.relationshipTypes()"
         result = self.execute_read(query)
-        print(result)
-        return result
+        return [elem["relationshipType"] for elem in result]
 
     def create_and_return_node(self, property_name, attributes):
         try:

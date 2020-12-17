@@ -4,7 +4,7 @@ from model_transformations.query_transformations.parse_tree_trasformations.funct
 
 class FuncCall:
 
-    def __init__(self, func_call, from_clause, cte, cte_name, rename, index = 0):
+    def __init__(self, func_call, from_clause, cte, cte_name, rename, index=0):
         self.func_call = func_call
         self.from_clause = from_clause
         self.cte = cte
@@ -29,7 +29,7 @@ class FuncCall:
         elif func_name == "avg":
             call = pg_functions_to_neo4j_functions(self.func_call)
             func_column = Column(
-                {"fields": [{"String": {"str": call["field"]}}]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
+                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
             self.func = "avg(" + \
                 func_column.transform_into_cypher() + ")"
             self.col_refer = Column(
@@ -38,7 +38,7 @@ class FuncCall:
             call = pg_functions_to_neo4j_functions(
                 self.func_call)
             func_column = Column(
-                {"fields": [{"String": {"str": call["field"]}}]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
+                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
             self.func = "sum(" + \
                 func_column.transform_into_cypher() + ")"
             self.col_refer = Column(
@@ -47,7 +47,7 @@ class FuncCall:
             call = pg_functions_to_neo4j_functions(
                 self.func_call)
             self.col_refer = Column(
-                {"fields": [{"String": {"str": call["field"]}}]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
+                {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
 
     def transform_into_cypher(self, with_with=True):
         res = ""

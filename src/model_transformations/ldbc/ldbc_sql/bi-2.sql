@@ -12,23 +12,14 @@ SELECT
          p.m_creationdate
    ) AS messageMonth,
    cr.p_gender AS "person_gender",
-   floor(
-      extract(
-         YEARS
-         FROM
-            age('2013-01-01' :: date, cr.p_birthday)
-      ) / 5
-   ) AS ageGroup,
    t.t_name AS "tag_name",
    count(*) AS messageCount
 FROM
    message p,
    message_tag pt,
    tag t,
-   person cr -- creator
-,
-   place ci -- city
-,
+   person cr, -- creator
+   place ci, -- city
    place co -- country
 WHERE
    1 = 1 -- join
@@ -46,7 +37,5 @@ GROUP BY
    cr.p_gender,
    t.t_name,
    ageGroup
-HAVING
-   count(*) > 100
 LIMIT
    100;

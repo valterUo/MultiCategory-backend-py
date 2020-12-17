@@ -58,6 +58,10 @@ class SelectStmt:
                         self.select_stmt[clause], self.cte, self.from_clause, self.name)
                 elif clause == "limitCount":
                     self.limit = Limit(self.select_stmt[clause], self.cte)
+                elif clause == "groupClause":
+                    print("INFO: SQL query contains a group clause. Neo4j does not support group clauses explicitly.\n")
+                elif clause == "havingClause":
+                    print("INFO: SQL query contains a having clause. Transformation of having clauses is under development.\n")
 
     def get_from_clause(self):
         return self.from_clause
@@ -84,7 +88,7 @@ class SelectStmt:
             if self.sort_clause and not self.cte:
                 res += "\n" + self.sort_clause.transform_into_cypher()
             if self.limit:
-                res += self.limit.transform_into_cypher()
+                res += "\n" + self.limit.transform_into_cypher()
             if self.cte:
                 res += " AS " + self.name + "\n"
 

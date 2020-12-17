@@ -14,31 +14,30 @@ class FromClause:
             for elem in self.from_clause:
                 if "RangeVar" in elem.keys():
                     self.sources.append(FromClauseSource(elem, self.cte_name))
-                if "JoinExpr" in elem.keys():
-                    from model_transformations.query_transformations.parse_tree_trasformations.join import Join
-                    self.joins.append(Join(elem["JoinExpr"]))
+                # if "JoinExpr" in elem.keys():
+                #     from model_transformations.query_transformations.parse_tree_trasformations.join import Join
+                #     self.joins.append(Join(elem["JoinExpr"]))
 
 
     def transform_into_cypher(self):
         res = ""
         if self.sources:
             matches = [elem for elem in self.sources if elem.get_if_in_database()]
+            matches_no_in_join_patterns = [elem for elem in matches if not self.joins.node_in_join_patterns(elem)]
             unwinds = [elem for elem in self.sources if not elem.get_if_in_database()]
 
-            if len(matches) > 0:
+            if len(matches_no_in_join_patterns) > 0:
                 res = "MATCH "
-                for elem in matches:
+                for elem in matches_no_in_join_patterns:
                     res += elem.transform_into_cypher() + ", "
                 res = res[0:-2] + "\n"
+
+            res += self.joins.transform_in_cypher()
 
             if len(unwinds) > 0:
                 for elem in unwinds:
                     res += "UNWIND "
                     res += elem.transform_into_cypher() + "\n"
-            
-        if self.joins:
-            for elem in self.joins:
-                res += elem.transform_into_cypher()
 
         return res
 
@@ -62,5 +61,5 @@ class FromClause:
             if source.get_relname() == relname:
                 return source.get_rel_alias()
 
-    def add_join(self, join):
-        return self.joins.add_join(self, join)
+    def add_join(self, left, right):
+        self.joins.add_join(left, right)

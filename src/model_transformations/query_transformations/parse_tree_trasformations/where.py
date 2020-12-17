@@ -137,42 +137,51 @@ class Where:
     def transform_into_cypher(self, add_where=True):
         res = ""
         if self.left and self.right:
-
             if add_where:
                 res = "WHERE "
 
-            if type(self.left) == str or type(self.left) == int:
-                res += str(self.left)
+            if self.kind == 11:
+                if self.operator == "BETWEEN":
+                    if self.type == "timestamp":
+                        if len(self.right) == 2:
+
+                            """
+                            Strange but Neo4j lacks datetime comparisions. Transforming datetimes into integers and comparing them is the workaround here.
+                            """
+
+                            res += self.right[0] + ".epochMillis " + " <= " + pg_types_to_neo4j_types(self.type,
+                                                    self.left.transform_into_cypher(), "column") + ".epochMillis <= " + self.right[1] +".epochMillis" + "\n"
             else:
-                if self.right_side_typecasted:
-                    res += pg_types_to_neo4j_types(self.type,
-                                                   self.left.transform_into_cypher(), "column") + " "
+
+                if type(self.left) == str or type(self.left) == int:
+                    res += str(self.left)
                 else:
-                    res += self.left.transform_into_cypher() + " "
+                    if self.right_side_typecasted:
+                        res += pg_types_to_neo4j_types(self.type,
+                                                    self.left.transform_into_cypher(), "column") + " "
+                    else:
+                        res += self.left.transform_into_cypher() + " "
 
-            if self.kind == 7:
-                res += "IN "
-            else:
-                res += self.operator + " "
-
-            if type(self.right) == str or type(self.right) == int:
-                res += str(self.right)
-            elif type(self.right) == list:
                 if self.kind == 7:
-                    res += "["
-                    for elem in self.right:
-                        res += "'" + elem + "'" + ", "
-                    res = res[0:-2] + "]"
-                elif self.kind == 11:
-                    if len(self.right) == 2:
-                        res += self.right[0] + " AND " + self.right[1]
-            else:
-                if self.left_side_typecasted:
-                    res += pg_types_to_neo4j_types(self.type,
-                                                   self.right.transform_into_cypher(), "column") + " "
+                    res += "IN "
                 else:
-                    res += self.right.transform_into_cypher()
-            return res + "\n"
+                    res += self.operator + " "
+
+                if type(self.right) == str or type(self.right) == int:
+                    res += str(self.right)
+                elif type(self.right) == list:
+                    if self.kind == 7:
+                        res += "["
+                        for elem in self.right:
+                            res += "'" + elem + "'" + ", "
+                        res = res[0:-2] + "]"
+                else:
+                    if self.left_side_typecasted:
+                        res += pg_types_to_neo4j_types(self.type,
+                                                    self.right.transform_into_cypher(), "column") + " "
+                    else:
+                        res += self.right.transform_into_cypher()
+                return res + "\n"
 
         return res
 

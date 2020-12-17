@@ -1,3 +1,4 @@
+import json
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
 from model_transformations.query_transformations.parse_tree_trasformations.where import Where
 from external_database_connections.postgresql.postgres import Postgres
@@ -29,6 +30,7 @@ class BooleanExpression:
         self.cte_name = cte_name
         self.boolop = self.raw_expr["boolop"]
         self.mapped_boolop = None
+        self.edge_types = graph_db.get_edge_types()
 
         self.joins = []
         self.possible_joins = []
@@ -52,47 +54,46 @@ class BooleanExpression:
                 right_side = elem["A_Expr"]["rexpr"]
                 operator = elem["A_Expr"]["name"][0]["String"]["str"]
 
-                if "ColumnRef" in left_side.keys() and "ColumnRef" in right_side.keys():
+                if type(left_side) == dict and type(right_side) == dict:
 
-                    left = Column(
-                        left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
-                    right = Column(
-                        right_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
+                    if "ColumnRef" in left_side.keys() and "ColumnRef" in right_side.keys():
 
-                    left_table = left.get_collection()
-                    right_table = right.get_collection()
+                        left = Column(
+                            left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
+                        right = Column(
+                            right_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
 
-                    if left_table and right_table:
-                        if rel_db.contains_table(left_table) and rel_db.contains_table(right_table) and operator == "=":
-                            self.possible_joins.append((left, right))
+                        left_table = left.get_collection()
+                        right_table = right.get_collection()
 
-                            #join_accepted = self.from_clause.add_join(left, right)
+                        if left_table and right_table:
+                            if rel_db.contains_table(left_table) and rel_db.contains_table(right_table) and operator == "=":
+                                fk = left.get_field()
+                                pk = right.get_field()
 
-                            #if not join_accepted:
-                            #    self.filters.append(elem)
+                                """
+                                It is not a trivial task to check if a collection of equalities given in the where clause defines a graph pattern.
+                                This part relies on certain assumptions in the underlaying data transformation.
+                                But nothing guarantees that the data transformation follows those assumptions and it does not need to follow them.
+                                """
+
+                                if fk + "_" + pk in self.edge_types:
+                                    self.from_clause.add_join(left, right)
+                                elif pk + "_" + fk in self.edge_types:
+                                    self.from_clause.add_join(right, left)
+                                else:
+                                    self.filters.append(elem)
+                            else:
+                                self.filters.append(elem)
                         else:
                             self.filters.append(elem)
                     else:
                         self.filters.append(elem)
+                else:
+                    self.filters.append(elem)
             else:
-                self.filters.append(elem)
+                    self.filters.append(elem)
 
-        
-        """
-        It is not a trivial task to check if a collection of equalities given in the where clause defines a graph pattern.
-        This part relies on certain assumptions in the underlaying data transformation.
-        But nothing guarantees that the data transformation follows those assumptions and it does not need to follow them.
-        """
-
-        for possible_join in self.possible_joins:
-            edge_types = graph_db.get_edge_types()
-            left = possible_join[0]
-            right = possible_join[1]
-            fk = left.get_field()
-            pk = right.get_field()
-
-
-        
 
         # Analyze those conditions that do not define graph patterns
 
@@ -115,4 +116,4 @@ class BooleanExpression:
                 res += elem.transform_into_cypher(False)
             else:
                 res += elem.transform_into_cypher(False) + self.mapped_boolop + " "
-        return res
+        return res[0:-1]
