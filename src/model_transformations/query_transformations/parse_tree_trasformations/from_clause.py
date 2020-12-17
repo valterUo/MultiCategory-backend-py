@@ -1,4 +1,5 @@
 from model_transformations.query_transformations.parse_tree_trasformations.from_clause_source import FromClauseSource
+from model_transformations.query_transformations.parse_tree_trasformations.join_translator import JoinTranslator
 
 
 class FromClause:
@@ -7,7 +8,7 @@ class FromClause:
         self.from_clause = from_clause
         self.cte_name = cte_name
         self.sources = []
-        self.joins = []
+        self.joins = JoinTranslator()
 
         if type(self.from_clause) == list:
             for elem in self.from_clause:
@@ -60,3 +61,6 @@ class FromClause:
         for source in self.sources:
             if source.get_relname() == relname:
                 return source.get_rel_alias()
+
+    def add_join(self, join):
+        return self.joins.add_join(self, join)

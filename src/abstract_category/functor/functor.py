@@ -1,4 +1,3 @@
-from logging import error
 from abstract_category.functor.functor_error import FunctorError
 
 

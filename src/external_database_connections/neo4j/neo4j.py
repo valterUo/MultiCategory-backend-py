@@ -63,6 +63,12 @@ class Neo4j:
         result = self.execute_write(query)
         return result
 
+    def get_edge_types(self):
+        query = "CALL db.relationshipTypes()"
+        result = self.execute_read(query)
+        print(result)
+        return result
+
     def create_and_return_node(self, property_name, attributes):
         try:
             with self.driver.session() as session:

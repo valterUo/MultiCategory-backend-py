@@ -1,4 +1,5 @@
 from external_database_connections.postgresql.postgres import Postgres
+from model_transformations.query_transformations.parse_tree_trasformations.alias_mapping import get_name_for_alias
 from model_transformations.query_transformations.parse_tree_trasformations.cte_table_data import get_cte_iterator_for_cte_column_name, get_cte_iterator_for_cte_name, is_cte
 
 rel_db = Postgres("ldbcsf1")
@@ -12,6 +13,7 @@ class Column:
         self.from_clause = from_clause
         self.field = self.fields[-1]["String"]["str"]
         self.collection_alias = None
+        self.collection = None
         self.cte = cte
         self.cte_name = cte_name
         self.rename = rename
@@ -27,6 +29,10 @@ class Column:
                         self.collection_alias)
             elif len(self.fields) == 1:
                 self.find_correct_collection_alias()
+        
+            if self.collection == None:
+                self.collection = get_name_for_alias(self.collection_alias)
+
 
     def transform_into_cypher(self, with_with=True):
         if not self.cte:
@@ -45,6 +51,9 @@ class Column:
 
     def get_field(self):
         return self.field
+
+    def get_collection(self):
+        return self.collection
 
     def get_name(self):
         if self.rename:

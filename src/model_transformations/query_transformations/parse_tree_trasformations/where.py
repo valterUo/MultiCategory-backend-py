@@ -1,9 +1,5 @@
-import json
-from model_transformations.query_transformations.parse_tree_trasformations.alias_mapping import get_name_for_alias
 from model_transformations.query_transformations.parse_tree_trasformations.column import Column
-from external_database_connections.postgresql.postgres import Postgres
 from model_transformations.query_transformations.parse_tree_trasformations.typecast import pg_types_to_neo4j_types
-rel_db = Postgres("ldbcsf1")
 
 
 class Where:
@@ -66,18 +62,10 @@ class Where:
 
                         self.left = Column(
                             self.left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
+
                         self.right = Column(
                             self.right_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
-                        left_table = get_name_for_alias(
-                            self.left.get_collection_alias())
-                        right_table = get_name_for_alias(
-                            self.right.get_collection_alias())
-                        if left_table and right_table:
-                            if left_table != right_table:
-                                """
-                                Some of these equalities will be moved to pattern mathc part
-                                """
-                                self.joins.append(self.where_clause["A_Expr"])
+
                     else:
                         if "ColumnRef" in self.left_side.keys():
 
@@ -89,7 +77,8 @@ class Where:
                             self.left = self.handle_a_const(self.left_side)
 
                         elif "TypeCast" in self.left_side.keys():
-                            self.left, self.type = self.handle_typecast(self.left_side)
+                            self.left, self.type = self.handle_typecast(
+                                self.left_side)
                             self.left_side_typecasted = True
 
                         if "ColumnRef" in self.right_side.keys():
@@ -101,7 +90,8 @@ class Where:
                             self.right = self.handle_a_const(self.right_side)
 
                         elif "TypeCast" in self.right_side.keys():
-                            self.right, self.type = self.handle_typecast(self.right_side)
+                            self.right, self.type = self.handle_typecast(
+                                self.right_side)
                             self.right_side_typecasted = True
 
             elif self.kind == 7:
@@ -109,14 +99,16 @@ class Where:
                 if type(self.left_side) == dict and type(self.right_side) == list:
 
                     if "ColumnRef" in self.left_side.keys():
-                        self.left = Column(self.left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
+                        self.left = Column(
+                            self.left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
 
                     self.right = []
                     for elem in self.right_side:
                         if "A_Const" in elem.keys():
                             self.right.append(self.handle_a_const(elem))
                         elif "TypeCast" in elem.keys():
-                            res, self.type = self.handle_typecast(self.right_side)
+                            res, self.type = self.handle_typecast(
+                                self.right_side)
                             self.right.append(res)
                             self.right_side_typecasted = True
 
@@ -124,7 +116,8 @@ class Where:
 
                 if type(self.left_side) == dict and type(self.right_side) == list:
                     if "ColumnRef" in self.left_side.keys():
-                        self.left = Column(self.left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
+                        self.left = Column(
+                            self.left_side["ColumnRef"], self.from_clause, self.cte, self.cte_name)
 
                     self.right = []
                     for elem in self.right_side:
@@ -134,7 +127,6 @@ class Where:
                             res, self.type = self.handle_typecast(elem)
                             self.right.append(res)
                             self.right_side_typecasted = True
-                    
 
         elif "NullTest" in self.where_clause.keys():
             self.left = Column(
@@ -144,42 +136,45 @@ class Where:
 
     def transform_into_cypher(self, add_where=True):
         res = ""
+        if self.left and self.right:
 
-        if add_where:
-            res = "WHERE "
+            if add_where:
+                res = "WHERE "
 
-        if type(self.left) == str or type(self.left) == int:
-            res += str(self.left)
-        else:
-            if self.right_side_typecasted:
-                res += pg_types_to_neo4j_types(self.type,
-                                               self.left.transform_into_cypher(), "column") + " "
+            if type(self.left) == str or type(self.left) == int:
+                res += str(self.left)
             else:
-                res += self.left.transform_into_cypher() + " "
+                if self.right_side_typecasted:
+                    res += pg_types_to_neo4j_types(self.type,
+                                                   self.left.transform_into_cypher(), "column") + " "
+                else:
+                    res += self.left.transform_into_cypher() + " "
 
-        if self.kind == 7:
-            res += "IN "
-        else:
-            res += self.operator + " "
-
-        if type(self.right) == str or type(self.right) == int:
-            res += str(self.right)
-        elif type(self.right) == list:
             if self.kind == 7:
-                res += "["
-                for elem in self.right:
-                    res += "'" + elem + "'" + ", "
-                res = res[0:-2] + "]"
-            elif self.kind == 11:
-                if len(self.right) == 2:
-                    res += self.right[0] + " AND " + self.right[1]
-        else:
-            if self.left_side_typecasted:
-                res += pg_types_to_neo4j_types(self.type,
-                                               self.right.transform_into_cypher(), "column") + " "
+                res += "IN "
             else:
-                res += self.right.transform_into_cypher()
-        return res + "\n"
+                res += self.operator + " "
+
+            if type(self.right) == str or type(self.right) == int:
+                res += str(self.right)
+            elif type(self.right) == list:
+                if self.kind == 7:
+                    res += "["
+                    for elem in self.right:
+                        res += "'" + elem + "'" + ", "
+                    res = res[0:-2] + "]"
+                elif self.kind == 11:
+                    if len(self.right) == 2:
+                        res += self.right[0] + " AND " + self.right[1]
+            else:
+                if self.left_side_typecasted:
+                    res += pg_types_to_neo4j_types(self.type,
+                                                   self.right.transform_into_cypher(), "column") + " "
+                else:
+                    res += self.right.transform_into_cypher()
+            return res + "\n"
+
+        return res
 
     def get_left(self):
         return self.left
