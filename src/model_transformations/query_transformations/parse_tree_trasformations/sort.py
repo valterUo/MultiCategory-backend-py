@@ -9,8 +9,14 @@ class Sort:
         self.from_clause = from_clause
         self.order_by = []
         self.cte_name = cte_name
+        self.modes = []
 
         for elem in self.sort_clause:
+            if elem["SortBy"]["sortby_dir"] == 2:
+                self.modes.append("DESC")
+            else:
+                self.modes.append("ASC")
+
             self.order_by.append(Column(elem["SortBy"]["node"]["ColumnRef"], self.from_clause, self.cte, self.cte_name))
 
     def transform_into_cypher(self):
@@ -21,7 +27,7 @@ class Sort:
                 res += elem.get_collection_alias() + ", "
             res = res[0:-2] + "\n"
         res += "ORDER BY "
-        for elem in self.order_by:
-            res += elem.transform_into_cypher() + ", "
+        for i, elem in enumerate(self.order_by):
+            res += elem.transform_into_cypher() + " " + self.modes[i] + ", "
         res = res[0:-2] + "\n"
         return res

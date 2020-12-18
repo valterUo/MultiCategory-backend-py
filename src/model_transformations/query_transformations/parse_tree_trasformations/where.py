@@ -142,6 +142,10 @@ class Where:
             if add_where:
                 res = "WHERE "
 
+            """
+            Left side of the single where clause
+            """
+
             if self.kind == 11:
                 if self.operator == "BETWEEN":
                     if self.type == "timestamp":
@@ -155,7 +159,9 @@ class Where:
                                                     self.left.transform_into_cypher(), "column") + ".epochMillis <= " + self.right[1] +".epochMillis" + "\n"
             else:
 
-                if type(self.left) == str or type(self.left) == int:
+                if type(self.left) == str:
+                    res += '"' + str(self.left) + '"'
+                elif type(self.left) == int:
                     res += str(self.left)
                 else:
                     if self.right_side_typecasted:
@@ -164,12 +170,23 @@ class Where:
                     else:
                         res += self.left.transform_into_cypher() + " "
 
+                """
+                Operator i.e. equality, inequality or other comparision, inclusion etc.
+                Most of the time Postgres and Neo4j have same naming here.
+                """
+
                 if self.kind == 7:
                     res += "IN "
                 else:
                     res += self.operator + " "
 
-                if type(self.right) == str or type(self.right) == int:
+                """
+                Right side of the single where clause
+                """
+
+                if type(self.right) == str:
+                    res += '"' + str(self.right) + '"'
+                elif type(self.right) == int:
                     res += str(self.right)
                 elif type(self.right) == list:
                     if self.kind == 7:

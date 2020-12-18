@@ -3,84 +3,45 @@ from model_transformations.query_transformations.parse_tree_trasformations.sql_t
 from model_transformations.query_transformations.pgSQL.pgSQL import pgSQL
 
 query = """
-WITH detail AS (
-   SELECT
-      t.t_name,
-      count(
-         DISTINCT CASE
-            WHEN extract(
-               MONTH
-               FROM
-                  m.m_creationdate
-            ) = 11 THEN m.m_messageid
-            ELSE NULL
-         END
-      ) AS countMonth1,
-      count(
-         DISTINCT CASE
-            WHEN extract(
-               MONTH
-               FROM
-                  m.m_creationdate
-            ) != 11 THEN m.m_messageid
-            ELSE NULL
-         END
-      ) AS countMonth2
-   FROM
-      message m,
-      message_tag mt,
-      tag t
-   WHERE
-      1 = 1 -- join
-      AND m.m_messageid = mt.mt_messageid
-      AND mt.mt_tagid = t.t_tagid -- filter
-      AND m.m_creationdate >= make_date(2010, 11, 1)
-      AND m.m_creationdate < make_date(2010, 11, 1) + make_interval(months => 2)
-   GROUP BY
-      t.t_name
-)
 SELECT
-   t_name AS "tag_name",
-   countMonth1,
-   countMonth2,
-   abs(countMonth1 - countMonth2) AS diff
+   f.f_forumid AS "forum_id",
+   f.f_title AS "forum_title",
+   f.f_creationdate AS "forum_creationDate",
+   f.f_moderatorid AS "person_id",
+   count(DISTINCT p.m_messageid) AS postCount
 FROM
-   detail d
+   tagClass tc,
+   tag t,
+   message_tag pt,
+   message p,
+   forum f,
+   person m, -- moderator
+   place ci, -- city
+   place co -- country
+WHERE
+   1 = 1 -- join
+   AND tc.tc_tagclassid = t.t_tagclassid
+   AND t.t_tagid = pt.mt_tagid
+   AND pt.mt_messageid = p.m_messageid
+   AND p.m_ps_forumid = f.f_forumid
+   AND f.f_moderatorid = m.p_personid
+   AND m.p_placeid = ci.pl_placeid
+   AND ci.pl_containerplaceid = co.pl_placeid -- filter
+   AND tc.tc_name = 'MusicalArtist'
+   AND co.pl_name = 'Burma'
+GROUP BY
+   f.f_forumid,
+   f.f_title,
+   f.f_creationdate,
+   f.f_moderatorid
 ORDER BY
-   diff DESC,
-   t_name
+   postCount DESC,
+   f.f_forumid
 LIMIT
-   100;
+   20;
 """
 
 parse_tree = pgSQL(query).get_parse_tree()
 
 res = SqlToCypher(parse_tree).transform_into_cypher()
 print(res)
-
-"""
-MATCH (mt : message_tag)-[mt_messageid_m_messageid]->(m : message)
-MATCH (mt : message_tag)-[mt_tagid_t_tagid]->(t : tag)
--- because group by t
-WITH t, count(distinct CASE
-WHEN datetime(m.m_creationdate).month = 11 THEN m.m_messageid
-ELSE NULL
-END) AS c1
-
-MATCH (mt : message_tag)-[mt_messageid_m_messageid]->(m : message)
-MATCH (mt : message_tag)-[mt_tagid_t_tagid]->(t : tag)
-
-WITH c1, t, count(distinct CASE
-WHEN datetime(m.m_creationdate).month <> 11 THEN m.m_messageid
-ELSE NULL
-END) AS c2
-
-WITH collect({ t_name : t.t_name, countmonth1: c1, countmonth2 : c2 }) as detail
-
-UNWIND detail as d
-WITH *, abs(d.countmonth1 - d.countmonth2) AS func3
-RETURN d.t_name AS tag_name, d.countmonth1, d.countmonth2, func3 AS diff
-ORDER BY diff DESC, d.t_name ASC
-LIMIT 100
-
-"""

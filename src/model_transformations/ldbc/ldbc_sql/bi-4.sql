@@ -14,10 +14,8 @@ FROM
    message_tag pt,
    message p,
    forum f,
-   person m -- moderator
-,
-   place ci -- city
-,
+   person m, -- moderator
+   place ci, -- city
    place co -- country
 WHERE
    1 = 1 -- join

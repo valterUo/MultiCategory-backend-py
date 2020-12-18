@@ -26,7 +26,7 @@ class FuncCall:
                 star = self.func_call["agg_star"]
             if star:
                 self.func = "count(*)"
-                self. col_refer = Column({"fields": [
+                self.col_refer = Column({"fields": [
                                          {"String": {"str": "c" + str(self.index)}}]},  self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
             else:
                 for elem in self.func_call["args"]:
@@ -40,40 +40,25 @@ class FuncCall:
                         else:
                             self.func = "count( " + \
                                 case_expr.transform_into_cypher() + ")"
-                        self. col_refer = Column({"fields": [
+                        self.col_refer = Column({"fields": [
+                            {"String": {"str": "c" + str(self.index)}}]},  self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
+                    elif "ColumnRef":
+                        col = Column(elem["ColumnRef"], self.from_clause, True, self.cte_name, self.rename)
+                        if self.distinct:
+                            self.func = "count(distinct "
+                        else:
+                            self.func = "count("
+                        self.func += col.transform_into_cypher(with_with=False) + ")"
+                        self.col_refer = Column({"fields": [
                             {"String": {"str": "c" + str(self.index)}}]},  self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
 
-        # elif func_name == "avg":
-        #     call = pg_functions_to_neo4j_functions(self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
-        #     func_column = Column(
-        #         {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
-        #     self.func = "avg(" + \
-        #         func_column.transform_into_cypher() + ")"
-        #     self.col_refer = Column(
-        #         {"fields": [{"String": {"str": "a" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, self.rename, accept_collection_alias=False)
-        # elif func_name == "sum":
-        #     call = pg_functions_to_neo4j_functions(
-        #         self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
-        #     func_column = Column(
-        #         {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, accept_collection_alias=True)
-        #     self.func = "sum(" + \
-        #         func_column.transform_into_cypher() + ")"
-        #     self.col_refer = Column(
-        #         {"fields": [{"String": {"str": "s" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, rename=self.rename, accept_collection_alias=False)
         else:
             call = pg_functions_to_neo4j_functions(
-                self.func_call, self.from_clause, self.cte, self.cte_name, self.rename,)
-            # print(call["fields"])
-            # print(call["func"])
+                self.func_call, self.from_clause, self.cte, self.cte_name, self.rename)
             for elem in call["fields"]:
                 self.func = call["func"]["pre"] + elem.transform_into_cypher(False) + call["func"]["post"]
             self.col_refer = Column(
                 {"fields": [{"String": {"str": "func" + str(self.index)}}]}, self.from_clause, self.cte, self.cte_name, self.rename, accept_collection_alias=False)
-            # func = Column(
-            #     {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
-            # self.func = func.transform_into_cypher()
-            # self.col_refer = Column(
-            #     {"fields": call["fields"]}, self.from_clause, self.cte, self.cte_name, self.rename, call["func"])
 
     def transform_into_cypher(self, with_with=True):
         res = ""
